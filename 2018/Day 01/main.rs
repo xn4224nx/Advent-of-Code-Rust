@@ -1,14 +1,15 @@
-/******************************************************************************
-*																			  *
-*					--- Day 1: Chronal Calibration ---						  *
-*																			  *
-*	Part 1 - 	Starting with a frequency of zero, what is the resulting 	  *
-* 				frequency after all of the changes in frequency have been 	  *
-* 				applied?													  *
-*																			  *
-*	Part 2	-	What is the first frequency your device reaches twice?		  *
-*																			  *
-******************************************************************************/
+/************************************************************************
+*									*
+*	--- Day 1: Chronal Calibration ---				*
+*									*
+*	Part 1 - Starting with a frequency of zero, what is the 	*
+*		resulting frequency after all of the changes in 	*
+*		frequency have been applied?				*
+*									*
+*	Part 2	- What is the first frequency your device reaches 	*
+*		twice?		  					*
+*									*
+************************************************************************/
 
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -73,18 +74,11 @@ fn main() {
 				break;
 				
 			} else {
-				
 				seen_freq.insert(freq_sum);
 			}
-			
 		}
 	}
 	
-	// 229
 	println!("Part 2: The first duplicate frequency is: {}", 
 				first_dup_freq.unwrap()); 
 }
-
-
-
-
