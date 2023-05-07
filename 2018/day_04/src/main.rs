@@ -7,6 +7,10 @@
 * 		What is the ID of the guard you chose multiplied by 	*
 * 		the minute you chose?					*
 *									*
+* 	Part 2 - Of all guards, which guard is most frequently asleep 	*
+* 		on the same minute? What is the ID of the guard you 	*
+* 		chose multiplied by the minute you chose?		*
+* 									*
 ************************************************************************/
 
 /* Accessing The Files */
@@ -70,6 +74,29 @@ impl Msg {
     }
 }
 
+
+fn vector_mode(numbers: Vec<i32>) -> (i32, i32) {
+    /* Calculate the mode of a vector of numbers and 
+     * return the mode and frequency. */
+    
+    /* If the vector is empty return set values of 0,0 */
+    if numbers.len() < 1 {
+	return (0,0)
+    }
+    
+    
+    /* Put the elements of the vector into a hash map */
+    let mut numbers_freq = HashMap::new();
+    
+    for num in &numbers {
+        let count = numbers_freq.entry(num).or_insert(1);
+        *count += 1;
+    }
+    
+    /* Extract the Mode */
+    let mode = numbers_freq.iter().max_by_key(|entry | entry.1).unwrap();
+    return (**mode.0, *mode.1);
+}
 
 
 fn read_lines<P> (filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -241,13 +268,19 @@ fn main() {
     let sleepiest_guard = guard_sleep_rec
 			    .iter().max_by_key(|entry | entry.1).unwrap().0;
     
-    println!("The Guard that sleeps the most is: #{}", sleepiest_guard);
+    println!("Part 1 - The Guard that sleeps the most is: #{}", 
+		    sleepiest_guard);
     
     
     /* Find the minute that they are most likely to be asleep. */
     let mut max_times_asleep = 0;
     let mut best_min = 0;
 
+    /* For each minute count the guard that is asleep the most. */
+    let mut max_times_asleep_in_a_min = 0;
+    let mut cons_asleep_guard = 0;
+    let mut best_min_p2 = 0;	
+    
     for min in sleep_rec {
 	
 	/* Count how many times the sleepy guard was asleep in this minute */
@@ -257,9 +290,24 @@ fn main() {
 	if times_asleep > max_times_asleep {
 	    max_times_asleep = times_asleep;
 	    best_min = min.0;
-	}	
+	}
+	
+	/* For each minute count the guard that is asleep the most. */
+	let sleep_mode = vector_mode(min.1);
+	
+	if sleep_mode.1 > max_times_asleep_in_a_min {
+	    max_times_asleep_in_a_min = sleep_mode.1;
+	    cons_asleep_guard = sleep_mode.0;
+	    best_min_p2 = min.0;
+	}  
+		
     }
     
-    println!("The minute the guard sleeps the most is {}", best_min);
-    println!("The product is {}", best_min * sleepiest_guard);
+    println!("Part 1 - The minute the guard sleeps the most is {}", best_min);
+    println!("Part 1 - The product is {}", best_min * sleepiest_guard);
+    
+    println!("Part 2- The most consistent guard is: #{}", cons_asleep_guard);
+    println!("Part 2- The minute the guard sleeps the is {}", best_min_p2);
+    println!("Part 2 - The product is {}", best_min_p2 * cons_asleep_guard);
+    
 }
