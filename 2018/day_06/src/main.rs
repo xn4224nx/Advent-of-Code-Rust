@@ -4,8 +4,12 @@
 *									*
 *	Part 1 - What is the size of the largest area that isn't 	*
 * 		infinite?						*
+*									* 
+* 	Part 2 - Try to find a region near as many coordinates as 	*
+* 		possible. What is the size of the region containing	*
+* 		all locations which have a total distance to all given 	*
+*		coordinates of less than 10000?				*
 *									*
-* 									*
 ************************************************************************/
 
 use std::collections::HashMap;
@@ -119,6 +123,40 @@ fn find_closest_point(rectangle: &Vec<(i32, i32)>, points: &Vec<(i32, i32)>)
 }
 
 
+fn find_coords_within_points(
+	rectangle: &Vec<(i32, i32)>, 
+	points: &Vec<(i32, i32)>, 
+	radius: i32) ->  Vec<(i32, i32)> {
+    
+    /* Find coordinates in the rectangle that are within radius. */
+    let mut close_coords: Vec<(i32, i32)> = vec![];
+    
+    /* For each coordinate in the rectangle.*/
+    for x in rectangle[0].0..rectangle[1].0 {
+	for y in rectangle[0].1..rectangle[1].1 {
+	
+	/* Count the total distance from each point */
+	let mut total_radius = 0;    
+	
+	    /* for each point */
+	    for (i, p) in points.iter().enumerate() {
+	    
+		/* Find the distance between the point & rectangle coordinate*/
+		total_radius += manhattan_distance(*p, (x,y));
+	    }
+	    
+	    /* If the total distance to all the points save it. */
+	    if total_radius < radius {		
+		close_coords.push((x, y))
+	    }
+	    
+	}
+    }
+    
+    return close_coords
+
+}
+
 fn finite_point_areas(coord_allocation: &Vec<(i32, (i32, i32))>, 
 			inf_points: &HashSet<i32>) -> HashMap<i32, i32> {
     /* Create a Hashmap of the points and the areas. */
@@ -183,5 +221,10 @@ fn main() {
     /* Find the largest non-infinite area */
     let max = areas.iter().max_by_key(|x| x.1).unwrap();
     
-    println!("Part 1:The largest non-infinite area is {}", max.1);
+    println!("Part 1 : The largest non-infinite area is {}", max.1);
+    
+    /* Find the coords that are within a distance of all points. */
+    let area = find_coords_within_points(&rectangle, &points, 10000).len();
+    
+    println!("Part 2 : The enclosed area is size is {}", area);
 }
