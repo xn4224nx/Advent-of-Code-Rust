@@ -12,12 +12,18 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
+/* Parse The Data */
+use regex::Regex;
 
 fn load_instructions<P>(filename: P) -> Vec<(char, char)> 
 where P: AsRef<Path>,{
-    /* Load the instructions from file and parse into a vector. */
+
+    /* Regex to extract the coordinate data */
+    let re_coords = Regex::new(
+	    r"([A-Z]) must be finished before step ([A-Z])").unwrap();
     
-    let instructs = vec![];
+    /* Storage for the parsed instructions */
+    let mut instructs = vec![];
     
     /* Open the instructions file as read only. */
     let file = File::open(filename).unwrap();
@@ -27,7 +33,22 @@ where P: AsRef<Path>,{
 	    
 	for line in lines {
 	    if let Ok(raw_line) = line {
-		println!("{}", raw_line);
+		
+		/* Parse the values */
+		match re_coords.captures(&raw_line) {
+		    Some(caps) => {
+		    
+			/* Insert into a vector */
+			instructs.push(( 
+			    caps.get(1).unwrap().as_str()
+					.chars().next().unwrap(),
+			    caps.get(2).unwrap().as_str()
+					.chars().next().unwrap(),
+			));
+		    }
+		    
+		    None => break
+		}
 	    }
 	}
     }
@@ -41,6 +62,10 @@ fn main() {
     /* Load the instructions from disk. */
     let var = load_instructions("./data/sample.txt");
     
+    for grp in var {
+	
+	println!("{} {}", grp.0, grp.1);
+    }
     
     /* Parse each line into a tuple of chars. */
     
