@@ -12,8 +12,12 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
+/* HashMaps */
+use  std::collections::HashMap;
+
 /* Parse The Data */
 use regex::Regex;
+
 
 fn load_instructions<P>(filename: P) -> Vec<(char, char)> 
 where P: AsRef<Path>,{
@@ -57,19 +61,49 @@ where P: AsRef<Path>,{
 }
 
 
+
+fn create_lookup(instructions: Vec<(char, char)>) -> HashMap<char, Vec<char>> {
+    /* Create a HashMap of the required Nodes for each Node */
+    
+    let mut req_nodes: HashMap<char, Vec<char>> = HashMap::new();
+    
+    /* Iterate over the vector of instructions */
+    for inst in instructions {
+	
+	/* If a key doesn't exist create it. */
+	req_nodes.entry(inst.0).or_insert(vec![]);
+	
+	/* Add the requred nodes to the hashmap */
+	req_nodes.entry(inst.1).and_modify(|node| node.push(inst.0))
+				.or_insert(vec![inst.0]);
+    }
+    
+    return req_nodes
+}
+
+
+fn find_node_order(node_lookup: HashMap<char, Vec<char>>) -> String {
+    /* Create a string that indicates the node order. */
+    
+    /* Find the first Node */
+    
+    /* Iterate over the Node map and find ones that can be next */
+    
+    
+    return String::from("");
+}
+
 fn main() {
     
     /* Load the instructions from disk. */
-    let var = load_instructions("./data/sample.txt");
-    
-    for grp in var {
-	
-	println!("{} {}", grp.0, grp.1);
-    }
-    
-    /* Parse each line into a tuple of chars. */
-    
+    let instruc = load_instructions("./data/sample.txt");
+
     /* Add the chars into a hashmap. */
+    let node_dep = create_lookup(instruc);
+
+    
+    println!("{:?}", node_dep);
+    
     
     /* Loop over the data structure. */
     
