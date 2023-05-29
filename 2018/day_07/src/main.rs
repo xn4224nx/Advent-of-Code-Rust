@@ -130,13 +130,8 @@ fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
 	    value.remove(next_node);
 	}
 
-
 	/* Add the Letters to the node order */
 	node_order.push(*next_node);
-
-	println!("{:?}", all_next_nodes);
-	println!("{:?}", lookup);
-	println!("{}", node_order);
 
     }
     
@@ -146,15 +141,13 @@ fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
 fn main() {
     
     /* Load the instructions from disk. */
-    let instruc = load_instructions("./data/sample.txt");
+    let instruc = load_instructions("./data/input.txt");
 
     /* Add the chars into a hashmap. */
     let node_dep = create_lookup(instruc);
-
-    
-    println!("{:?}", node_dep);
     
     /* Find the Node  */
-    find_node_order(node_dep);
+    let node_order = find_node_order(node_dep);
     
+    println!("The answer to part 1 is \"{}\".", node_order);
 }
