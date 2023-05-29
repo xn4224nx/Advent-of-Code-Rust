@@ -5,6 +5,9 @@
 *	Part 1 - Using the supplied step instructions determine what 	*
 * 		order they should be completed in. 			*
 *									*
+* 	Part 2 - With 5 workers and the 60+ second step durations, how 	*
+* 		long will it take to complete all of the steps?		*
+*									*	
 ************************************************************************/
 
 /* Load and read the file */
@@ -86,37 +89,18 @@ fn create_lookup(instructions: Vec<(char, char)>) ->
 
 fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
     /* Create a string that indicates the node order. */
-    
-    
+        
     /* Copy the contents of the node_lookup into another HashMap */
-    let mut lookup: HashMap<char, HashSet<char>> = HashMap::new();
-    
-    for (key, value) in node_lookup.iter() {
-	lookup.insert(*key, value.clone());
-    }
-    
+    let mut lookup = node_lookup.clone();
     
     /* String that will store the answers */
     let mut node_order = String::from("");
-    
     
     /* Iterate over the hash map while the string has less chars than nodes */
     while lookup.len() > 0 {
 	
 	/* Find nodes that have no requirements */
-	let mut all_next_nodes = vec![];
-	
-	for (key, value) in lookup.iter_mut() {
-	    
-	    /* If the node has no required nodes save it */
-	    if value.len() == 0 {
-		all_next_nodes.push(key.clone());
-	    }
-	}
-	
-	
-	/* Order the next_node vector */
-	all_next_nodes.sort();
+	let all_next_nodes = find_next_nodes(&lookup);
 	
 	/* Select the First Node */
 	let next_node = &all_next_nodes[0];
@@ -132,16 +116,38 @@ fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
 
 	/* Add the Letters to the node order */
 	node_order.push(*next_node);
-
+	
     }
     
     return node_order;
 }
 
+
+fn find_next_nodes(node_lookup: &HashMap<char, HashSet<char>>) -> Vec<char> {
+    /* Find all nodes that have no requirements and sort them in order.  */
+    
+    let mut all_next_nodes = vec![];
+    
+    for (key, value) in node_lookup.iter() {
+	
+	/* If the node has no required nodes save it */
+	if value.len() == 0 {
+	    all_next_nodes.push(key.clone());
+	}
+    }
+    
+    /* Order the next_node vector */
+    all_next_nodes.sort();
+    
+    return all_next_nodes
+}
+
+fn find_total_step_time() {}
+
 fn main() {
     
     /* Load the instructions from disk. */
-    let instruc = load_instructions("./data/input.txt");
+    let instruc = load_instructions("./data/sample.txt");
 
     /* Add the chars into a hashmap. */
     let node_dep = create_lookup(instruc);
