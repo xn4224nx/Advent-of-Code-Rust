@@ -22,7 +22,6 @@ use std::collections::HashSet;
 /* Parse The Data */
 use regex::Regex;
 
-
 fn load_instructions<P>(filename: P) -> Vec<(char, char)> 
 where P: AsRef<Path>,{
 
@@ -87,7 +86,7 @@ fn create_lookup(instructions: Vec<(char, char)>) ->
 }
 
 
-fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
+fn find_node_order(node_lookup: &HashMap<char, HashSet<char>>) -> String {
     /* Create a string that indicates the node order. */
         
     /* Copy the contents of the node_lookup into another HashMap */
@@ -100,7 +99,10 @@ fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
     while lookup.len() > 0 {
 	
 	/* Find nodes that have no requirements */
-	let all_next_nodes = find_next_nodes(&lookup);
+	let mut all_next_nodes = find_next_nodes(&lookup);
+	    
+	/* Order the next_node vector */
+	all_next_nodes.sort();
 	
 	/* Select the First Node */
 	let next_node = &all_next_nodes[0];
@@ -116,7 +118,6 @@ fn find_node_order(node_lookup: HashMap<char, HashSet<char>>) -> String {
 
 	/* Add the Letters to the node order */
 	node_order.push(*next_node);
-	
     }
     
     return node_order;
@@ -135,14 +136,94 @@ fn find_next_nodes(node_lookup: &HashMap<char, HashSet<char>>) -> Vec<char> {
 	    all_next_nodes.push(key.clone());
 	}
     }
-    
-    /* Order the next_node vector */
-    all_next_nodes.sort();
-    
+
     return all_next_nodes
 }
 
-fn find_total_step_time() {}
+
+fn find_total_step_time(node_lookup: &HashMap<char, HashSet<char>>, 
+    num_workers: usize) -> i32 {
+    /* Find the total time to process all the steps with a number of workers*/
+    let mut total_time = 0;
+    
+    /* Copy the contents of the node_lookup into another HashMap */
+    let mut lookup = node_lookup.clone();
+    
+    /* Create a object to identify the Worker Allocation */
+    let mut workers: Vec<i32> = vec![0; num_workers];
+    
+    /* Vector to store all the required nodes */
+    //let mut all_next_nodes = vec![];
+    
+    /* Iterate over the hash map while the string has less chars than nodes */
+    loop {
+	
+	/* Find nodes that have no requirements */
+	let mut all_next_nodes =  find_next_nodes(&lookup);
+
+	/* Put in reverse order and sort */
+	all_next_nodes.sort();
+	all_next_nodes.reverse();
+	
+	/* Allocate the tasks to free workers. */
+	for i in 0..workers.len() {
+	    
+	    /* If the worker is free */
+	    if workers[i] == 0 && all_next_nodes.len() > 0 {
+		
+		let next_node = all_next_nodes.pop().unwrap();
+		
+		println!("{}", next_node);
+		
+		/* Assign the task to the free worker */
+		workers[i] = alpha_index(next_node);
+		
+		/* Remove the next node from  the hashmap */
+		lookup.remove(&next_node);
+		
+		/* Remove the next node from the values */
+		for value in lookup.values_mut() {
+		    value.remove(&next_node);
+		}
+	    }
+	}
+	
+	println!("{:?}", workers);
+	
+	/* Work out the minimum time til the next worker is free */
+	let mut min_time = 99;
+	
+	for i in 0..workers.len() {
+	    if workers[i] < min_time && workers[i] > 0 {
+		min_time = workers[i];
+	    }
+	}
+	
+	/* Add the time to the total time */
+	total_time += min_time;
+	
+	/* Take minimum time off every worker */
+	for i in 0..workers.len() {
+	    if workers[i] > 0 {
+		 workers[i] -= min_time;
+	    }
+	}
+	
+	println!("{:?}", workers);
+	
+	/* If every step has been enacted and every worker finished exit. */
+	if lookup.len() <= 0 && workers.iter().sum::<i32>() == 0 {break}
+    }
+    
+    return total_time + 1
+}
+
+fn alpha_index(alpha: char) -> i32 {
+    /* Find the index of the alphabet character A=61 ... Z=86 */ 
+    
+    return (1 + (alpha as u32) - ('A' as u32)).try_into().unwrap()
+}
+
 
 fn main() {
     
@@ -152,8 +233,13 @@ fn main() {
     /* Add the chars into a hashmap. */
     let node_dep = create_lookup(instruc);
     
-    /* Find the Node  */
-    let node_order = find_node_order(node_dep);
-    
+    /* Find the Node Execution Order */
+    let node_order = find_node_order(&node_dep);
     println!("The answer to part 1 is \"{}\".", node_order);
+    
+    let step_time = find_total_step_time(&node_dep, 2);
+    
+    println!("{}", step_time);
+    
+    // 438 too low
 }
