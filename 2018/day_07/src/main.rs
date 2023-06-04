@@ -218,17 +218,18 @@ fn find_total_step_time(node_lookup: &HashMap<char, HashSet<char>>,
     return total_time + 1
 }
 
+
 fn alpha_index(alpha: char) -> i32 {
     /* Find the index of the alphabet character A=61 ... Z=86 */ 
     
-    return (1 + (alpha as u32) - ('A' as u32)).try_into().unwrap()
+    return (61 + (alpha as u32) - ('A' as u32)).try_into().unwrap()
 }
 
 
 fn main() {
     
     /* Load the instructions from disk. */
-    let instruc = load_instructions("./data/sample.txt");
+    let instruc = load_instructions("./data/input.txt");
 
     /* Add the chars into a hashmap. */
     let node_dep = create_lookup(instruc);
@@ -237,7 +238,7 @@ fn main() {
     let node_order = find_node_order(&node_dep);
     println!("The answer to part 1 is \"{}\".", node_order);
     
-    let step_time = find_total_step_time(&node_dep, 2);
+    let step_time = find_total_step_time(&node_dep, 5);
     
     println!("{}", step_time);
     
