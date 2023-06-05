@@ -9,6 +9,39 @@
 use std::path::Path;
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashMap;
+
+
+/// The Licence Node Structure
+struct Node {
+    values: Vec<i32>,
+    children: HashMap<i32, Node>,
+}
+
+
+impl Node {
+    
+    
+    /// Create a new Licence Node
+    fn new(values: Vec<i32>) -> Self {
+	
+	/* Define the new node */
+	Node {
+	    values:  values,
+	    children: HashMap::new(),
+	}
+    }
+    
+    /// Add a child Node to an already existing Node
+    fn add_child(&mut self, node_key: i32, values: Vec<i32>) {
+	
+	/* Create the new child node */
+	let mut child_node = Node::new(values);
+	
+	/* Insert the new child node into the current node */
+	self.children.insert(node_key.clone(), child_node);
+    }
+}
 
 
 /// Read the licence file and return a vector of the integer values
@@ -31,7 +64,11 @@ where P: AsRef<Path>{
 
 
 fn main() {
+    
+    /* Read the licence file */
     let raw_licence = read_licence_file("./data/sample.txt");
+    
+    /* Put the licence data into a tree structure */
     
     println!("{:?}", raw_licence);
 }
