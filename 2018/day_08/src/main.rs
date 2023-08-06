@@ -1,9 +1,9 @@
 /************************************************************************
-*									*
-*	--- Day 8: Memory Maneuver ---					*
-*									*
-*	Part 1 - What is the sum of all metadata entries?		*
-*									*	
+*									                                    *
+*	--- Day 8: Memory Maneuver ---					                    *
+*									                                    *
+*	Part 1 - What is the sum of all metadata entries?		            *
+*									                                    *
 ************************************************************************/
 
 use std::path::Path;
@@ -13,6 +13,7 @@ use std::collections::HashMap;
 
 
 /// The Licence Node Structure
+#[derive(Debug)]
 struct Node {
     values: Vec<i32>,
     children: HashMap<i32, Node>,
@@ -21,25 +22,24 @@ struct Node {
 
 impl Node {
     
-    
     /// Create a new Licence Node
     fn new(values: Vec<i32>) -> Self {
 	
-	/* Define the new node */
-	Node {
-	    values:  values,
-	    children: HashMap::new(),
-	}
+	    /* Define the new node */
+	    Node {
+	        values:  values,
+	        children: HashMap::new(),
+	    }
     }
     
     /// Add a child Node to an already existing Node
     fn add_child(&mut self, node_key: i32, values: Vec<i32>) {
 	
-	/* Create the new child node */
-	let mut child_node = Node::new(values);
-	
-	/* Insert the new child node into the current node */
-	self.children.insert(node_key.clone(), child_node);
+	    /* Create the new child node */
+	    let mut child_node = Node::new(values);
+	    
+	    /* Insert the new child node into the current node */
+	    self.children.insert(node_key.clone(), child_node);
     }
 }
 
@@ -66,9 +66,15 @@ where P: AsRef<Path>{
 fn main() {
     
     /* Read the licence file */
-    let raw_licence = read_licence_file("./data/sample.txt");
+    let ls = read_licence_file("./data/sample.txt");
+    
+    /* Create a Node from the first two licence values */
+    let mut licence = Node::new(ls[..2].to_vec());
+    
     
     /* Put the licence data into a tree structure */
+
     
-    println!("{:?}", raw_licence);
+    println!("{:?}", licence);
+    println!("{:?}", ls);
 }
