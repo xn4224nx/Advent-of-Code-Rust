@@ -10,7 +10,7 @@
 fn main() {
     
     let players = 419;
-    let last_marble = 7105200;
+    let last_marble = 71052;
     
     /* Define the vector to hold the circle of marbles. */
     let mut circle = vec![0];
