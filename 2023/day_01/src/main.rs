@@ -26,10 +26,26 @@
 
 use regex::Regex;
 use std::fs;
+use std::collections::HashMap;
+
+
 
 fn main() {
     let source_fp = "../data/input.txt";
-
+	
+	let num_replace: HashMap<&str, &str> = HashMap::from([
+		("zero", "z0o"),
+		("one", "o1e"),
+		("two", "t2o"),
+		("three", "t3e"),
+		("four", "f4r"),
+		("five", "f5e"),
+		("six", "s6x"),
+		("seven", "s7n"),
+		("eight", "e8t"),
+		("nine", "n9e"),
+	]);
+	
     let mut ex_nums = vec![];
 
     /* Load the raw text file and split it by new lines. */
@@ -39,9 +55,17 @@ fn main() {
     /* Iterate over the lines and extract the numbers. */
     let re = Regex::new(r"(\d)").unwrap();
 
-    for lin_ist in &instructs {
+    for lin_ist in instructs {
+		
+		let mut rep_line = lin_ist.to_owned();
+		
+        /* Replace the written digits. */
+        for (orig_txt, rep_txt) in num_replace.iter() {
+			rep_line = rep_line.replace(orig_txt, rep_txt);
+		}
+		
         /* Extract all the digits in the string. */
-        let digits: Vec<_> = re.captures_iter(lin_ist).collect();
+        let digits: Vec<_> = re.captures_iter(&rep_line).collect();
         if digits.len() <= 0 {
             continue;
         };
