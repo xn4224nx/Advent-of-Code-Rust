@@ -16,6 +16,8 @@
  * Determine which games would have been possible if the bag had been loaded
  * with only 12 red cubes, 13 green cubes, and 14 blue cubes. What is the sum of
  * the IDs of those games?
+ 
+ As you continue your walk, the Elf poses a second question: in each game you played, what is the fewest number of cubes of each color that could have been in the bag to make the game possible?
  */
 
 use regex::Regex;
@@ -28,7 +30,8 @@ fn main() {
     let input_file = "../data/input.txt";
 
     let mut possible_games = vec![];
-
+    let mut game_powers = vec![];
+    
     /* Key Regexes */
     let game_re = Regex::new(r"\d+").unwrap();
     let draw_re = Regex::new(r"(\d+) ([a-z]+)").unwrap();
@@ -70,7 +73,10 @@ fn main() {
                 }
             }
         }
-
+        
+        /* Calculate the power of the cubes */
+        game_powers.push(game_cubes.values().product());
+        
         /* Compare each hashmap to comparison game. */
         for (comp_cube_col, comp_cube_cnt) in comp_game.iter() {
             if game_cubes.get(comp_cube_col).unwrap_or(&0) > comp_cube_cnt {
@@ -83,4 +89,5 @@ fn main() {
     }
 
     println!("The sum of games = {}", possible_games.iter().sum::<u32>());
+    println!("The sum of game powers = {}", game_powers.iter().sum::<u32>());
 }
