@@ -26,7 +26,9 @@ fn file_to_str_vec(file_pth: &str) -> Vec<String> {
         .collect();
 }
 
+
+
 fn main() {
-    let data = file_to_grid("./data/example_0.txt");
+    let data = file_to_str_vec("./data/example_0.txt");
     println!("{:?}", data);
 }
