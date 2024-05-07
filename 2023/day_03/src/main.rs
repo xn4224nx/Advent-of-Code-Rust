@@ -1,23 +1,23 @@
 /*
- * --- Day 3: Gear Ratios ---
- *
- * The engineer explains that an engine part seems to be missing from the
- * engine, but nobody can figure out which one. If you can add up all the part
- * numbers in the engine schematic, it should be easy to work out which part is
- * missing.
- *
- * The engine schematic (your puzzle input) consists of a visual representation
- * of the engine. There are lots of numbers and symbols you don't really
- * understand, but apparently any number adjacent to a symbol, even diagonally,
- * is a "part number" and should be included in your sum. (Periods (.) do not
- * count as a symbol.)
- *
- * Part 1: What is the sum of all of the part numbers in the engine schematic?
- 
- * Part 2: A gear is any * symbol that is adjacent to exactly two part numbers. 
- * Its gear ratio is the result of multiplying those two numbers together. What 
- * is the sum of all of the gear ratios in your engine schematic?
- */
+* --- Day 3: Gear Ratios ---
+*
+* The engineer explains that an engine part seems to be missing from the
+* engine, but nobody can figure out which one. If you can add up all the part
+* numbers in the engine schematic, it should be easy to work out which part is
+* missing.
+*
+* The engine schematic (your puzzle input) consists of a visual representation
+* of the engine. There are lots of numbers and symbols you don't really
+* understand, but apparently any number adjacent to a symbol, even diagonally,
+* is a "part number" and should be included in your sum. (Periods (.) do not
+* count as a symbol.)
+*
+* Part 1: What is the sum of all of the part numbers in the engine schematic?
+
+* Part 2: A gear is any * symbol that is adjacent to exactly two part numbers.
+* Its gear ratio is the result of multiplying those two numbers together. What
+* is the sum of all of the gear ratios in your engine schematic?
+*/
 
 use regex::Regex;
 use std::fs;
@@ -70,125 +70,70 @@ fn number_coverage(num_pos: (u32, u32), row: u32) -> Vec<(u32, u32)> {
     return number_coverage;
 }
 
-/// Take the grid of positons and numbers and determine the sum of the numbers
-/// in the engine schematic.
-fn part_num_sum(raw_data: &Vec<String>, grid: &Vec<Vec<(u32, u32)>>) -> u32 {
+/// Sum the part and gear ratios of a schematic map.
+fn schematic_sum(raw_data: &Vec<String>, grid: &Vec<Vec<(u32, u32)>>) -> (u32, u32) {
     let re_pat = Regex::new(r#"[!#$%&'()*/+/,\-:@/[/]^_{|}~\?\\=]"#).unwrap();
-    let mut sum = 0;
+    let mut part_sum = 0;
+    let mut gear_sum = 0;
 
     for (row_idx, line) in raw_data.iter().enumerate() {
-        /* Find the symbol positions */
-        let sym_pos: Vec<u32> = re_pat.find_iter(&line).map(|x| x.start() as u32).collect();
+        /* Iterate over every symbol in the row. */
+        for sym in re_pat.find_iter(&line) {
+            let sym_pnt = (sym.start() as u32, row_idx as u32);
 
-        for col_idx in &sym_pos {
             /* Check for the numbers in-line. */
-            for num in &grid[row_idx] {
-                for point in number_coverage(*num, row_idx as u32) {
-                    if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                        sum += num.0;
-                        break;
-                    }
-                }
-            }
+            let mut found_nums = collect_overlap_nums(&grid[row_idx], sym_pnt);
 
             /* Check for numbers above. */
             if row_idx != 0 {
-                for num in &grid[row_idx - 1] {
-                    for point in number_coverage(*num, row_idx as u32) {
-                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                            sum += num.0;
-                            break;
-                        }
-                    }
-                }
+                found_nums = [
+                    found_nums,
+                    collect_overlap_nums(&grid[row_idx - 1], sym_pnt),
+                ]
+                .concat();
             }
 
             /* Check for numbers below. */
             if row_idx != grid.len() - 1 {
-                for num in &grid[row_idx + 1] {
-                    for point in number_coverage(*num, row_idx as u32) {
-                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                            sum += num.0;
-                            break;
-                        }
-                    }
-                }
+                found_nums = [
+                    found_nums,
+                    collect_overlap_nums(&grid[row_idx + 1], sym_pnt),
+                ]
+                .concat();
             }
+
+            /* If the gear has exactly two numbers multiply and sum them. */
+            if found_nums.len() == 2 && sym.as_str() == "*" {
+                gear_sum += found_nums[0] * found_nums[1];
+            }
+            //println!("{:?}", &found_nums);
+            part_sum += found_nums.iter().sum::<u32>();
         }
     }
 
-    return sum;
+    return (part_sum, gear_sum);
 }
 
-/// Find the gears and if there are only two numbers next to it, multiply them.
-/// Sum all those values and return the total.
-fn part_gear_sum(raw_data: &Vec<String>, grid: &Vec<Vec<(u32, u32)>>) -> u32 {
-    let re_pat = Regex::new(r#"[*]"#).unwrap();
-    let mut sum = 0;
-    
-    
-    for (row_idx, line) in raw_data.iter().enumerate() {
-        /* Find every gear. */
-        let gear_pos: Vec<u32> = re_pat.find_iter(&line).map(|x| x.start() as u32).collect();
-        
-        /* Iterate over every gear in the row. */
-        for col_idx in &gear_pos {
-            
-            let mut found_nums:Vec<u32> =  Vec::new();
-            
-            /* Check for the numbers in-line. */
-            for num in &grid[row_idx] {
-                for point in number_coverage(*num, row_idx as u32) {
-                    if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                        found_nums.push(num.0);
-                        break;
-                    }
-                }
-            }
+/// Collect the numbers in a row that overlap with a position
+fn collect_overlap_nums(nums_row: &Vec<(u32, u32)>, point: (u32, u32)) -> Vec<u32> {
+    let mut num_overlap = Vec::new();
 
-            /* Check for numbers above. */
-            if row_idx != 0 {
-                for num in &grid[row_idx - 1] {
-                    for point in number_coverage(*num, row_idx as u32) {
-                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                            found_nums.push(num.0);
-                            break;
-                        }
-                    }
-                }
+    for num in nums_row {
+        for num_point in number_coverage(*num, point.1) {
+            if coord_overlap(num_point, (point.0, point.1)) {
+                num_overlap.push(num.0);
+                break;
             }
-
-            /* Check for numbers below. */
-            if row_idx != grid.len() - 1 {
-                for num in &grid[row_idx + 1] {
-                    for point in number_coverage(*num, row_idx as u32) {
-                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
-                            found_nums.push(num.0);
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            /* If the gear has exactly two numbers multiply and sum them. */
-            if found_nums.len() == 2 {
-                sum += found_nums[0] * found_nums[1];
-            }
-                    
         }
     }
-    
-    return sum;
+    return num_overlap;
 }
 
 fn main() {
     let data = file_to_str_vec("./data/input.txt");
     let data_postions: Vec<_> = data.iter().map(|x| extract_num_pos(&x)).collect();
-    
-    let p1_ans = part_num_sum(&data, &data_postions);
-    println!("The answer to part one = {}", p1_ans);
-    
-    let p2_ans = part_gear_sum(&data, &data_postions);
-    println!("The answer to part two = {}", p2_ans);
-    
+    let results = schematic_sum(&data, &data_postions);
+
+    println!("The answer to part one = {}", results.0);
+    println!("The answer to part two = {}", results.1);
 }
