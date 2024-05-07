@@ -13,6 +13,10 @@
  * count as a symbol.)
  *
  * Part 1: What is the sum of all of the part numbers in the engine schematic?
+ 
+ * Part 2: A gear is any * symbol that is adjacent to exactly two part numbers. 
+ * Its gear ratio is the result of multiplying those two numbers together. What 
+ * is the sum of all of the gear ratios in your engine schematic?
  */
 
 use regex::Regex;
@@ -116,10 +120,75 @@ fn part_num_sum(raw_data: &Vec<String>, grid: &Vec<Vec<(u32, u32)>>) -> u32 {
     return sum;
 }
 
+/// Find the gears and if there are only two numbers next to it, multiply them.
+/// Sum all those values and return the total.
+fn part_gear_sum(raw_data: &Vec<String>, grid: &Vec<Vec<(u32, u32)>>) -> u32 {
+    let re_pat = Regex::new(r#"[*]"#).unwrap();
+    let mut sum = 0;
+    
+    
+    for (row_idx, line) in raw_data.iter().enumerate() {
+        /* Find every gear. */
+        let gear_pos: Vec<u32> = re_pat.find_iter(&line).map(|x| x.start() as u32).collect();
+        
+        /* Iterate over every gear in the row. */
+        for col_idx in &gear_pos {
+            
+            let mut found_nums:Vec<u32> =  Vec::new();
+            
+            /* Check for the numbers in-line. */
+            for num in &grid[row_idx] {
+                for point in number_coverage(*num, row_idx as u32) {
+                    if coord_overlap(point, (*col_idx, row_idx as u32)) {
+                        found_nums.push(num.0);
+                        break;
+                    }
+                }
+            }
+
+            /* Check for numbers above. */
+            if row_idx != 0 {
+                for num in &grid[row_idx - 1] {
+                    for point in number_coverage(*num, row_idx as u32) {
+                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
+                            found_nums.push(num.0);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            /* Check for numbers below. */
+            if row_idx != grid.len() - 1 {
+                for num in &grid[row_idx + 1] {
+                    for point in number_coverage(*num, row_idx as u32) {
+                        if coord_overlap(point, (*col_idx, row_idx as u32)) {
+                            found_nums.push(num.0);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            /* If the gear has exactly two numbers multiply and sum them. */
+            if found_nums.len() == 2 {
+                sum += found_nums[0] * found_nums[1];
+            }
+                    
+        }
+    }
+    
+    return sum;
+}
+
 fn main() {
     let data = file_to_str_vec("./data/input.txt");
     let data_postions: Vec<_> = data.iter().map(|x| extract_num_pos(&x)).collect();
+    
     let p1_ans = part_num_sum(&data, &data_postions);
-
     println!("The answer to part one = {}", p1_ans);
+    
+    let p2_ans = part_gear_sum(&data, &data_postions);
+    println!("The answer to part two = {}", p2_ans);
+    
 }
