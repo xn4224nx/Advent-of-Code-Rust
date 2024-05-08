@@ -13,6 +13,7 @@
 */
 
 use regex::Regex;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -51,6 +52,28 @@ fn read_scratch_cards(file_path: &str) -> Vec<(Vec<u32>, Vec<u32>)> {
     return all_scratch_cards;
 }
 
+/// Calculate the total points for a vector of scratch cards
+fn all_scratch_point_total(pile_of_cards: &Vec<(Vec<u32>, Vec<u32>)>) -> u32 {
+    return pile_of_cards.iter().map(|x| scrt_pnt_total(x)).sum();
+}
+
+/// Calculate the total points for one scratch card
+fn scrt_pnt_total(card: &(Vec<u32>, Vec<u32>)) -> u32 {
+    let win_num: HashSet<&u32> = HashSet::from_iter(&card.0);
+    let usr_num: HashSet<&u32> = HashSet::from_iter(&card.1);
+    let matches = usr_num.intersection(&win_num).count() as u32;
+
+    return if matches != 0 {
+        u32::pow(2, matches - 1)
+    } else {
+        matches
+    };
+}
+
 fn main() {
-    println!("{:?}", read_scratch_cards("./data/Example_0.txt"));
+    let card_pile = read_scratch_cards("./data/input.txt");
+    println!(
+        "The answer to part 1 = {}",
+        all_scratch_point_total(&card_pile)
+    );
 }
