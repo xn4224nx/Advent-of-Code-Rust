@@ -54,15 +54,21 @@ fn read_scratch_cards(file_path: &str) -> Vec<(Vec<u32>, Vec<u32>)> {
 
 /// Calculate the total points for a vector of scratch cards
 fn all_scratch_point_total(pile_of_cards: &Vec<(Vec<u32>, Vec<u32>)>) -> u32 {
-    return pile_of_cards.iter().map(|x| scrt_pnt_total(x)).sum();
+    return pile_of_cards
+        .iter()
+        .map(|x| matches_2_pnts(scrt_matches_total(x)))
+        .sum();
 }
 
 /// Calculate the total points for one scratch card
-fn scrt_pnt_total(card: &(Vec<u32>, Vec<u32>)) -> u32 {
+fn scrt_matches_total(card: &(Vec<u32>, Vec<u32>)) -> u32 {
     let win_num: HashSet<&u32> = HashSet::from_iter(&card.0);
     let usr_num: HashSet<&u32> = HashSet::from_iter(&card.1);
-    let matches = usr_num.intersection(&win_num).count() as u32;
+    return usr_num.intersection(&win_num).count() as u32;
+}
 
+/// Convert the number of matches to points
+fn matches_2_pnts(matches: u32) -> u32 {
     return if matches != 0 {
         u32::pow(2, matches - 1)
     } else {
