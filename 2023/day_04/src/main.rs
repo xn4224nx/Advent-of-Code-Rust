@@ -77,7 +77,7 @@ fn win_more_scratch_cards(pile_of_cards: &Vec<(Vec<u32>, Vec<u32>)>) -> u32 {
         let dupes = *card_cnts.get(&idx).unwrap();
 
         /* Determine what the new card idx's are */
-        let start: usize = idx + 1; // Included the current card
+        let start: usize = idx + 1; // Don't included the current card
         let end: usize = idx + (matches as usize);
 
         for new_card_idx in start..=end {
