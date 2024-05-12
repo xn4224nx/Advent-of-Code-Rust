@@ -10,10 +10,14 @@
 * point value of that card.
 *
 * Part 1: How many points are they worth in total?
+*
+* Part 2: Process all of the original and copied scratchcards until no more
+*         scratchcards are won. Including the original set of scratchcards, how
+*         many total scratchcards do you end up with?
 */
 
 use regex::Regex;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -60,7 +64,34 @@ fn all_scratch_point_total(pile_of_cards: &Vec<(Vec<u32>, Vec<u32>)>) -> u32 {
         .sum();
 }
 
-/// Calculate the total points for one scratch card
+fn win_more_scratch_cards(pile_of_cards: &Vec<(Vec<u32>, Vec<u32>)>) -> u32 {
+    /* Keep a record of the extra cards. */
+    let mut card_cnts: HashMap<usize, u32> = (0..pile_of_cards.len()).map(|x| (x, 1)).collect();
+
+    /* Iterate over the scratch cards. */
+    for (idx, card) in pile_of_cards.iter().enumerate() {
+        /* Calculate the matches the current scratch card has */
+        let matches = scrt_matches_total(card);
+
+        /* Check if this card is duplicated */
+        let dupes = *card_cnts.get(&idx).unwrap();
+
+        /* Determine what the new card idx's are */
+        let start: usize = idx + 1; // Included the current card
+        let end: usize = idx + (matches as usize);
+
+        for new_card_idx in start..=end {
+            if new_card_idx >= pile_of_cards.len() {
+                break;
+            }
+            card_cnts.entry(new_card_idx).and_modify(|x| *x += dupes);
+        }
+    }
+
+    return card_cnts.values().sum();
+}
+
+/// Calculate the total matches for one scratch card
 fn scrt_matches_total(card: &(Vec<u32>, Vec<u32>)) -> u32 {
     let win_num: HashSet<&u32> = HashSet::from_iter(&card.0);
     let usr_num: HashSet<&u32> = HashSet::from_iter(&card.1);
@@ -81,5 +112,10 @@ fn main() {
     println!(
         "The answer to part 1 = {}",
         all_scratch_point_total(&card_pile)
+    );
+
+    println!(
+        "The answer to part 2 = {}",
+        win_more_scratch_cards(&card_pile)
     );
 }
