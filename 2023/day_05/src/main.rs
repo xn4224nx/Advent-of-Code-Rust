@@ -71,9 +71,17 @@ fn read_almanac(file_path: &str) -> (Vec<u32>, Vec<Vec<(u32, u32, u32)>>) {
     return (seeds, all_maps);
 }
 
-fn main() {
-    let (seeds, all_seed_maps) = read_almanac("./data/sample.txt");
+/// Use a map to convert a seed value to another seed value
+fn map_to_new_seed(seed_map: (u32, u32, u32), seed: u32) -> u32 {
+    return if seed >= seed_map.0 && seed <= seed_map.0 + seed_map.2 {
+        seed_map.1 + seed - seed_map.0
+    } else {
+        seed
+    };
+}
 
+fn main() {
+    let (seeds, all_seed_maps) = read_almanac("./data/example.txt");
     println!("{:?}", seeds);
     println!("{:?}", all_seed_maps);
 }
