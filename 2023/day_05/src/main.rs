@@ -32,9 +32,9 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
 /// Parse an almanac file into a structured format
-fn read_almanac(file_path: &str) -> (Vec<u32>, Vec<Vec<(u32, u32, u32)>>) {
-    let mut seeds: Vec<u32> = Vec::new();
-    let mut all_maps: Vec<Vec<(u32, u32, u32)>> = Vec::new();
+fn read_almanac(file_path: &str) -> (Vec<u64>, Vec<Vec<(u64, u64, u64)>>) {
+    let mut seeds: Vec<u64> = Vec::new();
+    let mut all_maps: Vec<Vec<(u64, u64, u64)>> = Vec::new();
 
     let file = File::open(file_path).expect("File could not be opened!");
     let reader = BufReader::new(file);
@@ -48,7 +48,7 @@ fn read_almanac(file_path: &str) -> (Vec<u32>, Vec<Vec<(u32, u32, u32)>>) {
             let line_parts: Vec<&str> = line.split(":").collect();
             seeds = line_parts[1]
                 .split_whitespace()
-                .map(|x| x.trim().parse::<u32>().unwrap())
+                .map(|x| x.trim().parse::<u64>().unwrap())
                 .collect();
 
         /* Detect the map changing. */
@@ -57,9 +57,9 @@ fn read_almanac(file_path: &str) -> (Vec<u32>, Vec<Vec<(u32, u32, u32)>>) {
 
         /* Parse the map numbers */
         } else if line.contains(" ") {
-            let map_line: (u32, u32, u32) = line
+            let map_line: (u64, u64, u64) = line
                 .split_whitespace()
-                .map(|x| x.trim().parse::<u32>().unwrap())
+                .map(|x| x.trim().parse::<u64>().unwrap())
                 .collect_tuple()
                 .unwrap();
 
@@ -71,17 +71,31 @@ fn read_almanac(file_path: &str) -> (Vec<u32>, Vec<Vec<(u32, u32, u32)>>) {
     return (seeds, all_maps);
 }
 
-/// Use a map to convert a seed value to another seed value
-fn map_to_new_seed(seed_map: (u32, u32, u32), seed: u32) -> u32 {
-    return if seed >= seed_map.0 && seed <= seed_map.0 + seed_map.2 {
-        seed_map.1 + seed - seed_map.0
-    } else {
-        seed
-    };
+/// Follow seed values through a multi-map
+fn multi_map_follow(seeds: &mut Vec<u64>, multi_map: &Vec<(u64, u64, u64)>) {
+    for idx in 0..seeds.len() {
+        let seed = seeds[idx];
+
+        /* Find the last map that changes the seed */
+        for seed_map in multi_map.iter() {
+            if seed >= seed_map.1 && seed <= seed_map.1 + seed_map.2 {
+                /* Set the new seed value and stop checking maps */
+                seeds[idx] = seed_map.0 + seed - seed_map.1;
+                break;
+            }
+        }
+    }
+}
+
+/// Follow the seed through all the maps
+fn all_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>>) {
+    for multi_map in all_seed_maps.iter() {
+        multi_map_follow(seeds, &multi_map);
+    }
 }
 
 fn main() {
-    let (seeds, all_seed_maps) = read_almanac("./data/example.txt");
-    println!("{:?}", seeds);
-    println!("{:?}", all_seed_maps);
+    let (mut seeds, all_seed_maps) = read_almanac("./data/input.txt");
+    all_map_follow(&mut seeds, &all_seed_maps);
+    println!("The answer to part 1: {}", *seeds.iter().min().unwrap());
 }
