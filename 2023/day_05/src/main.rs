@@ -71,26 +71,23 @@ fn read_almanac(file_path: &str) -> (Vec<u64>, Vec<Vec<(u64, u64, u64)>>) {
     return (seeds, all_maps);
 }
 
-/// Follow seed values through a multi-map
-fn multi_map_follow(seeds: &mut Vec<u64>, multi_map: &Vec<(u64, u64, u64)>) {
-    for idx in 0..seeds.len() {
-        let seed = seeds[idx];
-
-        /* Find the last map that changes the seed */
-        for seed_map in multi_map.iter() {
-            if seed >= seed_map.1 && seed <= seed_map.1 + seed_map.2 {
-                /* Set the new seed value and stop checking maps */
-                seeds[idx] = seed_map.0 + seed - seed_map.1;
-                break;
-            }
-        }
-    }
-}
-
 /// Follow the seed through all the maps
 fn all_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>>) {
+    /* Follow seed values through each multi-map */
     for multi_map in all_seed_maps.iter() {
-        multi_map_follow(seeds, &multi_map);
+        /* Calculate each seed value individually. */
+        for idx in 0..seeds.len() {
+            let seed = seeds[idx];
+
+            /* Find the first map that changes the seed */
+            for seed_map in multi_map.iter() {
+                if seed >= seed_map.1 && seed <= seed_map.1 + seed_map.2 {
+                    /* Set the new seed value and stop checking maps */
+                    seeds[idx] = seed_map.0 + seed - seed_map.1;
+                    break;
+                }
+            }
+        }
     }
 }
 
