@@ -25,9 +25,18 @@
 *
 * Part 1 - What is the lowest location number that corresponds to any of the
 *          initial seed numbers?
+*
+* The values on the initial seeds: line come in pairs. Within each pair, the
+* first value is the start of the range and the second value is the length of
+* the range.
+*
+* Part 2 - Consider all of the initial seed numbers listed in the ranges on the
+*          first line of the almanac. What is the lowest location number that
+*          corresponds to any of the initial seed numbers?
 */
 
 use itertools::Itertools;
+use std::cmp;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -91,8 +100,44 @@ fn all_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>
     }
 }
 
+/// Follow through maps, using seed range
+fn range_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>>) {
+    /* Follow seed ranges through each multi-map */
+    for multi_map in all_seed_maps.iter() {
+        /* Calculate each seed range individually. */
+        for idx in (0..seeds.len()).step_by(2) {
+            let s_start = seeds[idx];
+            let s_range = seeds[idx + 1];
+
+            /* Find the first map that changes the seed */
+            for seed_map in multi_map.iter() {
+                if (s_start <= seed_map.1 && seed_map.1 <= s_start + s_range)
+                    || (seed_map.1 <= s_start && s_start <= seed_map.1 + seed_map.2)
+                {
+                    /* Restrict the seed ranges to the overlaping values. */
+                    seeds[idx] = cmp::max(s_start, seed_map.1);
+                    seeds[idx + 1] =
+                        cmp::min(s_start + s_range, seed_map.1 + seed_map.2) - seeds[idx];
+
+                    /* Convert the seeds values to the new mapped range */
+                    seeds[idx] += seed_map.0;
+                    seeds[idx] -= seed_map.1;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 fn main() {
-    let (mut seeds, all_seed_maps) = read_almanac("./data/input.txt");
+    let (mut seeds, all_seed_maps) = read_almanac("./data/example.txt");
     all_map_follow(&mut seeds, &all_seed_maps);
     println!("The answer to part 1: {}", *seeds.iter().min().unwrap());
+
+    let (mut seeds, all_seed_maps) = read_almanac("./data/example.txt");
+    range_map_follow(&mut seeds, &all_seed_maps);
+    println!(
+        "The answer to part 2: {}",
+        *seeds.iter().step_by(2).min().unwrap()
+    );
 }
