@@ -36,7 +36,6 @@
 */
 
 use itertools::Itertools;
-use std::cmp;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -100,44 +99,47 @@ fn all_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>
     }
 }
 
-/// Follow through maps, using seed range
-fn range_map_follow(seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>>) {
-    /* Follow seed ranges through each multi-map */
-    for multi_map in all_seed_maps.iter() {
-        /* Calculate each seed range individually. */
-        for idx in (0..seeds.len()).step_by(2) {
-            let s_start = seeds[idx];
-            let s_range = seeds[idx + 1];
-
-            /* Find the first map that changes the seed */
-            for seed_map in multi_map.iter() {
-                if (s_start <= seed_map.1 && seed_map.1 <= s_start + s_range)
-                    || (seed_map.1 <= s_start && s_start <= seed_map.1 + seed_map.2)
-                {
-                    /* Restrict the seed ranges to the overlaping values. */
-                    seeds[idx] = cmp::max(s_start, seed_map.1);
-                    seeds[idx + 1] =
-                        cmp::min(s_start + s_range, seed_map.1 + seed_map.2) - seeds[idx];
-
-                    /* Convert the seeds values to the new mapped range */
-                    seeds[idx] += seed_map.0;
-                    seeds[idx] -= seed_map.1;
-                    break;
-                }
-            }
-        }
+/// Follow range of seeds through maps 
+fn range_map_follow(input_seeds: &mut Vec<u64>, all_seed_maps: &Vec<Vec<(u64, u64, u64)>>) {
+    
+    let mut lowest: Vec<u64> = Vec::new();
+    
+    /* Calculate each seed range individually. */
+    for idx in (0..input_seeds.len()).step_by(2) {
+        
+        /* Generate the full seed range. */
+        let mut seeds = expand_seed_range((input_seeds[idx], input_seeds[idx+1]));
+        
+        /* Follow this group of seeds through the maps */
+        all_map_follow(&mut seeds, &all_seed_maps);
+        
+        /* Save the smallest result. */
+        lowest.push(*seeds.iter().min().unwrap())
     }
+    
+    /* Set all the lowest results in the seed vector. */
+    input_seeds.clear();
+    input_seeds.append(&mut lowest);
+}
+
+/// Expand range of seeds to seed values
+fn expand_seed_range(seed_range: (u64, u64)) -> Vec<u64> { 
+    let start = seed_range.0;
+    let end = seed_range.0 + seed_range.1;
+    return (start..end).collect();
 }
 
 fn main() {
-    let (mut seeds, all_seed_maps) = read_almanac("./data/example.txt");
-    all_map_follow(&mut seeds, &all_seed_maps);
-    println!("The answer to part 1: {}", *seeds.iter().min().unwrap());
+    let (seeds, all_seed_maps) = read_almanac("./data/input.txt");
+    let mut p1_seeds = seeds.clone();
+    let mut p2_seeds = seeds.clone();
+       
+    all_map_follow(&mut p1_seeds, &all_seed_maps);
+    println!("The answer to part 1: {}", *p1_seeds.iter().min().unwrap());
 
-    let (mut seeds, all_seed_maps) = read_almanac("./data/example.txt");
-    range_map_follow(&mut seeds, &all_seed_maps);
+    range_map_follow(&mut p2_seeds, &all_seed_maps);
     println!(
         "The answer to part 2: {}",
-        *seeds.iter().step_by(2).min().unwrap()
+        *p2_seeds.iter().min().unwrap()
     );
 }
