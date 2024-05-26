@@ -21,6 +21,13 @@
 *
 * Part 1 - Determine the number of ways you could beat the record in each race.
 *          What do you get if you multiply these numbers together?
+*
+* As the race is about to start, you realize the piece of paper with race times
+* and record distances you got earlier actually just has very bad kerning.
+* There's really only one race - ignore the spaces between the numbers on each
+* line.
+*
+* Part 2 - How many ways can you beat the record in this one much longer race?
 */
 
 use regex::Regex;
@@ -28,7 +35,7 @@ use std::fs;
 use std::iter::zip;
 
 /// Read the race file and create a vector of the time and distances
-fn read_races(file_path: &str) -> Vec<(u32, u32)> {
+fn read_races(file_path: &str, bad_kerning: bool) -> Vec<(u32, u32)> {
     let num_re = Regex::new(r"[\d]+").unwrap();
     let mut extracted_nums: Vec<Vec<u32>> = Vec::new();
 
@@ -37,11 +44,17 @@ fn read_races(file_path: &str) -> Vec<(u32, u32)> {
         fs::read_to_string(file_path).expect("File '{file_path}' could not be read!");
 
     /* Parse the data in the string by iteration over all the lines. */
-    for raw_line in raw_file_contents.lines() {
+    for mut raw_line in raw_file_contents.lines() {
+        let mut line: String = raw_line.to_string();
+
+        if bad_kerning {
+            line.retain(|c| !c.is_whitespace())
+        }
+
         /* Extract the numbers in the row. */
         extracted_nums.push(
             num_re
-                .find_iter(raw_line)
+                .find_iter(&line)
                 .filter_map(|x| x.as_str().parse::<u32>().ok())
                 .collect(),
         );
@@ -76,13 +89,16 @@ fn race_distance(time_button_held: u32, max_race_time: u32) -> u32 {
 }
 
 fn main() {
-    let example = read_races("./data/example.txt");
-    let input = read_races("./data/input.txt");
+    let race_details = read_races("./data/example.txt", false);
+    let long_race = read_races("./data/example.txt", true);
 
-    println!("\nexample races: {:?}\ninput races: {:?}\n", example, input);
+    println!(
+        "input races: {:?}\nlong race: {:?}\n",
+        race_details, long_race
+    );
 
     println!(
         "The answer to part 1 is: {}",
-        input.iter().map(|x| ways_to_win(x)).product::<u32>()
+        race_details.iter().map(|x| ways_to_win(x)).product::<u32>()
     );
 }
