@@ -55,9 +55,34 @@ fn read_races(file_path: &str) -> Vec<(u32, u32)> {
     return ret;
 }
 
+/// Determine the number of ways a race could be won
+fn ways_to_win(race_dets: &(u32, u32)) -> u32 {
+    let race_time = race_dets.0;
+    let max_dist = race_dets.1;
+    let mut ways_to_win = 0;
+
+    /* Determine for each time what the distance would be.  */
+    for time in 0..=race_time {
+        if race_distance(time, race_time) > max_dist {
+            ways_to_win += 1;
+        }
+    }
+    return ways_to_win;
+}
+
+/// Race Distance Calculation
+fn race_distance(time_button_held: u32, max_race_time: u32) -> u32 {
+    return time_button_held * (max_race_time - time_button_held);
+}
+
 fn main() {
     let example = read_races("./data/example.txt");
     let input = read_races("./data/input.txt");
 
     println!("\nexample races: {:?}\ninput races: {:?}\n", example, input);
+
+    println!(
+        "The answer to part 1 is: {}",
+        input.iter().map(|x| ways_to_win(x)).product::<u32>()
+    );
 }
