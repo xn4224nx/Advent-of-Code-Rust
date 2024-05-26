@@ -35,27 +35,21 @@ use std::fs;
 use std::iter::zip;
 
 /// Read the race file and create a vector of the time and distances
-fn read_races(file_path: &str, bad_kerning: bool) -> Vec<(u32, u32)> {
+fn read_races(file_path: &str) -> Vec<(u64, u64)> {
     let num_re = Regex::new(r"[\d]+").unwrap();
-    let mut extracted_nums: Vec<Vec<u32>> = Vec::new();
+    let mut extracted_nums: Vec<Vec<u64>> = Vec::new();
 
     /* Read the file as a string. */
     let raw_file_contents =
         fs::read_to_string(file_path).expect("File '{file_path}' could not be read!");
 
     /* Parse the data in the string by iteration over all the lines. */
-    for mut raw_line in raw_file_contents.lines() {
-        let mut line: String = raw_line.to_string();
-
-        if bad_kerning {
-            line.retain(|c| !c.is_whitespace())
-        }
-
+    for raw_line in raw_file_contents.lines() {
         /* Extract the numbers in the row. */
         extracted_nums.push(
             num_re
-                .find_iter(&line)
-                .filter_map(|x| x.as_str().parse::<u32>().ok())
+                .find_iter(raw_line)
+                .filter_map(|x| x.as_str().parse::<u64>().ok())
                 .collect(),
         );
     }
@@ -63,13 +57,13 @@ fn read_races(file_path: &str, bad_kerning: bool) -> Vec<(u32, u32)> {
     /* Extract the distance and time into matching tuples. */
     let ret = zip(&extracted_nums[0], &extracted_nums[1])
         .map(|(x, y)| (*x, *y))
-        .collect::<Vec<(u32, u32)>>();
+        .collect::<Vec<(u64, u64)>>();
 
     return ret;
 }
 
 /// Determine the number of ways a race could be won
-fn ways_to_win(race_dets: &(u32, u32)) -> u32 {
+fn ways_to_win(race_dets: &(u64, u64)) -> u64 {
     let race_time = race_dets.0;
     let max_dist = race_dets.1;
     let mut ways_to_win = 0;
@@ -84,21 +78,34 @@ fn ways_to_win(race_dets: &(u32, u32)) -> u32 {
 }
 
 /// Race Distance Calculation
-fn race_distance(time_button_held: u32, max_race_time: u32) -> u32 {
+fn race_distance(time_button_held: u64, max_race_time: u64) -> u64 {
     return time_button_held * (max_race_time - time_button_held);
 }
 
-fn main() {
-    let race_details = read_races("./data/example.txt", false);
-    let long_race = read_races("./data/example.txt", true);
+/// Transform the race numbers into one long one
+fn rm_kerning(race_details: &Vec<(u64, u64)>) -> (u64, u64) {
+    let mut time = String::new();
+    let mut distance = String::new();
 
-    println!(
-        "input races: {:?}\nlong race: {:?}\n",
-        race_details, long_race
+    for (x, y) in race_details.iter() {
+        time.push_str(&x.to_string());
+        distance.push_str(&y.to_string());
+    }
+
+    return (
+        time.parse::<u64>().unwrap(),
+        distance.parse::<u64>().unwrap(),
     );
+}
+
+fn main() {
+    let race_details = read_races("./data/input.txt");
+    let long_race = rm_kerning(&race_details);
 
     println!(
         "The answer to part 1 is: {}",
-        race_details.iter().map(|x| ways_to_win(x)).product::<u32>()
+        race_details.iter().map(|x| ways_to_win(x)).product::<u64>()
     );
+
+    println!("The answer to part 2 is: {}", ways_to_win(&long_race));
 }
