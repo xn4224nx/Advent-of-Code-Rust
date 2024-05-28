@@ -54,12 +54,12 @@
 * Part 1 - Find the rank of every hand in your set. What are the total winnings?
 */
 
+use std::collections::HashMap;
 use std::fs;
 
 /// Read a file with hands and bids
 fn parse_card_data(file_path: &str) -> Vec<(String, u32)> {
     let mut card_data = Vec::new();
-    let re_card_line = Regex::new(r"(\w+)(\d+)").unwrap();
 
     /* Read the entire file into a string. */
     let raw_file = fs::read_to_string(file_path).expect("Could not open file!");
@@ -74,9 +74,54 @@ fn parse_card_data(file_path: &str) -> Vec<(String, u32)> {
     return card_data;
 }
 
-/// Determine the numerical value of hand
-fn hand_value(hand: String) -> u32 {
-    0
+/// Determine the unique card counts
+fn card_count(hand: &String) -> Vec<u32> {
+    let mut card_cnt = HashMap::new();
+
+    /* Convert the string to a vector of chars */
+    let hand_vec: Vec<char> = hand.chars().collect();
+
+    /* Count the occurance of each card */
+    for card in hand_vec {
+        *card_cnt.entry(card).or_insert(0) += 1;
+    }
+
+    return card_cnt.into_values().collect();
+}
+
+/// Determine the Type of Hand
+fn hand_type(hand: &String) -> u32 {
+    /* Get a vector count of each card in the hand. */
+    let card_cnt = card_count(hand);
+
+    /* Five of a kind */
+    if card_cnt.len() == 1 {
+        return 6;
+
+    /* One Pair */
+    } else if card_cnt.len() == 4 {
+        return 1;
+
+    /* High Card */
+    } else if card_cnt.len() == 5 {
+        return 0;
+
+    /* Four of a Kind */
+    } else if card_cnt.contains(&4) {
+        return 5;
+
+    /* Full House */
+    } else if card_cnt.len() == 2 {
+        return 4;
+
+    /* Three of a Kind */
+    } else if card_cnt.contains(&3) {
+        return 3;
+
+    /* Two Pair */
+    } else {
+        return 2;
+    }
 }
 
 fn main() {
