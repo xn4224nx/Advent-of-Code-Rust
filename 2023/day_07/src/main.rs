@@ -54,6 +54,31 @@
 * Part 1 - Find the rank of every hand in your set. What are the total winnings?
 */
 
+use std::fs;
+
+/// Read a file with hands and bids
+fn parse_card_data(file_path: &str) -> Vec<(String, u32)> {
+    let mut card_data = Vec::new();
+    let re_card_line = Regex::new(r"(\w+)(\d+)").unwrap();
+
+    /* Read the entire file into a string. */
+    let raw_file = fs::read_to_string(file_path).expect("Could not open file!");
+
+    /* Iterate over the read file and parse the data */
+    for raw_line in raw_file.lines() {
+        let mut rl_split = raw_line.split_whitespace();
+        let cards = rl_split.next().unwrap().to_string();
+        let bid = rl_split.next().unwrap().parse::<u32>().unwrap();
+        card_data.push((cards, bid));
+    }
+    return card_data;
+}
+
+/// Determine the numerical value of hand
+fn hand_value(hand: String) -> u32 {
+    0
+}
+
 fn main() {
-    println!("Hello, world!");
+    let card_data = parse_card_data("./data/example.txt");
 }
