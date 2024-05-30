@@ -54,6 +54,8 @@
 * Part 1 - Find the rank of every hand in your set. What are the total winnings?
 */
 
+static CARD_TYPES: u32 = 13;
+
 use std::collections::HashMap;
 use std::fs;
 
@@ -152,14 +154,30 @@ fn calc_hand_value(hand: &String) -> u32 {
     /* Determine a hand score to differentiate between hands of the same type.
     add to score in reverse order based on the value of the card. */
     for card in hand.chars().rev() {
-        score += card_value(card) * u32::pow(12, idx);
+        score += card_value(card) * u32::pow(CARD_TYPES, idx);
         idx += 1;
     }
 
     /* The most determinant thing is a hands classifcation. */
-    return score + classif_hand_type(hand) * u32::pow(12, idx + 1);
+    return score + classif_hand_type(hand) * u32::pow(CARD_TYPES, idx + 1);
+}
+
+/// Rank the hands and sum the hand bid multiplied by the ranking
+fn calc_total_winnings(card_data: &mut Vec<(String, u32)>) -> u32 {
+    let mut winnings = 0;
+
+    /* Sort the vector of hands based on the card value. */
+    card_data.sort_by_cached_key(|x| calc_hand_value(&x.0));
+
+    /* Calculate the total winnings. */
+    for (idx, (_hand, bid)) in card_data.iter().enumerate() {
+        winnings += bid * (idx as u32 + 1)
+    }
+
+    return winnings;
 }
 
 fn main() {
-    let card_data = parse_card_data("./data/example.txt");
+    let mut card_data = parse_card_data("./data/input.txt");
+    println!("Part 1 answer = {}", calc_total_winnings(&mut card_data));
 }
