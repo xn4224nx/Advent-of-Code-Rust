@@ -52,10 +52,18 @@
 * multiplying each hand's bid with its rank.
 *
 * Part 1 - Find the rank of every hand in your set. What are the total winnings?
+*
+* Now, J cards are jokers - wildcards that can act like whatever card would make
+* the hand the strongest type possible. To balance this, J cards are now the
+* weakest individual cards, weaker even than 2.
+*
+* Part 2 - Using the new joker rule, find the rank of every hand in your set.
+*          What are the new total winnings?
 */
 
 static CARD_TYPES: u32 = 13;
 
+use std::cmp::min;
 use std::collections::HashMap;
 use std::fs;
 
@@ -88,86 +96,184 @@ fn card_count(hand: &String) -> Vec<u32> {
         *card_cnt.entry(card).or_insert(0) += 1;
     }
 
-    return card_cnt.into_values().collect();
+    let mut counts: Vec<u32> = card_cnt.into_values().collect();
+    counts.sort();
+    counts.reverse();
+
+    return counts;
 }
 
 /// Determine the Type of Hand
-fn classif_hand_type(hand: &String) -> u32 {
+fn classif_hand_type(hand: &String, joker: bool) -> u32 {
     /* Get a vector count of each card in the hand. */
     let card_cnt = card_count(hand);
 
-    /* Five of a kind */
-    if card_cnt.len() == 1 {
-        return 6;
+    if !joker || !hand.contains("J") {
+        /* Five of a kind */
+        if card_cnt.len() == 1 {
+            return 6;
 
-    /* One Pair */
-    } else if card_cnt.len() == 4 {
-        return 1;
+        /* One Pair */
+        } else if card_cnt.len() == 4 {
+            return 1;
 
-    /* High Card */
-    } else if card_cnt.len() == 5 {
-        return 0;
+        /* High Card */
+        } else if card_cnt.len() == 5 {
+            return 0;
 
-    /* Four of a Kind */
-    } else if card_cnt.contains(&4) {
-        return 5;
+        /* Four of a Kind */
+        } else if card_cnt.contains(&4) {
+            return 5;
 
-    /* Full House */
-    } else if card_cnt.len() == 2 {
-        return 4;
+        /* Full House */
+        } else if card_cnt.len() == 2 {
+            return 4;
 
-    /* Three of a Kind */
-    } else if card_cnt.contains(&3) {
-        return 3;
+        /* Three of a Kind */
+        } else if card_cnt.contains(&3) {
+            return 3;
 
-    /* Two Pair */
+        /* Two Pair */
+        } else {
+            return 2;
+        }
     } else {
-        return 2;
+        let joker_cnt = hand.chars().filter(|c| *c == 'J').count() as u32;
+        let mut non_j_cnts = card_count(&hand.chars().filter(|c| *c != 'J').collect());
+
+        /* Catch all the cards being jokers. */
+        if non_j_cnts.len() == 0 {
+            non_j_cnts.push(0);
+        }
+
+        /* Five of a kind */
+        if joker_cnt + non_j_cnts[0] == 5 {
+            return 6;
+
+        /* Four of a Kind */
+        } else if joker_cnt + non_j_cnts[0] == 4 {
+            return 5;
+
+        /* Full House */
+        } else if ((joker_cnt + non_j_cnts[0] == 3) && non_j_cnts[1] >= 2)
+            || (non_j_cnts[0] == 3 && (non_j_cnts[1] + joker_cnt >= 2))
+        {
+            return 4;
+
+        /* Three of a Kind */
+        } else if non_j_cnts[0] + joker_cnt == 3 {
+            return 3;
+
+        /* Two Pair */
+        } else if non_j_cnts[0] == 2 && non_j_cnts[1] + min(joker_cnt, 1) == 2 {
+            return 2;
+
+        /* One Pair */
+        } else if non_j_cnts[0] + joker_cnt == 2 {
+            return 1;
+
+        /* High Card */
+        } else {
+            return 0;
+        }
     }
 }
 
 /// Determine the value of a card
-fn card_value(card: char) -> u32 {
-    return match card {
-        '2' => 0,
-        '3' => 1,
-        '4' => 2,
-        '5' => 3,
-        '6' => 4,
-        '7' => 5,
-        '8' => 6,
-        '9' => 7,
-        'T' => 8,
-        'J' => 9,
-        'Q' => 10,
-        'K' => 11,
-        'A' => 12,
-        _ => panic!(),
-    };
+fn card_value(card: char, joker: bool) -> u32 {
+    if card == '2' {
+        if joker {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else if card == '3' {
+        if joker {
+            return 2;
+        } else {
+            return 1;
+        }
+    } else if card == '4' {
+        if joker {
+            return 3;
+        } else {
+            return 2;
+        }
+    } else if card == '5' {
+        if joker {
+            return 4;
+        } else {
+            return 3;
+        }
+    } else if card == '6' {
+        if joker {
+            return 5;
+        } else {
+            return 4;
+        }
+    } else if card == '7' {
+        if joker {
+            return 6;
+        } else {
+            return 5;
+        }
+    } else if card == '8' {
+        if joker {
+            return 7;
+        } else {
+            return 6;
+        }
+    } else if card == '9' {
+        if joker {
+            return 8;
+        } else {
+            return 7;
+        }
+    } else if card == 'T' {
+        if joker {
+            return 9;
+        } else {
+            return 8;
+        }
+    } else if card == 'J' {
+        if joker {
+            return 0;
+        } else {
+            return 9;
+        }
+    } else if card == 'Q' {
+        return 10;
+    } else if card == 'K' {
+        return 11;
+    } else if card == 'A' {
+        return 12;
+    } else {
+        panic!("Unknown card!");
+    }
 }
 
 /// Give a hand a numerical score related to its rank
-fn calc_hand_value(hand: &String) -> u32 {
+fn calc_hand_value(hand: &String, joker: bool) -> u32 {
     let mut score = 0;
     let mut idx = 0;
 
     /* Determine a hand score to differentiate between hands of the same type.
     add to score in reverse order based on the value of the card. */
     for card in hand.chars().rev() {
-        score += card_value(card) * u32::pow(CARD_TYPES, idx);
+        score += card_value(card, joker) * u32::pow(CARD_TYPES, idx);
         idx += 1;
     }
 
     /* The most determinant thing is a hands classifcation. */
-    return score + classif_hand_type(hand) * u32::pow(CARD_TYPES, idx + 1);
+    return score + classif_hand_type(hand, joker) * u32::pow(CARD_TYPES, idx + 1);
 }
 
 /// Rank the hands and sum the hand bid multiplied by the ranking
-fn calc_total_winnings(card_data: &mut Vec<(String, u32)>) -> u32 {
+fn calc_total_winnings(card_data: &mut Vec<(String, u32)>, joker: bool) -> u32 {
     let mut winnings = 0;
 
     /* Sort the vector of hands based on the card value. */
-    card_data.sort_by_cached_key(|x| calc_hand_value(&x.0));
+    card_data.sort_by_cached_key(|x| calc_hand_value(&x.0, joker));
 
     /* Calculate the total winnings. */
     for (idx, (_hand, bid)) in card_data.iter().enumerate() {
@@ -179,5 +285,12 @@ fn calc_total_winnings(card_data: &mut Vec<(String, u32)>) -> u32 {
 
 fn main() {
     let mut card_data = parse_card_data("./data/input.txt");
-    println!("Part 1 answer = {}", calc_total_winnings(&mut card_data));
+    println!(
+        "Part 1 answer = {}",
+        calc_total_winnings(&mut card_data, false)
+    );
+    println!(
+        "Part 2 answer = {}",
+        calc_total_winnings(&mut card_data, true)
+    );
 }
