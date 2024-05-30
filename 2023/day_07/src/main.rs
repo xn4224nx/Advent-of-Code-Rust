@@ -74,7 +74,7 @@ fn parse_card_data(file_path: &str) -> Vec<(String, u32)> {
     return card_data;
 }
 
-/// Determine the unique card counts
+/// Determine the unique card counts in a hand
 fn card_count(hand: &String) -> Vec<u32> {
     let mut card_cnt = HashMap::new();
 
@@ -90,7 +90,7 @@ fn card_count(hand: &String) -> Vec<u32> {
 }
 
 /// Determine the Type of Hand
-fn hand_type(hand: &String) -> u32 {
+fn classif_hand_type(hand: &String) -> u32 {
     /* Get a vector count of each card in the hand. */
     let card_cnt = card_count(hand);
 
@@ -122,6 +122,42 @@ fn hand_type(hand: &String) -> u32 {
     } else {
         return 2;
     }
+}
+
+/// Determine the value of a card
+fn card_value(card: char) -> u32 {
+    return match card {
+        '2' => 0,
+        '3' => 1,
+        '4' => 2,
+        '5' => 3,
+        '6' => 4,
+        '7' => 5,
+        '8' => 6,
+        '9' => 7,
+        'T' => 8,
+        'J' => 9,
+        'Q' => 10,
+        'K' => 11,
+        'A' => 12,
+        _ => panic!(),
+    };
+}
+
+/// Give a hand a numerical score related to its rank
+fn calc_hand_value(hand: &String) -> u32 {
+    let mut score = 0;
+    let mut idx = 0;
+
+    /* Determine a hand score to differentiate between hands of the same type.
+    add to score in reverse order based on the value of the card. */
+    for card in hand.chars().rev() {
+        score += card_value(card) * u32::pow(12, idx);
+        idx += 1;
+    }
+
+    /* The most determinant thing is a hands classifcation. */
+    return score + classif_hand_type(hand) * u32::pow(12, idx + 1);
 }
 
 fn main() {
