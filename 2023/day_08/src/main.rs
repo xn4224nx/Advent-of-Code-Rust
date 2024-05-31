@@ -24,6 +24,40 @@
 *          are required to reach ZZZ?
 */
 
+use itertools::Itertools;
+use regex::Regex;
+use std::fs;
+
+/// Read the map file and parse it to a vector
+fn read_map_data(file_path: &str) -> (String, Vec<(String, String, String)>) {
+    let mut map_data = Vec::new();
+    let mut turns = String::new();
+    let re_map = Regex::new("[A-Z]{3}").unwrap();
+
+    /* Read the entire file into a string. */
+    let raw_file = fs::read_to_string(file_path).expect("Could not open file!");
+
+    for (idx, raw_line) in raw_file.lines().enumerate() {
+        /* Capture the turns at the start of the file. */
+        if idx == 0 {
+            turns = raw_line.to_string();
+            continue;
+        }
+
+        /* Parse the node identities and convert to a three string tuple.*/
+        let raw_nodes = re_map
+            .find_iter(raw_line)
+            .filter_map(|x| Some(x.as_str().to_string()))
+            .collect_tuple();
+
+        /* If the parse was sucessful retain it otherwise continue the loop. */
+        let Some(nodes) = raw_nodes else { continue };
+        map_data.push(nodes);
+    }
+
+    return (turns, map_data);
+}
+
 fn main() {
-    println!("Hello, world!");
+    println!("{:?}", read_map_data("./data/example_01.txt"));
 }
