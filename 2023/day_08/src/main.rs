@@ -29,7 +29,7 @@ use regex::Regex;
 use std::fs;
 
 /// Read the map file and parse it to a vector
-fn read_map_data(file_path: &str) -> (String, Vec<(String, String, String)>) {
+pub fn read_map_data(file_path: &str) -> (String, Vec<(String, String, String)>) {
     let mut map_data = Vec::new();
     let mut turns = String::new();
     let re_map = Regex::new("[A-Z]{3}").unwrap();
