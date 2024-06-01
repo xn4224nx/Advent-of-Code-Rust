@@ -26,6 +26,7 @@
 
 use itertools::Itertools;
 use regex::Regex;
+use std::collections::HashMap;
 use std::fs;
 
 /// Read the map file and parse it to a vector
@@ -58,6 +59,20 @@ pub fn read_map_data(file_path: &str) -> (String, Vec<(String, String, String)>)
     return (turns, map_data);
 }
 
+/// Convert the map to a HashMap version
+pub fn parse_map(raw_map: Vec<(String, String, String)>) -> HashMap<String, (String, String)> {
+    let mut new_map = HashMap::new();
+
+    for line in raw_map {
+        new_map.entry(line.0).or_insert((line.1, line.2));
+    }
+
+    return new_map;
+}
+
 fn main() {
-    println!("{:?}", read_map_data("./data/example_01.txt"));
+    let (turns, raw_map) = read_map_data("./data/example_01.txt");
+    let desert_map = parse_map(raw_map);
+
+    println!("{:?}", desert_map);
 }
