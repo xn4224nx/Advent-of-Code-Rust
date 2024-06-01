@@ -22,6 +22,21 @@
 *
 * Part 1 - Starting at AAA, follow the left/right instructions. How many steps
 *          are required to reach ZZZ?
+*
+* After examining the maps a bit longer, your attention is drawn to a curious
+* fact: the number of nodes with names ending in A is equal to the number
+* ending in Z! If you were a ghost, you'd probably just start at every node
+* that ends with A and follow all of the paths at the same time until they
+* all simultaneously end up at nodes that end with Z.
+*
+* As you follow each left/right instruction, use that instruction to
+* simultaneously navigate away from both nodes you're currently on. Repeat
+* this process until all of the nodes you're currently on end with Z. (If
+* only some of the nodes you're on end with Z, they act like any other node
+* and you continue as normal.)
+*
+* Part 2 - Simultaneously start on every node that ends with A. How many
+*          steps does it take before you're only on nodes that end with Z?
 */
 
 use itertools::Itertools;
