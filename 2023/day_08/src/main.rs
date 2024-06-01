@@ -70,9 +70,39 @@ pub fn parse_map(raw_map: Vec<(String, String, String)>) -> HashMap<String, (Str
     return new_map;
 }
 
+/// Count the steps required to reach the end of the map
+pub fn count_map_steps(turns: String, desert_map: HashMap<String, (String, String)>) -> u32 {
+    /* This is the node that the map starts */
+    let start_node = String::from("AAA");
+
+    let mut curr_node = &start_node;
+    let final_node = &String::from("ZZZ");
+    let mut path_cnt = 0;
+
+    for path in turns.chars().cycle() {
+        /* Get the two possible paths */
+        let paths: &(String, String) = desert_map.get(curr_node).unwrap();
+
+        if path == 'L' {
+            curr_node = &paths.0
+        } else {
+            curr_node = &paths.1
+        }
+
+        path_cnt += 1;
+
+        /* If the destination has been reached break the loop. */
+        if curr_node == final_node {
+            break;
+        }
+    }
+
+    return path_cnt;
+}
+
 fn main() {
-    let (turns, raw_map) = read_map_data("./data/example_01.txt");
+    let (turns, raw_map) = read_map_data("./data/input.txt");
     let desert_map = parse_map(raw_map);
 
-    println!("{:?}", desert_map);
+    println!("Answer to part 1 = {}", count_map_steps(turns, desert_map));
 }
