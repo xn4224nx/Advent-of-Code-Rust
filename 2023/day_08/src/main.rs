@@ -118,7 +118,6 @@ pub fn count_map_steps(turns: &String, desert_map: &HashMap<String, (String, Str
 
 /// Start with all the A nodes and count the steps til its all Z nodes.
 pub fn count_ghost_steps(turns: &String, desert_map: &HashMap<String, (String, String)>) -> u64 {
-
     /* Identify all the nodes that end with A */
     let start_nodes: Vec<&String> = desert_map
         .keys()
