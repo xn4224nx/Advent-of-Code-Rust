@@ -40,6 +40,7 @@
 */
 
 use itertools::Itertools;
+use num_integer::lcm;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
@@ -48,7 +49,7 @@ use std::fs;
 pub fn read_map_data(file_path: &str) -> (String, Vec<(String, String, String)>) {
     let mut map_data = Vec::new();
     let mut turns = String::new();
-    let re_map = Regex::new("[A-Z]{3}").unwrap();
+    let re_map = Regex::new("[A-Z0-9]{3}").unwrap();
 
     /* Read the entire file into a string. */
     let raw_file = fs::read_to_string(file_path).expect("Could not open file!");
@@ -86,7 +87,7 @@ pub fn parse_map(raw_map: Vec<(String, String, String)>) -> HashMap<String, (Str
 }
 
 /// Count the steps required to reach the end of the map
-pub fn count_map_steps(turns: String, desert_map: HashMap<String, (String, String)>) -> u32 {
+pub fn count_map_steps(turns: &String, desert_map: &HashMap<String, (String, String)>) -> u64 {
     /* This is the node that the map starts */
     let start_node = String::from("AAA");
 
@@ -115,9 +116,73 @@ pub fn count_map_steps(turns: String, desert_map: HashMap<String, (String, Strin
     return path_cnt;
 }
 
+/// Start with all the A nodes and count the steps til its all Z nodes.
+pub fn count_ghost_steps(turns: &String, desert_map: &HashMap<String, (String, String)>) -> u64 {
+    let mut cycl_vals: Vec<u64> = Vec::new();
+
+    /* Identify all the nodes that end with A */
+    let start_nodes: Vec<&String> = desert_map
+        .keys()
+        .filter(|x| x.chars().last().unwrap() == 'A')
+        .collect();
+
+    /* Find the cycle path length for each route */
+    let cycl_vals: Vec<u64> = start_nodes
+        .iter()
+        .map(|x| loop_ghost_path(&x, turns, desert_map))
+        .collect();
+
+    let mut max = 1;
+    for val in cycl_vals {
+        max = lcm(max, val);
+    }
+
+    return max;
+}
+
+/// Determine the minimum loop length of the ghost paths
+fn loop_ghost_path(
+    start_node: &String,
+    turns: &String,
+    desert_map: &HashMap<String, (String, String)>,
+) -> u64 {
+    let mut init_dist = 0;
+    let mut pth_count = 0;
+    let mut curr_node = start_node;
+
+    /* Find the distance to the end. */
+    for path in turns.chars().cycle() {
+        /* Get the two possible paths */
+        curr_node = if path == 'L' {
+            &desert_map.get(curr_node).unwrap().0
+        } else {
+            &desert_map.get(curr_node).unwrap().1
+        };
+
+        pth_count += 1;
+
+        /* Check for the intial distance being completed. */
+        if init_dist == 0 && curr_node.chars().last().unwrap() == 'Z' {
+            init_dist = pth_count;
+
+        /* Test for the loop being completed */
+        } else if curr_node.chars().last().unwrap() == 'Z' {
+            break;
+        }
+    }
+    return pth_count - init_dist;
+}
+
 fn main() {
     let (turns, raw_map) = read_map_data("./data/input.txt");
     let desert_map = parse_map(raw_map);
 
-    println!("Answer to part 1 = {}", count_map_steps(turns, desert_map));
+    println!(
+        "Answer to part 1 = {}",
+        count_map_steps(&turns, &desert_map)
+    );
+    println!(
+        "Answer to part 2 = {}",
+        count_ghost_steps(&turns, &desert_map)
+    );
 }
