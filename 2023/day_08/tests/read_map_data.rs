@@ -30,5 +30,5 @@ fn reads_map_example_02() {
 #[test]
 #[should_panic]
 fn panics_on_no_file() {
-    let _result = day_08::read_map_data("./data/example_03.txt");
+    let _result = day_08::read_map_data("./data/MISSING.txt");
 }

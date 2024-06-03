@@ -118,7 +118,6 @@ pub fn count_map_steps(turns: &String, desert_map: &HashMap<String, (String, Str
 
 /// Start with all the A nodes and count the steps til its all Z nodes.
 pub fn count_ghost_steps(turns: &String, desert_map: &HashMap<String, (String, String)>) -> u64 {
-    let mut cycl_vals: Vec<u64> = Vec::new();
 
     /* Identify all the nodes that end with A */
     let start_nodes: Vec<&String> = desert_map
@@ -141,7 +140,7 @@ pub fn count_ghost_steps(turns: &String, desert_map: &HashMap<String, (String, S
 }
 
 /// Determine the minimum loop length of the ghost paths
-fn loop_ghost_path(
+pub fn loop_ghost_path(
     start_node: &String,
     turns: &String,
     desert_map: &HashMap<String, (String, String)>,
