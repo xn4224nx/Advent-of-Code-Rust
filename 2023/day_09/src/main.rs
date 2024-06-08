@@ -17,6 +17,37 @@
  *          each history. What is the sum of these extrapolated values?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{self, prelude::*, BufReader};
+
+// Parse sequence data into a machine readable format
+pub fn read_seq_data(filepath: &str) -> Vec<Vec<i32>> {
+    let file = File::open(filepath).expect("Unable to read file!");
+    let reader = BufReader::new(file);
+
+    let seq_re = Regex::new(r"\-?[\d]").unwrap();
+
+    let mut all_seq: Vec<Vec<i32>> = Vec::new();
+
+    for raw_line in reader.lines() {
+        /* Check the line can be read otherwise skip it. */
+        let Ok(c_line) = raw_line else {
+            continue;
+        };
+
+        /* Create a vector of numbers out of the line */
+        let seq: Vec<i32> = seq_re
+            .find_iter(&c_line)
+            .map(|x| x.as_str().parse::<i32>().unwrap())
+            .collect();
+
+        all_seq.push(seq);
+    }
+
+    return all_seq;
+}
+
 // Find the depths of a sequence differences
 pub fn plumb_seq_depths(seq: &Vec<i32>) -> Vec<Vec<i32>> {
     let mut seq_depths: Vec<Vec<i32>> = Vec::new();
@@ -69,4 +100,6 @@ pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
     return *next_vals.last().unwrap();
 }
 
-fn main() {}
+fn main() {
+    println!("{:?}", read_seq_data("./data/example_01.txt"));
+}
