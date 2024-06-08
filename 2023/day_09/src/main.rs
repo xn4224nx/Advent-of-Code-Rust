@@ -17,28 +17,56 @@
  *          each history. What is the sum of these extrapolated values?
  */
 
-/// Determine the common difference and the level its at
-pub fn common_diff_level(seq: Vec<i32>) -> (i32, i32) {
-    let mut level = 1;
+// Find the depths of a sequence differences
+pub fn plumb_seq_depths(seq: &Vec<i32>) -> Vec<Vec<i32>> {
+    let mut seq_depths: Vec<Vec<i32>> = Vec::new();
+    let mut depth_idx = 0;
 
-    /* Calculate the common difference between each element. */
-    let mut diff: Vec<i32> = seq.windows(2).map(|s| s[1] - s[0]).collect();
+    /* The top level of the depths is the original sequence. */
+    seq_depths.push((*seq.clone()).to_vec());
 
+    /* Plumb the depths of the sequence. */
     loop {
         /* If all values are the same there is a common difference */
-        if diff.iter().all(|&x| x == diff[0]) {
+        if seq_depths[depth_idx]
+            .iter()
+            .all(|&x| x == seq_depths[depth_idx][0])
+        {
             break;
         }
 
         /* Calculate the common difference between common differences.*/
-        diff = diff.windows(2).map(|s| s[1] - s[0]).collect();
+        let diff = seq_depths[depth_idx]
+            .windows(2)
+            .map(|x| x[1] - x[0])
+            .collect();
 
-        level += 1;
+        seq_depths.push(diff);
+        depth_idx += 1;
     }
 
-    return (diff[0], level);
+    return seq_depths;
 }
 
-fn main() {
-    println!("{:?}", common_diff_level(vec![10, 13, 16, 21, 30, 45]));
+// Find the next value in a polynomial sequence
+pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
+    /* Plumb the depths of the sequence. */
+    let seq_depths = plumb_seq_depths(&seq);
+
+    let mut next_vals: Vec<i32> = Vec::new();
+
+    /* Work up from the depths determining the next value. */
+    for (idx, seq_dif) in seq_depths.iter().rev().enumerate() {
+        if idx == 0 {
+            next_vals.push(seq_dif[idx]);
+        } else {
+            let prev_new_diff = next_vals.last().unwrap();
+            let curr_last_val = seq_dif.last().unwrap();
+            next_vals.push(curr_last_val + prev_new_diff);
+        }
+    }
+
+    return *next_vals.last().unwrap();
 }
+
+fn main() {}
