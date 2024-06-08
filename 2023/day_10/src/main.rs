@@ -50,4 +50,17 @@ pub fn read_pipe_maze(filepath: &str) -> Vec<Vec<char>> {
     return pipe_maze;
 }
 
+/// Find the starting location of the maze
+pub fn find_start_coord(pipe_maze: &Vec<Vec<char>>) -> (usize, usize) {
+    for (y, row) in pipe_maze.iter().enumerate() {
+        for (x, val) in row.iter().enumerate() {
+            if *val == 'L' {
+                return (y, x);
+            }
+        }
+    }
+
+    panic!("Start point not found in the maze!");
+}
+
 fn main() {}
