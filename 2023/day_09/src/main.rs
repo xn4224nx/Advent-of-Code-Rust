@@ -19,14 +19,14 @@
 
 use regex::Regex;
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{prelude::*, BufReader};
 
-// Parse sequence data into a machine readable format
+/// Parse sequence data into a machine readable format
 pub fn read_seq_data(filepath: &str) -> Vec<Vec<i32>> {
     let file = File::open(filepath).expect("Unable to read file!");
     let reader = BufReader::new(file);
 
-    let seq_re = Regex::new(r"\-?[\d]").unwrap();
+    let seq_re = Regex::new(r"\-?[\d]+").unwrap();
 
     let mut all_seq: Vec<Vec<i32>> = Vec::new();
 
@@ -48,7 +48,7 @@ pub fn read_seq_data(filepath: &str) -> Vec<Vec<i32>> {
     return all_seq;
 }
 
-// Find the depths of a sequence differences
+/// Find the depths of a sequence differences
 pub fn plumb_seq_depths(seq: &Vec<i32>) -> Vec<Vec<i32>> {
     let mut seq_depths: Vec<Vec<i32>> = Vec::new();
     let mut depth_idx = 0;
@@ -79,7 +79,7 @@ pub fn plumb_seq_depths(seq: &Vec<i32>) -> Vec<Vec<i32>> {
     return seq_depths;
 }
 
-// Find the next value in a polynomial sequence
+/// Find the next value in a polynomial sequence
 pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
     /* Plumb the depths of the sequence. */
     let seq_depths = plumb_seq_depths(&seq);
