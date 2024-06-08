@@ -80,7 +80,7 @@ pub fn plumb_seq_depths(seq: &Vec<i32>) -> Vec<Vec<i32>> {
 }
 
 /// Find the next value in a polynomial sequence
-pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
+pub fn next_seq_val(seq: &Vec<i32>, backwards: bool) -> i32 {
     /* Plumb the depths of the sequence. */
     let seq_depths = plumb_seq_depths(&seq);
 
@@ -92,8 +92,14 @@ pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
             next_vals.push(seq_dif[idx]);
         } else {
             let prev_new_diff = next_vals.last().unwrap();
-            let curr_last_val = seq_dif.last().unwrap();
-            next_vals.push(curr_last_val + prev_new_diff);
+
+            if backwards {
+                let curr_last_val = seq_dif.first().unwrap();
+                next_vals.push(curr_last_val - prev_new_diff);
+            } else {
+                let curr_last_val = seq_dif.last().unwrap();
+                next_vals.push(curr_last_val + prev_new_diff);
+            }
         }
     }
 
@@ -105,6 +111,11 @@ fn main() {
 
     println!(
         "The answer to part 1 = {}",
-        all_seq.iter().map(|x| next_seq_val(x)).sum::<i32>()
+        all_seq.iter().map(|x| next_seq_val(x, false)).sum::<i32>()
+    );
+
+    println!(
+        "The answer to part 2 = {}",
+        all_seq.iter().map(|x| next_seq_val(x, true)).sum::<i32>()
     );
 }
