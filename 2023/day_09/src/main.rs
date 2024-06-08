@@ -101,5 +101,10 @@ pub fn next_seq_val(seq: &Vec<i32>) -> i32 {
 }
 
 fn main() {
-    println!("{:?}", read_seq_data("./data/example_01.txt"));
+    let all_seq = read_seq_data("./data/input.txt");
+
+    println!(
+        "The answer to part 1 = {}",
+        all_seq.iter().map(|x| next_seq_val(x)).sum::<i32>()
+    );
 }
