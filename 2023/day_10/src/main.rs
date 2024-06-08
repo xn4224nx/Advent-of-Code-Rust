@@ -28,6 +28,26 @@
  *          position to the point farthest from the starting position?
  */
 
-fn main() {
-    println!("Hello, world!");
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
+
+/// Read a pipe maze file into a machine readable format
+pub fn read_pipe_maze(filepath: &str) -> Vec<Vec<char>> {
+    let file = File::open(filepath).expect("Unable to read file!");
+    let reader = BufReader::new(file);
+
+    let mut pipe_maze: Vec<Vec<char>> = Vec::new();
+
+    for raw_line in reader.lines() {
+        /* Check the line can be read otherwise skip it. */
+        let Ok(clean_line) = raw_line else {
+            continue;
+        };
+
+        pipe_maze.push(clean_line.chars().collect());
+    }
+
+    return pipe_maze;
 }
+
+fn main() {}
