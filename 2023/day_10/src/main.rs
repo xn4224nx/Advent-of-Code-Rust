@@ -94,6 +94,39 @@ impl Maze {
             maze_size: (row_idx, col_idx),
         };
     }
+
+    /// Determine the adjacent maze squares for a point
+    pub fn adj_squares(&self, point: (usize, usize)) -> Vec<(usize, usize)> {
+        let mut adj_sqrs: Vec<(usize, usize)> = Vec::new();
+        let x = point.0;
+        let y = point.1;
+
+        if x >= self.maze_size.0 {
+            panic!("X-coord is too large!");
+        } else if y >= self.maze_size.1 {
+            panic!("Y-coord is too large!");
+        }
+
+        if x == 0 {
+            adj_sqrs.push((1, y));
+        } else if x >= self.maze_size.0 - 1 {
+            adj_sqrs.push((self.maze_size.0 - 2, y));
+        } else {
+            adj_sqrs.push((x + 1, y));
+            adj_sqrs.push((x - 1, y));
+        }
+
+        if y == 0 {
+            adj_sqrs.push((x, 1));
+        } else if y >= self.maze_size.1 - 1 {
+            adj_sqrs.push((x, self.maze_size.1 - 2));
+        } else {
+            adj_sqrs.push((x, y + 1));
+            adj_sqrs.push((x, y - 1));
+        }
+
+        return adj_sqrs;
+    }
 }
 
 fn main() {}
