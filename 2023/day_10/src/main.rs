@@ -31,36 +31,69 @@
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
-/// Read a pipe maze file into a machine readable format
-pub fn read_pipe_maze(filepath: &str) -> Vec<Vec<char>> {
-    let file = File::open(filepath).expect("Unable to read file!");
-    let reader = BufReader::new(file);
-
-    let mut pipe_maze: Vec<Vec<char>> = Vec::new();
-
-    for raw_line in reader.lines() {
-        /* Check the line can be read otherwise skip it. */
-        let Ok(clean_line) = raw_line else {
-            continue;
-        };
-
-        pipe_maze.push(clean_line.chars().collect());
-    }
-
-    return pipe_maze;
+#[derive(Debug)]
+pub struct Maze {
+    pub pipes: Vec<Vec<char>>,
+    pub start_pnt: (usize, usize),
+    pub maze_size: (usize, usize),
 }
 
-/// Find the starting location of the maze
-pub fn find_start_coord(pipe_maze: &Vec<Vec<char>>) -> (usize, usize) {
-    for (y, row) in pipe_maze.iter().enumerate() {
-        for (x, val) in row.iter().enumerate() {
-            if *val == 'L' {
-                return (y, x);
-            }
-        }
-    }
+impl Maze {
+    /// Read a file with a pipe maze and populate a structure
+    pub fn new(filepath: &str) -> Self {
+        let mut row_idx = 0;
+        let mut col_idx = 0;
+        let mut start_point = (0, 0);
+        let mut start_found = false;
+        let mut last_col_len = 0;
 
-    panic!("Start point not found in the maze!");
+        /* Read the file. */
+        let file = File::open(filepath).expect("Unable to read file!");
+        let reader = BufReader::new(file);
+        let mut pipe_maze: Vec<Vec<char>> = Vec::new();
+
+        /* Iterate over the file, parse the data and collect stats */
+        for raw_line in reader.lines() {
+            let mut row: Vec<char> = Vec::new();
+            col_idx = 0;
+
+            /* Check the line can be read otherwise skip it. */
+            let Ok(clean_line) = raw_line else {
+                continue;
+            };
+
+            /* Iterate over the characters in the row. */
+            for row_ele in clean_line.chars() {
+                if row_ele == 'S' {
+                    start_point = (row_idx, col_idx);
+                    start_found = true;
+                }
+
+                row.push(row_ele);
+                col_idx += 1;
+            }
+
+            /* Check the current row is the same length as the last. */
+            if row_idx > 0 && col_idx != last_col_len {
+                panic!("The maze rows need to be consistent length!");
+            }
+
+            last_col_len = col_idx;
+            pipe_maze.push(row);
+            row_idx += 1;
+        }
+
+        /* Check the start point was found. */
+        if !start_found {
+            panic!("Start point not found in the maze!");
+        }
+
+        return Maze {
+            pipes: pipe_maze,
+            start_pnt: start_point,
+            maze_size: (row_idx, col_idx),
+        };
+    }
 }
 
 fn main() {}
