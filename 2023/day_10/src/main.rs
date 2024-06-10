@@ -30,6 +30,7 @@
 
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Maze {
@@ -98,35 +99,139 @@ impl Maze {
     /// Determine the adjacent maze squares for a point
     pub fn adj_squares(&self, point: (usize, usize)) -> Vec<(usize, usize)> {
         let mut adj_sqrs: Vec<(usize, usize)> = Vec::new();
-        let x = point.0;
-        let y = point.1;
+        let y = point.0;
+        let x = point.1;
 
-        if x >= self.maze_size.0 {
-            panic!("X-coord is too large!");
-        } else if y >= self.maze_size.1 {
-            panic!("Y-coord is too large!");
-        }
-
-        if x == 0 {
-            adj_sqrs.push((1, y));
-        } else if x >= self.maze_size.0 - 1 {
-            adj_sqrs.push((self.maze_size.0 - 2, y));
-        } else {
-            adj_sqrs.push((x + 1, y));
-            adj_sqrs.push((x - 1, y));
+        if y >= self.maze_size.0 {
+            panic!("y-coord is too large!");
+        } else if x >= self.maze_size.1 {
+            panic!("x-coord is too large!");
         }
 
         if y == 0 {
-            adj_sqrs.push((x, 1));
-        } else if y >= self.maze_size.1 - 1 {
-            adj_sqrs.push((x, self.maze_size.1 - 2));
+            adj_sqrs.push((1, x));
+        } else if y >= self.maze_size.0 - 1 {
+            adj_sqrs.push((self.maze_size.0 - 2, x));
         } else {
-            adj_sqrs.push((x, y + 1));
-            adj_sqrs.push((x, y - 1));
+            adj_sqrs.push((y + 1, x));
+            adj_sqrs.push((y - 1, x));
+        }
+
+        if x == 0 {
+            adj_sqrs.push((y, 1));
+        } else if x >= self.maze_size.1 - 1 {
+            adj_sqrs.push((y, self.maze_size.1 - 2));
+        } else {
+            adj_sqrs.push((y, x + 1));
+            adj_sqrs.push((y, x - 1));
         }
 
         return adj_sqrs;
     }
+
+    /// Determine the valid adjacent next steps
+    pub fn next_steps(&self, curr_point: (usize, usize)) -> Vec<(usize, usize)> {
+        let mut next_pnts: Vec<(usize, usize)> = Vec::new();
+
+        /* Gather all the squares next to the current point. */
+        let all_adj = &self.adj_squares(curr_point);
+        
+        println!("adj {:?}", all_adj);
+        
+        /* Iterate over each adjacent point and check its validity. */
+        for pnt in all_adj.iter() {
+            let pnt_type = self.pipes[pnt.0][pnt.1];
+            
+            
+            println!("\n{}", pnt_type);
+            println!("\tcurr_y = {} curr_x = {}", curr_point.0, curr_point.1);
+            println!("\tpnt_y  = {} pnt_x  = {}\n", pnt.0, pnt.1);
+            
+            if pnt_type == '.' {
+                continue;
+            }
+            else if pnt_type == 'S' {
+                next_pnts.push(*pnt);                
+            }
+            /* Points above the current point. */
+            else if (pnt_type == 'F' || pnt_type == '7' || pnt_type == '|')
+                && pnt.0 < curr_point.0
+            {
+                next_pnts.push(*pnt);
+            }
+            /* Points below the current point. */
+            else if (pnt_type == 'L' || pnt_type == 'J' || pnt_type == '|')
+                && pnt.0 > curr_point.0
+            {
+                next_pnts.push(*pnt);
+            }
+            /* Points to the left of the current point. */
+            else if (pnt_type == 'F' || pnt_type == 'L' || pnt_type == '-')
+                && pnt.1 < curr_point.1
+            {
+                next_pnts.push(*pnt);
+            }
+            /* Points to the right of the current point. */
+            else if (pnt_type == 'J' || pnt_type == '7' || pnt_type == '-')
+                && pnt.1 > curr_point.1
+            {
+                next_pnts.push(*pnt);
+            }
+        }
+
+        return next_pnts;
+    }
+
+    /// Follow the loop in the maze and measure its length
+    pub fn measure_maze_loop(&self) -> u32 {
+        
+        let mut loop_idx = 0;
+        let mut seen_points = HashMap::new();
+        
+        /* Start from the designated starting point. */
+        let mut curr_pnt = self.start_pnt;
+        
+        loop {
+            /* Save a record of the point. */
+            seen_points.insert(curr_pnt, loop_idx);
+            println!("{}", loop_idx);
+            
+            /* Find the next points for the current point. */
+            let nxt = self.next_steps(curr_pnt);
+            
+            println!("curr{:?}", curr_pnt);
+            println!("next {:?}", nxt);
+            
+            /* Ariving back at the S means that the loop is complete. */
+            if nxt.contains(&self.start_pnt) && loop_idx > 1 {
+                break
+            }
+            
+            /* Check if any of the next points have been seen before. */
+            for nxt_pnt in nxt.iter() {
+                if !seen_points.contains_key(nxt_pnt) {
+                    curr_pnt = *nxt_pnt;
+                    break;
+                }
+            }
+            
+            println!("curr {:?}", curr_pnt);
+            
+            let pnt_type = self.pipes[curr_pnt.0][curr_pnt.1];
+            println!("curr {:?}\n\n", pnt_type);
+            
+            loop_idx += 1;
+            
+            if loop_idx > 10 {break;}
+        }
+        
+        println!("{:?}", seen_points);
+        
+        return loop_idx;
+    }
 }
 
-fn main() {}
+fn main() {
+    let pmaze = Maze::new("./data/example_01.txt");
+    println!("{:?}", pmaze.measure_maze_loop());
+}
