@@ -30,7 +30,6 @@
 
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
-use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Maze {
@@ -135,23 +134,13 @@ impl Maze {
 
         /* Gather all the squares next to the current point. */
         let all_adj = &self.adj_squares(curr_point);
-        
-        println!("adj {:?}", all_adj);
-        
+
         /* Iterate over each adjacent point and check its validity. */
         for pnt in all_adj.iter() {
             let pnt_type = self.pipes[pnt.0][pnt.1];
-            
-            
-            println!("\n{}", pnt_type);
-            println!("\tcurr_y = {} curr_x = {}", curr_point.0, curr_point.1);
-            println!("\tpnt_y  = {} pnt_x  = {}\n", pnt.0, pnt.1);
-            
+
             if pnt_type == '.' {
                 continue;
-            }
-            else if pnt_type == 'S' {
-                next_pnts.push(*pnt);                
             }
             /* Points above the current point. */
             else if (pnt_type == 'F' || pnt_type == '7' || pnt_type == '|')
@@ -182,56 +171,54 @@ impl Maze {
         return next_pnts;
     }
 
-    /// Follow the loop in the maze and measure its length
-    pub fn measure_maze_loop(&self) -> u32 {
-        
-        let mut loop_idx = 0;
-        let mut seen_points = HashMap::new();
-        
-        /* Start from the designated starting point. */
-        let mut curr_pnt = self.start_pnt;
-        
+    /// Retrieve the pipe that is at a certain point in the maze
+    pub fn pnt_2_pipe(&self, point: (usize, usize)) -> char {
+        return self.pipes[point.0][point.1];
+    }
+
+    /// Determine the next square based on the currently occupied square
+    pub fn generate_maze_loop(&self) -> Vec<(usize, usize)> {
+        let mut seen_points = vec![self.start_pnt];
+
+        /* Determine the viable next step from the start point. */
+        let mut pnt = self.next_steps(self.start_pnt)[0];
+
         loop {
-            /* Save a record of the point. */
-            seen_points.insert(curr_pnt, loop_idx);
-            println!("{}", loop_idx);
-            
-            /* Find the next points for the current point. */
-            let nxt = self.next_steps(curr_pnt);
-            
-            println!("curr{:?}", curr_pnt);
-            println!("next {:?}", nxt);
-            
-            /* Ariving back at the S means that the loop is complete. */
-            if nxt.contains(&self.start_pnt) && loop_idx > 1 {
-                break
+            let pipe = self.pnt_2_pipe(pnt);
+
+            /* The loop is completed when the start point is seen again. */
+            if pipe == 'S' {
+                break;
             }
-            
-            /* Check if any of the next points have been seen before. */
-            for nxt_pnt in nxt.iter() {
-                if !seen_points.contains_key(nxt_pnt) {
-                    curr_pnt = *nxt_pnt;
-                    break;
-                }
+
+            /* Keep a record of the points travelled. */
+            seen_points.push(pnt);
+
+            /* Determine the two possible next steps in the maze */
+            let pos_next_steps = match pipe {
+                '-' => vec![(pnt.0, pnt.1 + 1), (pnt.0, pnt.1 - 1)],
+                '|' => vec![(pnt.0 + 1, pnt.1), (pnt.0 - 1, pnt.1)],
+                'F' => vec![(pnt.0 + 1, pnt.1), (pnt.0, pnt.1 + 1)],
+                'L' => vec![(pnt.0 - 1, pnt.1), (pnt.0, pnt.1 + 1)],
+                'J' => vec![(pnt.0 - 1, pnt.1), (pnt.0, pnt.1 - 1)],
+                '7' => vec![(pnt.0 + 1, pnt.1), (pnt.0, pnt.1 - 1)],
+                _ => panic!("Unknown pipe encountered!"),
+            };
+
+            /* Work out which of the two points was the previous one. */
+            if seen_points[seen_points.len() - 2] == pos_next_steps[0] {
+                pnt = pos_next_steps[1]
+            } else {
+                pnt = pos_next_steps[0]
             }
-            
-            println!("curr {:?}", curr_pnt);
-            
-            let pnt_type = self.pipes[curr_pnt.0][curr_pnt.1];
-            println!("curr {:?}\n\n", pnt_type);
-            
-            loop_idx += 1;
-            
-            if loop_idx > 10 {break;}
         }
-        
-        println!("{:?}", seen_points);
-        
-        return loop_idx;
+        return seen_points;
     }
 }
 
 fn main() {
-    let pmaze = Maze::new("./data/example_01.txt");
-    println!("{:?}", pmaze.measure_maze_loop());
+    let pmaze = Maze::new("./data/input.txt");
+    let maze_loop = pmaze.generate_maze_loop();
+
+    println!("Part 1 answer = {}", maze_loop.len() / 2);
 }
