@@ -176,7 +176,7 @@ impl Maze {
         return self.pipes[point.0][point.1];
     }
 
-    /// Determine the next square based on the currently occupied square
+    /// Follow a maze loop and generate a list of the points it goes through.
     pub fn generate_maze_loop(&self) -> Vec<(usize, usize)> {
         let mut seen_points = vec![self.start_pnt];
 
