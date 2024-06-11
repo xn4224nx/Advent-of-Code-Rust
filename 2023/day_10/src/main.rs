@@ -26,6 +26,19 @@
  * Part 1 - Find the single giant loop starting at S. How many steps
  *          along the loop does it take to get from the starting
  *          position to the point farthest from the starting position?
+ *
+ * You quickly reach the farthest point of the loop, but the animal never
+ * emerges. Maybe its nest is within the area enclosed by the loop?
+ *
+ * To determine whether it's even worth taking the time to search for such a
+ * nest, you should calculate how many tiles are contained within the loop.
+ *
+ * Any tile that isn't part of the main loop can count as being enclosed by the
+ * loop.
+ *
+ * Part 2 - Figure out whether you have time to search for the nest by
+ *          calculating the area within the loop. How many tiles are enclosed
+ *          by the loop?
  */
 
 use std::fs::File;
