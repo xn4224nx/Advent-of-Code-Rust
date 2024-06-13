@@ -227,6 +227,29 @@ impl Maze {
         }
         return seen_points;
     }
+
+    /// Find the number of squares encircled entirely by a maze loop
+    pub fn calc_maze_area(&self, maze_loop: &Vec<(usize, usize)>) -> usize {
+        let mut area_pos = 0;
+        let mut area_neg = 0;
+        let perimeter = maze_loop.len();
+
+        /* Iterate over the first loop  and use the shoelace algorithm.*/
+        for i in 0..perimeter {
+            let j = (i + 1) % perimeter;
+            area_pos += maze_loop[i].1 * maze_loop[j].0;
+            area_neg += maze_loop[j].1 * maze_loop[i].0;
+        }
+
+        /* Get the absolute difference between the two areas. */
+        let area_diff = if area_pos > area_neg {
+            area_pos - area_neg
+        } else {
+            area_neg - area_pos
+        } / 2;
+
+        return area_diff - perimeter / 2 + 1;
+    }
 }
 
 fn main() {
@@ -234,4 +257,5 @@ fn main() {
     let maze_loop = pmaze.generate_maze_loop();
 
     println!("Part 1 answer = {}", maze_loop.len() / 2);
+    println!("Part 2 answer = {}", pmaze.calc_maze_area(&maze_loop));
 }
