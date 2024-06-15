@@ -25,6 +25,7 @@
  *          these lengths?
  */
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -48,6 +49,36 @@ pub fn read_galaxy_img(filepath: &str) -> Vec<(usize, usize)> {
     return galaxies;
 }
 
+/// Find columns and rows that contain no galaxies
+pub fn find_empty_space(galaxies: &Vec<(usize, usize)>) -> (Vec<usize>, Vec<usize>) {
+    let mut seen_x: HashSet<usize> = HashSet::new();
+    let mut seen_y: HashSet<usize> = HashSet::new();
+    let mut max_x: usize = 0;
+    let mut max_y: usize = 0;
+
+    /* Find all the rows and column that have a galaxy in them, also find
+    maximum extent of the universe.  */
+    for (x, y) in galaxies.iter() {
+        seen_x.insert(*x);
+        seen_y.insert(*y);
+
+        if x > &max_x {
+            max_x = *x;
+        }
+
+        if y > &max_y {
+            max_y = *y;
+        }
+    }
+
+    /* Generate lists of the columns & rows that have no galaxies. */
+    let empty_cols: Vec<usize> = (0..max_x).filter(|x| !seen_x.contains(x)).collect();
+    let empty_rows: Vec<usize> = (0..max_y).filter(|y| !seen_y.contains(y)).collect();
+
+    return (empty_cols, empty_rows);
+}
+
 fn main() {
     let mut galaxy_positions = read_galaxy_img("./data/example_01.txt");
+    let empty_univ = find_empty_space(&galaxy_positions);
 }
