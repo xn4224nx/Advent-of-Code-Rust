@@ -78,7 +78,32 @@ pub fn find_empty_space(galaxies: &Vec<(usize, usize)>) -> (Vec<usize>, Vec<usiz
     return (empty_cols, empty_rows);
 }
 
+/// Expand the empty space in a universe image
+pub fn expand_empty_space(
+    galaxies: &mut Vec<(usize, usize)>,
+    empty_space: &(Vec<usize>, Vec<usize>),
+) {
+    /* For each galaxy increase its coords based on empty space being before it. */
+    for galx_idx in 0..galaxies.len() {
+        /* Expand the columns in reverse order. */
+        for empty_col in empty_space.0.iter().rev() {
+            if galaxies[galx_idx].0 > *empty_col {
+                galaxies[galx_idx].0 += 1;
+            }
+        }
+
+        /* Expand the rows in reverse order. */
+        for empty_row in empty_space.1.iter().rev() {
+            if galaxies[galx_idx].1 > *empty_row {
+                galaxies[galx_idx].1 += 1;
+            }
+        }
+    }
+}
+
 fn main() {
     let mut galaxy_positions = read_galaxy_img("./data/example_01.txt");
-    let empty_univ = find_empty_space(&galaxy_positions);
+    let empty_space = find_empty_space(&galaxy_positions);
+
+    expand_empty_space(&mut galaxy_positions, &empty_space);
 }
