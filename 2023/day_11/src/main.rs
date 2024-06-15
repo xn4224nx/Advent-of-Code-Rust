@@ -25,6 +25,7 @@
  *          these lengths?
  */
 
+use itertools::Itertools;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
@@ -101,9 +102,42 @@ pub fn expand_empty_space(
     }
 }
 
-fn main() {
-    let mut galaxy_positions = read_galaxy_img("./data/example_01.txt");
-    let empty_space = find_empty_space(&galaxy_positions);
+/// Calculate the manhattan distances between two points
+pub fn manh_dist(pnt_0: &(usize, usize), pnt_1: &(usize, usize)) -> usize {
+    let mut dist = 0;
 
+    /* x coordinates */
+    if pnt_0.0 > pnt_1.0 {
+        dist += pnt_0.0 - pnt_1.0;
+    } else {
+        dist += pnt_1.0 - pnt_0.0;
+    }
+
+    /* y coordinates */
+    if pnt_0.1 > pnt_1.1 {
+        dist += pnt_0.1 - pnt_1.1;
+    } else {
+        dist += pnt_1.1 - pnt_0.1;
+    }
+
+    return dist;
+}
+
+/// Calculate the sum of the manhattan distances between all the galaxy combinations
+pub fn sum_galaxy_distances(galaxies: &Vec<(usize, usize)>) -> usize {
+    return galaxies
+        .iter()
+        .tuple_combinations()
+        .map(|(a, b)| manh_dist(a, b))
+        .sum();
+}
+
+fn main() {
+    let mut galaxy_positions = read_galaxy_img("./data/input.txt");
+    let empty_space = find_empty_space(&galaxy_positions);
     expand_empty_space(&mut galaxy_positions, &empty_space);
+    println!(
+        "Part 1 answer = {}",
+        sum_galaxy_distances(&galaxy_positions)
+    );
 }
