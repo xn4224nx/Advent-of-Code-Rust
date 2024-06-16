@@ -23,6 +23,18 @@
  * Part 1 - Expand the universe, then find the length of the shortest
  *          path between every pair of galaxies. What is the sum of
  *          these lengths?
+ *
+ * The galaxies are much older (and thus much farther apart) than the researcher
+ * initially estimated.
+ *
+ * Now, instead of the expansion you did before, make each empty row or column
+ * one million times larger. That is, each empty row should be replaced with
+ * 1000000 empty rows, and each empty column should be replaced with 1000000
+ * empty columns.
+ *
+ * Part 2 - Starting with the same initial image, expand the universe according
+ *          to these new rules, then find the length of the shortest path
+ *          between every pair of galaxies. What is the sum of these lengths?
  */
 
 use itertools::Itertools;
@@ -83,20 +95,21 @@ pub fn find_empty_space(galaxies: &Vec<(usize, usize)>) -> (Vec<usize>, Vec<usiz
 pub fn expand_empty_space(
     galaxies: &mut Vec<(usize, usize)>,
     empty_space: &(Vec<usize>, Vec<usize>),
+    expansion_factor: usize,
 ) {
     /* For each galaxy increase its coords based on empty space being before it. */
     for galx_idx in 0..galaxies.len() {
         /* Expand the columns in reverse order. */
         for empty_col in empty_space.0.iter().rev() {
             if galaxies[galx_idx].0 > *empty_col {
-                galaxies[galx_idx].0 += 1;
+                galaxies[galx_idx].0 += 1 * expansion_factor;
             }
         }
 
         /* Expand the rows in reverse order. */
         for empty_row in empty_space.1.iter().rev() {
             if galaxies[galx_idx].1 > *empty_row {
-                galaxies[galx_idx].1 += 1;
+                galaxies[galx_idx].1 += 1 * expansion_factor;
             }
         }
     }
@@ -135,7 +148,7 @@ pub fn sum_galaxy_distances(galaxies: &Vec<(usize, usize)>) -> usize {
 fn main() {
     let mut galaxy_positions = read_galaxy_img("./data/input.txt");
     let empty_space = find_empty_space(&galaxy_positions);
-    expand_empty_space(&mut galaxy_positions, &empty_space);
+    expand_empty_space(&mut galaxy_positions, &empty_space, 1);
     println!(
         "Part 1 answer = {}",
         sum_galaxy_distances(&galaxy_positions)

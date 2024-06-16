@@ -7,7 +7,7 @@ mod day_11;
 fn expand_example_01() {
     let mut galaxy_positions = day_11::read_galaxy_img("./data/example_01.txt");
     let empty_space = day_11::find_empty_space(&galaxy_positions);
-    day_11::expand_empty_space(&mut galaxy_positions, &empty_space);
+    day_11::expand_empty_space(&mut galaxy_positions, &empty_space, 1);
 
     assert_eq!(
         galaxy_positions,
