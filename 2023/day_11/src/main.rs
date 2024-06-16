@@ -102,14 +102,14 @@ pub fn expand_empty_space(
         /* Expand the columns in reverse order. */
         for empty_col in empty_space.0.iter().rev() {
             if galaxies[galx_idx].0 > *empty_col {
-                galaxies[galx_idx].0 += 1 * expansion_factor;
+                galaxies[galx_idx].0 += expansion_factor - 1;
             }
         }
 
         /* Expand the rows in reverse order. */
         for empty_row in empty_space.1.iter().rev() {
             if galaxies[galx_idx].1 > *empty_row {
-                galaxies[galx_idx].1 += 1 * expansion_factor;
+                galaxies[galx_idx].1 += expansion_factor - 1;
             }
         }
     }
@@ -146,11 +146,20 @@ pub fn sum_galaxy_distances(galaxies: &Vec<(usize, usize)>) -> usize {
 }
 
 fn main() {
-    let mut galaxy_positions = read_galaxy_img("./data/input.txt");
-    let empty_space = find_empty_space(&galaxy_positions);
-    expand_empty_space(&mut galaxy_positions, &empty_space, 1);
+    let mut p1_galaxy_positions = read_galaxy_img("./data/input.txt");
+    let mut p2_galaxy_positions = p1_galaxy_positions.clone();
+    
+    let empty_space = find_empty_space(&p1_galaxy_positions);
+    
+    expand_empty_space(&mut p1_galaxy_positions, &empty_space, 2);
     println!(
         "Part 1 answer = {}",
-        sum_galaxy_distances(&galaxy_positions)
+        sum_galaxy_distances(&p1_galaxy_positions)
+    );
+    
+    expand_empty_space(&mut p2_galaxy_positions, &empty_space, 1000000);
+    println!(
+        "Part 2 answer = {}",
+        sum_galaxy_distances(&p2_galaxy_positions)
     );
 }
