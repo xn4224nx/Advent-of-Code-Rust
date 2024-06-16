@@ -31,6 +31,44 @@
  *          What is the sum of those counts?
  */
 
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
+
+/// Parse a file with spring condition data into a structured format
+pub fn read_spring_condition_data(file_path: &str) -> Vec<(String, Vec<usize>)> {
+    let mut spring_combination = Vec::new();
+
+    /* Read the file into a buffer. */
+    let file = File::open(file_path).expect("File could not be opened!");
+    let reader = BufReader::new(file);
+
+    /* Iterate over the file line by line. */
+    for raw_line in reader.lines() {
+        /* Check the line can be read otherwise skip it. */
+        let Ok(clean_line) = raw_line else {
+            continue;
+        };
+
+        /* Split the line into two based on the whitespace. */
+        let mut parts = clean_line.split(" ");
+
+        /* Extract the first part as the record of spring status. */
+        let spring_record = parts.next().unwrap().to_string();
+
+        /* Parse the second part as a vector of integers. */
+        let groups = parts
+            .next()
+            .unwrap()
+            .split(",")
+            .map(|x| x.parse::<usize>().unwrap())
+            .collect();
+
+        spring_combination.push((spring_record, groups));
+    }
+
+    return spring_combination;
+}
+
 fn main() {
-    println!("Hello, world!");
+    let spring_data = read_spring_condition_data("./data/example_00.txt");
 }
