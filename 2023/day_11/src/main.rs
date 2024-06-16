@@ -148,15 +148,15 @@ pub fn sum_galaxy_distances(galaxies: &Vec<(usize, usize)>) -> usize {
 fn main() {
     let mut p1_galaxy_positions = read_galaxy_img("./data/input.txt");
     let mut p2_galaxy_positions = p1_galaxy_positions.clone();
-    
+
     let empty_space = find_empty_space(&p1_galaxy_positions);
-    
+
     expand_empty_space(&mut p1_galaxy_positions, &empty_space, 2);
     println!(
         "Part 1 answer = {}",
         sum_galaxy_distances(&p1_galaxy_positions)
     );
-    
+
     expand_empty_space(&mut p2_galaxy_positions, &empty_space, 1000000);
     println!(
         "Part 2 answer = {}",
