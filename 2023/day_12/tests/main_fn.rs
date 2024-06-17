@@ -32,3 +32,51 @@ fn read_example_01() {
         ]
     )
 }
+
+#[test]
+fn generate_spring_stats_00() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from("???.###"), vec![1, 1, 3]),
+        (3, 2, 1, 1)
+    );
+}
+
+#[test]
+fn generate_spring_stats_01() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from(".??..??...?##."), vec![1, 1, 3]),
+        (2, 3, 7, 2)
+    );
+}
+
+#[test]
+fn generate_spring_stats_02() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from("?#?#?#?#?#?#?#?"), vec![1, 3, 1, 6]),
+        (7, 4, 0, 4)
+    );
+}
+
+#[test]
+fn generate_spring_stats_03() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from("????.#...#..."), vec![4, 1, 1]),
+        (2, 4, 7, 0)
+    );
+}
+
+#[test]
+fn generate_spring_stats_04() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from("????.######..#####."), vec![1, 6, 5]),
+        (11, 1, 4, 3)
+    );
+}
+
+#[test]
+fn generate_spring_stats_05() {
+    assert_eq!(
+        day_12::generate_spring_stats(&String::from("?###????????"), vec![3, 2, 1]),
+        (3, 3, 0, 6)
+    );
+}

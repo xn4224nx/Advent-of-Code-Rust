@@ -69,6 +69,36 @@ pub fn read_spring_condition_data(file_path: &str) -> Vec<(String, Vec<usize>)> 
     return spring_combination;
 }
 
+/// Count the number of visible and hidden working and broken springs
+/// Returns a tuple of the key values:
+/// (visible working , hidden working, visible broken, hidden broken)
+pub fn generate_spring_stats(
+    init_config: &String,
+    working_groups: Vec<usize>,
+) -> (usize, usize, usize, usize) {
+    let mut wrk_spring_cnt = 0;
+    let mut brk_spring_cnt = 0;
+
+    /* Determine the contents of the inital spring configration string. */
+    for spring_char in init_config.chars() {
+        match spring_char {
+            '#' => wrk_spring_cnt += 1,
+            '.' => brk_spring_cnt += 1,
+            _ => continue,
+        };
+    }
+
+    /* Determine the total spring type counts from the working groups */
+    let total_wrk: usize = working_groups.iter().sum();
+    let total_brk: usize = init_config.chars().count() - total_wrk;
+
+    /* Work out the contents of the lost data. */
+    let missing_wrk = total_wrk - wrk_spring_cnt;
+    let missing_brk = total_brk - brk_spring_cnt;
+
+    return (wrk_spring_cnt, missing_wrk, brk_spring_cnt, missing_brk);
+}
+
 fn main() {
     let spring_data = read_spring_condition_data("./data/example_00.txt");
 }
