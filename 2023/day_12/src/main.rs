@@ -31,6 +31,7 @@
  *          What is the sum of those counts?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashSet;
 use std::fs::File;
@@ -104,7 +105,11 @@ pub fn generate_spring_stats(
 
 /// Determine if a spring configuration matches the groups of damaged
 /// springs. Returns a bool based on if the match is correct.
-pub fn validate_spring_config(init_config: &String, broken_groups: &Vec<usize>) -> bool {
+pub fn validate_spring_config(
+    init_config: &String,
+    broken_groups: &Vec<usize>,
+    consistent_order: bool,
+) -> bool {
     let re_brk_springs = Regex::new(r"(#+)").unwrap();
 
     /* Count the length of the broken groups in the spring config str */
@@ -114,13 +119,57 @@ pub fn validate_spring_config(init_config: &String, broken_groups: &Vec<usize>) 
         .map(|x| x.as_str().chars().count())
         .collect();
 
-    /* Cast both broken groups as sets and check they are identical. */
-    let brk_grp_0: HashSet<usize> = broke_grps_guess.into_iter().collect();
-    let brk_grp_1: HashSet<usize> = broken_groups.into_iter().cloned().collect();
+    if consistent_order {
+        return *broken_groups == broke_grps_guess;
+    } else {
+        /* Cast both broken groups as sets and check they are identical. */
+        let brk_grp_0: HashSet<usize> = broke_grps_guess.into_iter().collect();
+        let brk_grp_1: HashSet<usize> = broken_groups.into_iter().cloned().collect();
 
-    return brk_grp_0 == brk_grp_1;
+        return brk_grp_0 == brk_grp_1;
+    }
+}
+
+/// For a hidden config find the possible unhidden configs
+pub fn gen_valid_spring_config(init_config: &String, broken_groups: &Vec<usize>) -> Vec<String> {
+    let mut valid_spr_combs = Vec::new();
+
+    let (s_brk_spr, h_brk_spr, s_wrk_spr, h_wrk_spr) =
+        generate_spring_stats(init_config, broken_groups);
+
+    /* Generate the possible missing springs */
+    let miss_spr: Vec<char> = [vec!['#'; h_brk_spr], vec!['.'; h_wrk_spr]].concat();
+
+    /* Iterate over all possible permutations of the unseen springs. */
+    for hidd_sprs in miss_spr.iter().permutations(miss_spr.len()).unique() {
+        let mut miss_cnt = 0;
+        let mut tmp_config: Vec<char> = Vec::new();
+
+        /* Create a new version of the spring config with the unknowns filled in. */
+        for spr in init_config.chars() {
+            if spr == '?' {
+                tmp_config.push(*hidd_sprs[miss_cnt]);
+                miss_cnt += 1;
+            } else {
+                tmp_config.push(spr)
+            }
+        }
+
+        /* Convert the vector of chars to a string */
+        let tmp_config = tmp_config.into_iter().collect();
+
+        /* Only accept valid configurations. */
+        if validate_spring_config(&tmp_config, broken_groups, true) {
+            valid_spr_combs.push(tmp_config);
+        }
+    }
+
+    /* Remove duplicate configurations. */
+    let valid_spr_combs = valid_spr_combs.into_iter().unique().collect();
+
+    return valid_spr_combs;
 }
 
 fn main() {
-    let spring_data = read_spring_condition_data("./data/example_00.txt");
+    let spring_data = read_spring_condition_data("./data/example_01.txt");
 }

@@ -84,7 +84,7 @@ fn generate_spring_stats_05() {
 #[test]
 fn validate_spring_config_00() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from("#.#.###"), &vec![1, 1, 3]),
+        day_12::validate_spring_config(&String::from("#.#.###"), &vec![1, 1, 3], true),
         true
     );
 }
@@ -92,7 +92,7 @@ fn validate_spring_config_00() {
 #[test]
 fn validate_spring_config_01() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from(".#...#....###."), &vec![1, 1, 3]),
+        day_12::validate_spring_config(&String::from(".#...#....###."), &vec![1, 1, 3], true),
         true
     );
 }
@@ -100,7 +100,7 @@ fn validate_spring_config_01() {
 #[test]
 fn validate_spring_config_02() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from(".#.###.#.######"), &vec![1, 3, 1, 6]),
+        day_12::validate_spring_config(&String::from(".#.###.#.######"), &vec![1, 3, 1, 6], true),
         true
     );
 }
@@ -108,7 +108,7 @@ fn validate_spring_config_02() {
 #[test]
 fn validate_spring_config_03() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from("####.#...#..."), &vec![4, 1, 1]),
+        day_12::validate_spring_config(&String::from("####.#...#..."), &vec![4, 1, 1], true),
         true
     );
 }
@@ -116,7 +116,7 @@ fn validate_spring_config_03() {
 #[test]
 fn validate_spring_config_04() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from("#....######..#####."), &vec![1, 6, 5]),
+        day_12::validate_spring_config(&String::from("#....######..#####."), &vec![1, 6, 5], true),
         true
     );
 }
@@ -124,7 +124,55 @@ fn validate_spring_config_04() {
 #[test]
 fn validate_spring_config_05() {
     assert_eq!(
-        day_12::validate_spring_config(&String::from(".###.##....#"), &vec![3, 2, 1]),
+        day_12::validate_spring_config(&String::from(".###.##....#"), &vec![3, 2, 1], true),
         true
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_00() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from("???.###"), &vec![1, 1, 3])[0],
+        String::from("#.#.###")
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_01() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from("?###????????"), &vec![3, 2, 1]).len(),
+        10
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_02() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from(".??..??...?##."), &vec![1, 1, 3]).len(),
+        4
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_03() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from("?#?#?#?#?#?#?#?"), &vec![1, 3, 1, 6]).len(),
+        1
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_04() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from("????.#...#..."), &vec![4, 1, 1]).len(),
+        1
+    );
+}
+
+#[test]
+fn verify_hidden_spring_comb_05() {
+    assert_eq!(
+        day_12::gen_valid_spring_config(&String::from("????.######..#####."), &vec![1, 6, 5]).len(),
+        4
     );
 }
