@@ -31,6 +31,8 @@
  *          What is the sum of those counts?
  */
 
+use regex::Regex;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 
@@ -75,7 +77,7 @@ pub fn read_spring_condition_data(file_path: &str) -> Vec<(String, Vec<usize>)> 
 /// (#, ? == #, ., ? == .)
 pub fn generate_spring_stats(
     init_config: &String,
-    broken_groups: Vec<usize>,
+    broken_groups: &Vec<usize>,
 ) -> (usize, usize, usize, usize) {
     let mut wrk_spring_cnt = 0;
     let mut brk_spring_cnt = 0;
@@ -98,6 +100,25 @@ pub fn generate_spring_stats(
     let missing_brk = total_brk - brk_spring_cnt;
 
     return (brk_spring_cnt, missing_brk, wrk_spring_cnt, missing_wrk);
+}
+
+/// Determine if a spring configuration matches the groups of damaged
+/// springs. Returns a bool based on if the match is correct.
+pub fn validate_spring_config(init_config: &String, broken_groups: &Vec<usize>) -> bool {
+    let re_brk_springs = Regex::new(r"(#+)").unwrap();
+
+    /* Count the length of the broken groups in the spring config str */
+    let broke_grps_guess: Vec<usize> = re_brk_springs
+        .captures_iter(init_config)
+        .filter_map(|x| x.get(0))
+        .map(|x| x.as_str().chars().count())
+        .collect();
+
+    /* Cast both broken groups as sets and check they are identical. */
+    let brk_grp_0: HashSet<usize> = broke_grps_guess.into_iter().collect();
+    let brk_grp_1: HashSet<usize> = broken_groups.into_iter().cloned().collect();
+
+    return brk_grp_0 == brk_grp_1;
 }
 
 fn main() {

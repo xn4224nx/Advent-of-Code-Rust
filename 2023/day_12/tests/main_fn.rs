@@ -36,7 +36,7 @@ fn read_example_01() {
 #[test]
 fn generate_spring_stats_00() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from("???.###"), vec![1, 1, 3]),
+        day_12::generate_spring_stats(&String::from("???.###"), &vec![1, 1, 3]),
         (3, 2, 1, 1)
     );
 }
@@ -44,7 +44,7 @@ fn generate_spring_stats_00() {
 #[test]
 fn generate_spring_stats_01() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from(".??..??...?##."), vec![1, 1, 3]),
+        day_12::generate_spring_stats(&String::from(".??..??...?##."), &vec![1, 1, 3]),
         (2, 3, 7, 2)
     );
 }
@@ -52,7 +52,7 @@ fn generate_spring_stats_01() {
 #[test]
 fn generate_spring_stats_02() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from("?#?#?#?#?#?#?#?"), vec![1, 3, 1, 6]),
+        day_12::generate_spring_stats(&String::from("?#?#?#?#?#?#?#?"), &vec![1, 3, 1, 6]),
         (7, 4, 0, 4)
     );
 }
@@ -60,7 +60,7 @@ fn generate_spring_stats_02() {
 #[test]
 fn generate_spring_stats_03() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from("????.#...#..."), vec![4, 1, 1]),
+        day_12::generate_spring_stats(&String::from("????.#...#..."), &vec![4, 1, 1]),
         (2, 4, 7, 0)
     );
 }
@@ -68,7 +68,7 @@ fn generate_spring_stats_03() {
 #[test]
 fn generate_spring_stats_04() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from("????.######..#####."), vec![1, 6, 5]),
+        day_12::generate_spring_stats(&String::from("????.######..#####."), &vec![1, 6, 5]),
         (11, 1, 4, 3)
     );
 }
@@ -76,7 +76,55 @@ fn generate_spring_stats_04() {
 #[test]
 fn generate_spring_stats_05() {
     assert_eq!(
-        day_12::generate_spring_stats(&String::from("?###????????"), vec![3, 2, 1]),
+        day_12::generate_spring_stats(&String::from("?###????????"), &vec![3, 2, 1]),
         (3, 3, 0, 6)
+    );
+}
+
+#[test]
+fn validate_spring_config_00() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from("#.#.###"), &vec![1, 1, 3]),
+        true
+    );
+}
+
+#[test]
+fn validate_spring_config_01() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from(".#...#....###."), &vec![1, 1, 3]),
+        true
+    );
+}
+
+#[test]
+fn validate_spring_config_02() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from(".#.###.#.######"), &vec![1, 3, 1, 6]),
+        true
+    );
+}
+
+#[test]
+fn validate_spring_config_03() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from("####.#...#..."), &vec![4, 1, 1]),
+        true
+    );
+}
+
+#[test]
+fn validate_spring_config_04() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from("#....######..#####."), &vec![1, 6, 5]),
+        true
+    );
+}
+
+#[test]
+fn validate_spring_config_05() {
+    assert_eq!(
+        day_12::validate_spring_config(&String::from(".###.##....#"), &vec![3, 2, 1]),
+        true
     );
 }
