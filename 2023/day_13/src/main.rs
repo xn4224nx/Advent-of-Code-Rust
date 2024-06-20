@@ -47,6 +47,65 @@ pub fn read_raw_notes(notes_file: &str) -> Vec<Vec<Vec<char>>> {
         .collect();
 }
 
+/// Check if a horizontal line of reflection in an ashfield is valid
+pub fn is_horiz_reflection(ashfield: &Vec<Vec<char>>, row: usize) -> bool {
+    if row >= ashfield.len() - 1 {
+        return false;
+    }
+
+    let (mut u_row, mut d_row) = (row, row + 1);
+
+    /* working outwards until the edge check that every element matches. */
+    loop {
+        /* Check if the current rows are identical */
+        if ashfield[u_row] != ashfield[d_row] {
+            return false;
+        }
+
+        /* Exit if the checks have reached the edge of the ashfield */
+        if u_row <= 0 || d_row >= ashfield.len() - 1 {
+            break;
+        }
+
+        /* Prepare the next iteration to check the next rows */
+        u_row -= 1;
+        d_row += 1;
+    }
+
+    return true;
+}
+
+/// Check if a vertical line of reflection in an ashfield is valid
+pub fn is_verti_reflection(ashfield: &Vec<Vec<char>>, col: usize) -> bool {
+    if col >= ashfield[0].len() - 1 {
+        return false;
+    }
+
+    let (mut u_col, mut d_col) = (col, col + 1);
+
+    /* working outwards until the edge check that every element matches. */
+    loop {
+        /* Check if the current cols are identical */
+        for idx in 0..ashfield.len() - 1 {
+            if ashfield[idx][u_col] != ashfield[idx][d_col] {
+                return false;
+            }
+        }
+
+        /* Exit if the checks have reached the edge of the ashfield */
+        if u_col <= 0 || d_col >= ashfield[0].len() - 1 {
+            break;
+        }
+
+        /* Prepare the next iteration to check the next rows */
+        u_col -= 1;
+        d_col += 1;
+    }
+
+    return true;
+}
+
 fn main() {
-    let raw_notes = read_raw_notes("./data/input.txt");
+    let raw_notes = read_raw_notes("./data/example_00.txt");
+    println!("{:?}", is_verti_reflection(&raw_notes[0], 0));
 }
