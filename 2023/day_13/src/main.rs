@@ -126,4 +126,8 @@ pub fn ashfield_score(ashfield: &Vec<Vec<char>>) -> usize {
 
 fn main() {
     let raw_notes = read_raw_notes("./data/input.txt");
+    println!(
+        "Part 1 answer = {}",
+        raw_notes.iter().map(|x| ashfield_score(x)).sum::<usize>()
+    )
 }
