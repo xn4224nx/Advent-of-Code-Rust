@@ -33,13 +33,17 @@
 
 use std::fs;
 
-/// Parse the raw notes on the ash field
-pub fn read_raw_notes(notes_file: &str) -> Vec<Vec<String>> {
+/// Parse the raw notes on the ash field into vectors of chars
+pub fn read_raw_notes(notes_file: &str) -> Vec<Vec<Vec<char>>> {
     return fs::read_to_string(notes_file)
         .unwrap()
         .split("\n\n")
         .map(|x| x.to_string())
-        .map(|x| x.split('\n').map(|x| x.to_string()).collect())
+        .map(|x| {
+            x.split('\n')
+                .map(|x| x.to_string().chars().collect())
+                .collect()
+        })
         .collect();
 }
 
