@@ -97,3 +97,14 @@ fn score_example_01() {
         400
     );
 }
+
+#[test]
+fn score_input() {
+    assert_eq!(
+        day_13::read_raw_notes("./data/input.txt")
+            .iter()
+            .map(|x| day_13::ashfield_score(x))
+            .sum::<usize>(),
+        31877
+    );
+}

@@ -58,8 +58,10 @@ pub fn is_horiz_reflection(ashfield: &Vec<Vec<char>>, row: usize) -> bool {
     /* working outwards until the edge check that every element matches. */
     loop {
         /* Check if the current rows are identical */
-        if ashfield[u_row] != ashfield[d_row] {
-            return false;
+        for idx in 0..ashfield[d_row].len() {
+            if ashfield[u_row][idx] != ashfield[d_row][idx] {
+                return false;
+            }
         }
 
         /* Exit if the checks have reached the edge of the ashfield */
@@ -126,8 +128,9 @@ pub fn ashfield_score(ashfield: &Vec<Vec<char>>) -> usize {
 
 fn main() {
     let raw_notes = read_raw_notes("./data/input.txt");
+
     println!(
         "Part 1 answer = {}",
         raw_notes.iter().map(|x| ashfield_score(x)).sum::<usize>()
-    )
+    );
 }
