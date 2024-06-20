@@ -105,7 +105,25 @@ pub fn is_verti_reflection(ashfield: &Vec<Vec<char>>, col: usize) -> bool {
     return true;
 }
 
+/// Determine the score for an ashfield based on its mirror
+pub fn ashfield_score(ashfield: &Vec<Vec<char>>) -> usize {
+    /* Determine if there is a horizontal reflection. */
+    for col in 0..ashfield.len() {
+        if is_horiz_reflection(ashfield, col) {
+            return (col + 1) * 100;
+        }
+    }
+
+    /* Determine if there is a vertical reflection. */
+    for row in 0..ashfield[0].len() {
+        if is_verti_reflection(ashfield, row) {
+            return row + 1;
+        }
+    }
+
+    panic!("No refection found");
+}
+
 fn main() {
-    let raw_notes = read_raw_notes("./data/example_00.txt");
-    println!("{:?}", is_verti_reflection(&raw_notes[0], 0));
+    let raw_notes = read_raw_notes("./data/input.txt");
 }

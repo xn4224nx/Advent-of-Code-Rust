@@ -81,3 +81,19 @@ fn find_refect_example_01() {
         vec![false, false, false, false, false, false, false, false, false]
     );
 }
+
+#[test]
+fn score_example_00() {
+    assert_eq!(
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_00.txt")[0]),
+        5
+    );
+}
+
+#[test]
+fn score_example_01() {
+    assert_eq!(
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_01.txt")[0]),
+        400
+    );
+}
