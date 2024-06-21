@@ -45,10 +45,10 @@ fn find_refect_example_00() {
     let examp = &day_13::read_raw_notes("./data/example_00.txt")[0];
 
     let horiz_comp: Vec<bool> = (0..examp.len())
-        .map(|x| day_13::is_horiz_reflection(&examp, x))
+        .map(|x| day_13::is_horiz_reflection(&examp, x, 0))
         .collect();
     let verti_comp: Vec<bool> = (0..examp[0].len())
-        .map(|x| day_13::is_verti_reflection(&examp, x))
+        .map(|x| day_13::is_verti_reflection(&examp, x, 0))
         .collect();
 
     assert_eq!(
@@ -66,10 +66,10 @@ fn find_refect_example_01() {
     let examp = &day_13::read_raw_notes("./data/example_01.txt")[0];
 
     let horiz_comp: Vec<bool> = (0..examp.len())
-        .map(|x| day_13::is_horiz_reflection(&examp, x))
+        .map(|x| day_13::is_horiz_reflection(&examp, x, 0))
         .collect();
     let verti_comp: Vec<bool> = (0..examp[0].len())
-        .map(|x| day_13::is_verti_reflection(&examp, x))
+        .map(|x| day_13::is_verti_reflection(&examp, x, 0))
         .collect();
 
     assert_eq!(
@@ -85,7 +85,7 @@ fn find_refect_example_01() {
 #[test]
 fn score_example_00() {
     assert_eq!(
-        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_00.txt")[0]),
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_00.txt")[0], 0),
         5
     );
 }
@@ -93,8 +93,24 @@ fn score_example_00() {
 #[test]
 fn score_example_01() {
     assert_eq!(
-        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_01.txt")[0]),
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_01.txt")[0], 0),
         400
+    );
+}
+
+#[test]
+fn score_example_02() {
+    assert_eq!(
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_00.txt")[0], 1),
+        300
+    );
+}
+
+#[test]
+fn score_example_03() {
+    assert_eq!(
+        day_13::ashfield_score(&day_13::read_raw_notes("./data/example_01.txt")[0], 1),
+        100
     );
 }
 
@@ -103,7 +119,7 @@ fn score_input() {
     assert_eq!(
         day_13::read_raw_notes("./data/input.txt")
             .iter()
-            .map(|x| day_13::ashfield_score(x))
+            .map(|x| day_13::ashfield_score(x, 0))
             .sum::<usize>(),
         31877
     );
