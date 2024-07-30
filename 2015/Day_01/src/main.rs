@@ -25,16 +25,23 @@ pub fn read_building_directions(fp: &str) -> String {
 }
 
 /// Find the final floor that Santa ends up on due to the building
-/// directions.
-pub fn find_final_floor(directions: &String) -> i32 {
+/// directions or when he first enters the basement.
+pub fn find_final_floor(directions: &String, find_basement: bool) -> i32 {
     let mut floor: i32 = 0;
 
     /* Interate over the instructions */
-    for direct in directions.chars() {
+    for (idx, direct) in directions.chars().enumerate() {
         match direct {
             '(' => floor += 1,
             ')' => floor -= 1,
             _ => panic!("Unknown direction!"),
+        }
+
+        /* Return the index of the instruction that first takes Santa
+        into the basement. Plus one is due to differnt indexing offset for
+        the answer.*/
+        if find_basement && floor == -1 {
+            return (idx + 1) as i32;
         }
     }
     return floor;
@@ -42,5 +49,6 @@ pub fn find_final_floor(directions: &String) -> i32 {
 
 fn main() {
     let directions = read_building_directions("./data/input.txt");
-    println!("Part 1 answer = {}", find_final_floor(&directions));
+    println!("Part 1 answer = {}", find_final_floor(&directions, false));
+    println!("Part 1 answer = {}", find_final_floor(&directions, true));
 }
