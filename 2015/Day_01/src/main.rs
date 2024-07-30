@@ -18,7 +18,6 @@
  */
 
 use std::fs;
-use std::path::Path;
 
 /// Read the file with the building directions and return them
 pub fn read_building_directions(fp: &str) -> String {
