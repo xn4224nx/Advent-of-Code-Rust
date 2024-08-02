@@ -26,3 +26,13 @@ fn read_example_03() {
         vec![(2, 3, 4), (1, 1, 10)]
     )
 }
+
+#[test]
+fn ribb_len_example_01() {
+    assert_eq!(day_02::calc_ribb_and_wrap((2, 3, 4)), (34, 58))
+}
+
+#[test]
+fn ribb_len_example_02() {
+    assert_eq!(day_02::calc_ribb_and_wrap((1, 1, 10)), (14, 43))
+}

@@ -18,6 +18,19 @@
  *
  * PART 1:  How many total square feet of wrapping paper should
  *          they order?
+ *
+ * The elves are also running low on ribbon. Ribbon is all the
+ * same width, so they only have to worry about the length they
+ * need to order, which they would again like to be exact.
+ *
+ * The ribbon required to wrap a present is the shortest distance
+ * around its sides, or the smallest perimeter of any one face.
+ * Each present also requires a bow made out of ribbon as well;
+ * the feet of ribbon required for the perfect bow is equal to
+ * the cubic feet of volume of the present. Don't ask how they
+ * tie the bow, though; they'll never tell.
+ *
+ * PART 2: How many total feet of ribbon should they order?
  */
 
 use regex::Regex;
@@ -56,64 +69,48 @@ pub fn read_instructions(inst_filepath: &str) -> Vec<(usize, usize, usize)> {
     return parsed_inst;
 }
 
-/// Calculate the area of wrapping paper need to cover a
-/// box whose dimensions are specified in the tuple.
-pub fn calc_wrap_area(box_dims: (usize, usize, usize)) -> usize {
-    let (l, w, h) = box_dims;
-
-    /* Calculate the area of the 3 surfaces of the box. */
-    let sfc_area = 2 * l * w + 2 * w * h + 2 * h * l;
-
-    /* Find the side with the smallest area. */
-    let small_side = if l <= h && w <= h {
-        l * w
-    } else if w <= l && h <= l {
-        w * h
-    } else if h <= w && l <= w {
-        h * l
-    } else {
-        panic!("smallest side not found!");
-    };
-
-    return sfc_area + small_side;
-}
-
-/// Calculate the length of ribbon need to wrap a box
-pub fn calc_ribb_len(box_dims: (usize, usize, usize)) -> usize {
+/// Calculate the length of ribbon and area of wrapping paper for a box
+pub fn calc_ribb_and_wrap(box_dims: (usize, usize, usize)) -> (usize, usize) {
     let (l, w, h) = box_dims;
 
     /* The bow requires a length of ribbon the same magnitude
      * as the boxes volume */
     let bow_len = l * w * h;
 
-    /* Find the side with the smallest perimeter. */
-    let small_prei = if l <= h && w <= h {
-        2 * l + 2 * w
-    } else if w <= l && h <= l {
-        2 * w + 2 * h
-    } else if h <= w && l <= w {
-        2 * h + 2 * l
-    } else {
-        panic!("smallest perimeter not found!");
-    };
+    /* Calculate the area of the 3 surfaces of the box. */
+    let sfc_area = 2 * l * w + 2 * w * h + 2 * h * l;
 
-    return bow_len + small_prei;
+    /* Find the side with the smallest perimeter and the smallest area */
+    let small_prei;
+    let small_side;
+
+    if l <= h && w <= h {
+        small_prei = 2 * l + 2 * w;
+        small_side = l * w;
+    } else if w <= l && h <= l {
+        small_prei = 2 * w + 2 * h;
+        small_side = w * h;
+    } else {
+        small_prei = 2 * h + 2 * l;
+        small_side = h * l;
+    }
+
+    return (bow_len + small_prei, sfc_area + small_side);
 }
 
 fn main() {
+    let results: Vec<(usize, usize)> = read_instructions("./data/input.txt")
+        .into_iter()
+        .map(|x| calc_ribb_and_wrap(x))
+        .collect();
+
     println!(
         "Answer to part 1 = {}",
-        read_instructions("./data/input.txt")
-            .into_iter()
-            .map(|x| calc_wrap_area(x))
-            .sum::<usize>()
+        results.iter().map(|x| x.1).sum::<usize>()
     );
 
     println!(
         "Answer to part 2 = {}",
-        read_instructions("./data/input.txt")
-            .into_iter()
-            .map(|x| calc_ribb_len(x))
-            .sum::<usize>()
+        results.iter().map(|x| x.0).sum::<usize>()
     );
 }
