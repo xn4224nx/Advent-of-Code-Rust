@@ -78,12 +78,42 @@ pub fn calc_wrap_area(box_dims: (usize, usize, usize)) -> usize {
     return sfc_area + small_side;
 }
 
+/// Calculate the length of ribbon need to wrap a box
+pub fn calc_ribb_len(box_dims: (usize, usize, usize)) -> usize {
+    let (l, w, h) = box_dims;
+
+    /* The bow requires a length of ribbon the same magnitude
+     * as the boxes volume */
+    let bow_len = l * w * h;
+
+    /* Find the side with the smallest perimeter. */
+    let small_prei = if l <= h && w <= h {
+        2 * l + 2 * w
+    } else if w <= l && h <= l {
+        2 * w + 2 * h
+    } else if h <= w && l <= w {
+        2 * h + 2 * l
+    } else {
+        panic!("smallest perimeter not found!");
+    };
+
+    return bow_len + small_prei;
+}
+
 fn main() {
     println!(
         "Answer to part 1 = {}",
         read_instructions("./data/input.txt")
             .into_iter()
             .map(|x| calc_wrap_area(x))
+            .sum::<usize>()
+    );
+
+    println!(
+        "Answer to part 2 = {}",
+        read_instructions("./data/input.txt")
+            .into_iter()
+            .map(|x| calc_ribb_len(x))
             .sum::<usize>()
     );
 }
