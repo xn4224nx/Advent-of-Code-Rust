@@ -56,4 +56,34 @@ pub fn read_instructions(inst_filepath: &str) -> Vec<(usize, usize, usize)> {
     return parsed_inst;
 }
 
-fn main() {}
+/// Calculate the area of wrapping paper need to cover a
+/// box whose dimensions are specified in the tuple.
+pub fn calc_wrap_area(box_dims: (usize, usize, usize)) -> usize {
+    let (l, w, h) = box_dims;
+
+    /* Calculate the area of the 3 surfaces of the box. */
+    let sfc_area = 2 * l * w + 2 * w * h + 2 * h * l;
+
+    /* Find the side with the smallest area. */
+    let small_side = if l <= h && w <= h {
+        l * w
+    } else if w <= l && h <= l {
+        w * h
+    } else if h <= w && l <= w {
+        h * l
+    } else {
+        panic!("smallest side not found!");
+    };
+
+    return sfc_area + small_side;
+}
+
+fn main() {
+    println!(
+        "Answer to part 1 = {}",
+        read_instructions("./data/input.txt")
+            .into_iter()
+            .map(|x| calc_wrap_area(x))
+            .sum::<usize>()
+    );
+}
