@@ -35,13 +35,13 @@ fn read_example_04() {
 
 #[test]
 fn unique_visits_ex_01() {
-    assert_eq!(day_03::count_visited_houses(&vec![East]), 2)
+    assert_eq!(day_03::count_visited_houses(&vec![East], false), 2)
 }
 
 #[test]
 fn unique_visits_ex_02() {
     assert_eq!(
-        day_03::count_visited_houses(&vec![North, East, South, West]),
+        day_03::count_visited_houses(&vec![North, East, South, West], false),
         4
     )
 }
@@ -49,9 +49,34 @@ fn unique_visits_ex_02() {
 #[test]
 fn unique_visits_ex_03() {
     assert_eq!(
-        day_03::count_visited_houses(&vec![
-            North, South, North, South, North, South, North, South, North, South
-        ]),
+        day_03::count_visited_houses(
+            &vec![North, South, North, South, North, South, North, South, North, South],
+            false
+        ),
         2
     )
+}
+
+#[test]
+fn robot_visits_ex_02() {
+    assert_eq!(
+        day_03::count_visited_houses(&vec![North, East, South, West], true),
+        3
+    )
+}
+
+#[test]
+fn robot_visits_ex_03() {
+    assert_eq!(
+        day_03::count_visited_houses(
+            &vec![North, South, North, South, North, South, North, South, North, South],
+            true
+        ),
+        11
+    )
+}
+
+#[test]
+fn robot_visits_ex_04() {
+    assert_eq!(day_03::count_visited_houses(&vec![North, South], true), 3)
 }

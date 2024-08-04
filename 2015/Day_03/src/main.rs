@@ -16,6 +16,16 @@
  * Santa ends up visiting some houses more than once.
  *
  * PART 1: How many houses receive at least one present?
+ *
+ * The next year, to speed up the process, Santa creates a robot
+ * version of himself, Robo-Santa, to deliver presents with him.
+ *
+ * Santa and Robo-Santa start at the same location (delivering two
+ * presents to the same starting house), then take turns moving
+ * based on instructions from the elf, who is eggnoggedly reading
+ * from the same script as the previous year.
+ *
+ * PART 2:  This year, how many houses receive at least one present?
  */
 
 use std::collections::HashSet;
@@ -52,30 +62,52 @@ pub fn read_directions(file_path: &str) -> Vec<GridDir> {
 
 /// Count the number of houses visited by Santa at least
 /// once.
-pub fn count_visited_houses(directions: &Vec<GridDir>) -> usize {
-    let mut c_loc = (0, 0);
+pub fn count_visited_houses(directions: &Vec<GridDir>, robot: bool) -> usize {
     let mut visited_houses = HashSet::new();
 
+    /* Santa & Robot Santa always start at the same location. */
+    let mut s_loc = (0, 0);
+    let mut r_loc = s_loc;
+
     /* The starting house is always visited. */
-    visited_houses.insert(c_loc);
+    visited_houses.insert(s_loc);
 
     /* For each direction move the location then save it*/
-    for dir in directions.iter() {
-        match dir {
-            GridDir::North => c_loc = (c_loc.0, c_loc.1 + 1),
-            GridDir::South => c_loc = (c_loc.0, c_loc.1 - 1),
-            GridDir::West => c_loc = (c_loc.0 - 1, c_loc.1),
-            GridDir::East => c_loc = (c_loc.0 + 1, c_loc.1),
-        };
+    for (idx, dir) in directions.iter().enumerate() {
+        /* Robot Santa moves on even directions */
+        if robot && idx % 2 == 0 {
+            move_santa(&mut r_loc, dir);
+            visited_houses.insert(r_loc);
 
-        visited_houses.insert(c_loc);
+        /* Santa moves otherwise */
+        } else {
+            move_santa(&mut s_loc, dir);
+            visited_houses.insert(s_loc);
+        }
     }
 
     /* Only the unique number of houses visited matters. */
     return visited_houses.len();
 }
 
+/// Move Santa or his robot counterpart based on a direction
+fn move_santa(c_loc: &mut (i32, i32), dir: &GridDir) {
+    match dir {
+        GridDir::North => *c_loc = (c_loc.0, c_loc.1 + 1),
+        GridDir::South => *c_loc = (c_loc.0, c_loc.1 - 1),
+        GridDir::West => *c_loc = (c_loc.0 - 1, c_loc.1),
+        GridDir::East => *c_loc = (c_loc.0 + 1, c_loc.1),
+    };
+}
+
 fn main() {
     let dirs = read_directions("./data/input.txt");
-    println!("The answer to part 1 = {}", count_visited_houses(&dirs));
+    println!(
+        "The answer to part 1 = {}",
+        count_visited_houses(&dirs, false)
+    );
+    println!(
+        "The answer to part 1 = {}",
+        count_visited_houses(&dirs, true)
+    );
 }
