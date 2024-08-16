@@ -28,6 +28,31 @@
  *
  * PART 1:  After following the instructions, how
  *          many lights are lit?
+ *
+ * You just finish implementing your winning light
+ * pattern when you realize you mistranslated
+ * Santa's message from Ancient Nordic Elvish.
+ *
+ * The light grid you bought actually has
+ * individual brightness controls; each light can
+ * have a brightness of zero or more. The lights
+ * all start at zero.
+ *
+ * The phrase turn on actually means that you
+ * should increase the brightness of those lights
+ * by 1.
+ *
+ * The phrase turn off actually means that you
+ * should decrease the brightness of those lights
+ * by 1, to a minimum of zero.
+ *
+ * The phrase toggle actually means that you
+ * should increase the brightness of those lights
+ * by 2.
+ *
+ * PART 2:  What is the total brightness of all
+ *          lights combined after following
+ *          Santa's instructions?
  */
 
 use ndarray::{s, Array};
@@ -123,7 +148,31 @@ pub fn cnt_on_lights(instrucs: &Vec<Instruct>, init_state: bool) -> usize {
     return grid.iter().filter(|x| **x).count();
 }
 
+/// Assume that the instructions modify the brightness not the status of the
+/// lights.
+pub fn sum_nord_lights(instrucs: &Vec<Instruct>, init_state: u32) -> u32 {
+    let mut grid = Array::from_elem((GRID_SIZE, GRID_SIZE), init_state);
+
+    for ins in instrucs.iter() {
+        match ins.cmd {
+            Command::TurnOn => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .map_inplace(|x| *x = x.saturating_add(1)),
+            Command::TurnOff => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .map_inplace(|x| *x = x.saturating_sub(1)),
+            Command::Toggle => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .map_inplace(|x| *x = x.saturating_add(2)),
+        }
+    }
+
+    /* Sum the total brightness levels*/
+    return grid.sum();
+}
+
 fn main() {
     let instruc = read_instrucs("./data/input.txt");
     println!("Part 1 = {}", cnt_on_lights(&instruc, false));
+    println!("Part 2 = {}", sum_nord_lights(&instruc, 0));
 }
