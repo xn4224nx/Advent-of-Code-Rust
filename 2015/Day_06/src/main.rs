@@ -30,9 +30,12 @@
  *          many lights are lit?
  */
 
+use ndarray::{s, Array};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+
+static GRID_SIZE: usize = 1000;
 
 #[derive(Debug, PartialEq)]
 pub enum Command {
@@ -44,10 +47,10 @@ pub enum Command {
 #[derive(Debug, PartialEq)]
 pub struct Instruct {
     pub cmd: Command,
-    pub srt_x: u32,
-    pub srt_y: u32,
-    pub end_x: u32,
-    pub end_y: u32,
+    pub srt_x: usize,
+    pub srt_y: usize,
+    pub end_x: usize,
+    pub end_y: usize,
 }
 
 /// Open the datafile and parse the instructions
@@ -73,9 +76,9 @@ pub fn read_instrucs(filepath: &str) -> Vec<Instruct> {
         };
 
         /* Extract the coordinates of the command. */
-        let nums: Vec<u32> = re_num
+        let nums: Vec<usize> = re_num
             .find_iter(&buffer)
-            .map(|x| x.as_str().parse::<u32>().unwrap())
+            .map(|x| x.as_str().parse::<usize>().unwrap())
             .collect();
 
         if nums.len() != 4 {
@@ -96,6 +99,31 @@ pub fn read_instrucs(filepath: &str) -> Vec<Instruct> {
     return instr;
 }
 
+/// Go through a set of light instructions and after all of them have executed
+/// and count the number of lights that are on in the 1000x1000 grid.
+/// True indicates on, false indicates off.
+pub fn cnt_on_lights(instrucs: &Vec<Instruct>, init_state: bool) -> usize {
+    let mut grid = Array::from_elem((GRID_SIZE, GRID_SIZE), init_state);
+
+    for ins in instrucs.iter() {
+        match ins.cmd {
+            Command::TurnOn => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .fill(true),
+            Command::TurnOff => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .fill(false),
+            Command::Toggle => grid
+                .slice_mut(s![ins.srt_x..=ins.end_x, ins.srt_y..=ins.end_y])
+                .map_inplace(|x| *x = !*x),
+        }
+    }
+
+    /* Count the number of trues in the grid and return them. */
+    return grid.iter().filter(|x| **x).count();
+}
+
 fn main() {
     let instruc = read_instrucs("./data/input.txt");
+    println!("Part 1 = {}", cnt_on_lights(&instruc, false));
 }
