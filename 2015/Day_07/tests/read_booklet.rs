@@ -7,7 +7,7 @@ use day_07::{read_booklet, Instruction, Operation, Signal};
 #[test]
 fn read_exp_01() {
     assert_eq!(
-        read_booklet("./data/example_01.txt"),
+        read_booklet("./data/example_01.txt", None),
         vec![
             Instruction {
                 output: Signal::Wire("x".to_string()),

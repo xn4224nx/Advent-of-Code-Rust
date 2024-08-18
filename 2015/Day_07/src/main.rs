@@ -24,6 +24,11 @@
  * PART 1:  In little Bobby's kit's instructions booklet (provided as
  *          your puzzle input), what signal is ultimately provided to
  *          wire a?
+ *
+ * Now, take the signal you got on wire a, override wire b to that signal,
+ * and reset the other wires (including wire a).
+ *
+ * PART 1:  What new signal is ultimately provided to wire a?
  */
 
 use std::collections::HashMap;
@@ -64,7 +69,7 @@ pub fn parse_wire_id(raw: String) -> Signal {
 
 /// Parse the booklet data on disk and convert to a machine readable
 /// format
-pub fn read_booklet(file_path: &str) -> Vec<Instruction> {
+pub fn read_booklet(file_path: &str, b_val: Option<u16>) -> Vec<Instruction> {
     let file = File::open(file_path).unwrap();
     let mut fp = BufReader::new(file);
 
@@ -112,6 +117,17 @@ pub fn read_booklet(file_path: &str) -> Vec<Instruction> {
             inputs.push(parse_wire_id(parts.pop().unwrap()));
         };
 
+        /* Overwrite the input to the b wire */
+        if outp == Signal::Wire(String::from("b")) {
+            match b_val {
+                Some(val) => {
+                    inputs.clear();
+                    inputs.push(Signal::Num(val));
+                }
+                None => (),
+            }
+        };
+
         data.push(Instruction {
             output: outp,
             opper: oper,
@@ -155,10 +171,9 @@ pub fn final_signals(all_inst: &Vec<Instruction>) -> HashMap<String, u16> {
                             continue 'rev_instr;
                         }
                     }
-                };
+                }
             }
 
-            /* Replace with https://doc.rust-lang.org/nightly/std/primitive.u16.html */
             /* Determine the new signal. */
             let sig = match inst.opper {
                 Operation::And => {
@@ -170,14 +185,14 @@ pub fn final_signals(all_inst: &Vec<Instruction>) -> HashMap<String, u16> {
                         | resolve_value(&inst.inputs[1], &wire_sigs)
                 }
                 Operation::LShift => {
-                    resolve_value(&inst.inputs[1], &wire_sigs).overflowing_shl
-                        (resolve_value(&inst.inputs[0], &wire_sigs) as u32).0
-
+                    resolve_value(&inst.inputs[1], &wire_sigs)
+                        .overflowing_shl(resolve_value(&inst.inputs[0], &wire_sigs) as u32)
+                        .0
                 }
                 Operation::RShift => {
-                    resolve_value(&inst.inputs[1], &wire_sigs).overflowing_shr
-                        (resolve_value(&inst.inputs[0], &wire_sigs) as u32).0
-
+                    resolve_value(&inst.inputs[1], &wire_sigs)
+                        .overflowing_shr(resolve_value(&inst.inputs[0], &wire_sigs) as u32)
+                        .0
                 }
                 Operation::Not => !resolve_value(&inst.inputs[0], &wire_sigs),
                 Operation::Assign => resolve_value(&inst.inputs[0], &wire_sigs),
@@ -197,10 +212,15 @@ pub fn final_signals(all_inst: &Vec<Instruction>) -> HashMap<String, u16> {
 }
 
 fn main() {
-    let data = read_booklet("./data/input.txt");
+    let data = read_booklet("./data/input.txt", None);
     let sigs = final_signals(&data);
-    println!(
-        "Part 1 = {}",
-        resolve_value(&Signal::Wire("a".to_string()), &sigs)
-    );
+    let a_sig = resolve_value(&Signal::Wire("a".to_string()), &sigs);
+
+    println!("Part 1 = {}", a_sig);
+
+    let data2 = read_booklet("./data/input.txt", Some(a_sig));
+    let sigs2 = final_signals(&data2);
+    let a_sig_2 = resolve_value(&Signal::Wire("a".to_string()), &sigs2);
+
+    println!("Part 2 = {}", a_sig_2);
 }

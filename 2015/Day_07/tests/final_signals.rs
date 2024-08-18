@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 #[test]
 fn signals_exp_01() {
-    let data = read_booklet("./data/example_01.txt");
+    let data = read_booklet("./data/example_01.txt", None);
     assert_eq!(
         final_signals(&data),
         HashMap::from([
