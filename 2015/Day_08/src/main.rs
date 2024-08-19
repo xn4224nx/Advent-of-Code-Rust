@@ -23,6 +23,71 @@
  *          characters of code for string literals minus the number of
  *          characters in memory for the values of the strings in total for the
  *          entire file?
+ *
+ * Now, let's go the other way. In addition to finding the number of characters
+ * of code, you should now encode each code representation as a new string and
+ * find the number of characters of the new encoded representation, including the
+ * surrounding double quotes.
+ *
+ * PART 2:  Your task is to find the total number of characters to represent the
+ *          newly encoded strings minus the number of characters of code in each
+ *          original string literal.
  */
 
-fn main() {}
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+/// Open the data file and iterate over it line by line
+pub fn parse_data(file_path: &str) -> (usize, usize) {
+    let file = File::open(file_path).unwrap();
+    let mut fp = BufReader::new(file);
+
+    let mut str_cnt = 0;
+    let mut raw_str_cnt = 0;
+    let mut enc_str_cnt = 0;
+
+    let mut buffer = String::new();
+
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        /* Remove the end line char */
+        buffer.truncate(buffer.len() - 1);
+
+        /* Count the length of various string forms. */
+        str_cnt += str_len(&buffer);
+        raw_str_cnt += raw_str_len(&buffer);
+        enc_str_cnt += encoded_str_len(&buffer);
+
+        buffer.clear()
+    }
+
+    println!("{} {} {}", str_cnt, raw_str_cnt, enc_str_cnt);
+
+    return (raw_str_cnt - str_cnt, enc_str_cnt - raw_str_cnt);
+}
+
+/// Determine the length of the String
+pub fn str_len(value: &String) -> usize {
+    let num_esc_quotes = value.matches(r#"\""#).count();
+    let num_dbl_slash = value.matches(r#"\\"#).count();
+    let num_hex = value.matches(r#"\x"#).count() * 3;
+
+    return value.len() - 2 - num_esc_quotes - num_dbl_slash - num_hex;
+}
+
+/// Determine the raw String length
+pub fn raw_str_len(value: &String) -> usize {
+    return value.len();
+}
+
+pub fn encoded_str_len(value: &String) -> usize {
+    let raw_len = raw_str_len(value) + 2;
+    let new_quotes = value.matches(r#"""#).count();
+    let new_back = value.matches(r#"\"#).count();
+
+    return raw_len + new_quotes + new_back;
+}
+
+fn main() {
+    let res = parse_data("./data/input.txt");
+    println!("Part 1 = {}\nPart 2 = {}", res.0, res.1);
+}
