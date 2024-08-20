@@ -28,4 +28,4 @@ Cargo.lock
 *.pdb
 
 # Kate temp files
-.kate-swp
+*.kate-swp
