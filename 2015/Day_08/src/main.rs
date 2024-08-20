@@ -34,6 +34,7 @@
  *          original string literal.
  */
 
+use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -67,11 +68,12 @@ pub fn parse_data(file_path: &str) -> (usize, usize) {
 
 /// Determine the length of the String
 pub fn str_len(value: &String) -> usize {
-    let num_esc_quotes = value.matches(r#"\""#).count();
-    let num_dbl_slash = value.matches(r#"\\"#).count();
-    let num_hex = value.matches(r#"\x"#).count() * 3;
+    let hex_re = Regex::new(r#"\\x[0-9,a-f][0-9,a-f]"#).unwrap();
+    let test = value.replace(r#"\""#, "B");
+    let test = test.replace(r#"\\"#, "C");
+    let test = hex_re.replace_all(&test, "A");
 
-    return value.len() - 2 - num_esc_quotes - num_dbl_slash - num_hex;
+    return test.len() - 2;
 }
 
 /// Determine the raw String length
