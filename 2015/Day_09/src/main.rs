@@ -11,6 +11,7 @@
  * PART 1:  What is the distance of the shortest route?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
@@ -53,6 +54,42 @@ pub fn read_dist_data(file_path: &str) -> HashMap<String, HashMap<String, usize>
     return data;
 }
 
+/// Iterate over every possible route in the map and find the shortest length
+pub fn find_shortest_path(data: &HashMap<String, HashMap<String, usize>>) -> usize {
+    let all_locs: Vec<&String> = data.keys().collect();
+    let mut all_dist: Vec<usize> = Vec::new();
+
+    /* Iterate over every possible ordering of the locations. */
+    'outer: for perm in all_locs.iter().permutations(all_locs.len()) {
+        let mut dist = 0;
+
+        /* Iterate over each location in the possible path. */
+        for idx in 1..perm.len() {
+            /* Check that the current and previous location are actually linked */
+            if idx < perm.len() - 1
+                && !data
+                    .get(&perm[idx] as &String)
+                    .unwrap()
+                    .contains_key(&perm[idx - 1] as &String)
+            {
+                continue 'outer;
+            }
+
+            /* Extract the value from the nested dictionary. */
+            dist += data
+                .get(&perm[idx] as &String)
+                .unwrap()
+                .get(&perm[idx - 1] as &String)
+                .unwrap()
+        }
+
+        all_dist.push(dist)
+    }
+
+    return *all_dist.iter().min().unwrap();
+}
+
 fn main() {
-    println!("{:?}", read_dist_data("./data/example_01.txt"));
+    let route_data = read_dist_data("./data/input.txt");
+    println!("Part 1 = {}", find_shortest_path(&route_data));
 }
