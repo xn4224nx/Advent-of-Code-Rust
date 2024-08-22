@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_09;
-use day_09::{find_shortest_path, read_dist_data};
+use day_09::{find_minmax_path, read_dist_data};
 use std::collections::HashMap;
 
 #[test]
@@ -29,5 +29,11 @@ fn read_example_01() {
 #[test]
 fn shortest_route_expl_01() {
     let data = read_dist_data("./data/example_01.txt");
-    assert_eq!(find_shortest_path(&data), 605);
+    assert_eq!(find_minmax_path(&data).0, 605);
+}
+
+#[test]
+fn longest_route_expl_01() {
+    let data = read_dist_data("./data/example_01.txt");
+    assert_eq!(find_minmax_path(&data).1, 982);
 }

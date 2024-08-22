@@ -9,6 +9,14 @@
  * exactly once. What is the shortest distance he can travel to achieve this?
  *
  * PART 1:  What is the distance of the shortest route?
+ *
+ * The next year, just to show off, Santa decides to take the route with the
+ * longest distance instead.
+ *
+ * He can still start and end at any two (different) locations he wants, and he
+ * still must visit each location exactly once.
+ *
+ * PART 2:  What is the distance of the longest route?
  */
 
 use itertools::Itertools;
@@ -54,10 +62,12 @@ pub fn read_dist_data(file_path: &str) -> HashMap<String, HashMap<String, usize>
     return data;
 }
 
-/// Iterate over every possible route in the map and find the shortest length
-pub fn find_shortest_path(data: &HashMap<String, HashMap<String, usize>>) -> usize {
+/// Iterate over every possible route in the map and find the shortest and
+/// longest route lengths.
+pub fn find_minmax_path(data: &HashMap<String, HashMap<String, usize>>) -> (usize, usize) {
     let all_locs: Vec<&String> = data.keys().collect();
-    let mut all_dist: Vec<usize> = Vec::new();
+    let mut min_route = usize::MAX;
+    let mut max_route = 0;
 
     /* Iterate over every possible ordering of the locations. */
     'outer: for perm in all_locs.iter().permutations(all_locs.len()) {
@@ -83,13 +93,21 @@ pub fn find_shortest_path(data: &HashMap<String, HashMap<String, usize>>) -> usi
                 .unwrap()
         }
 
-        all_dist.push(dist)
+        /* Check for a new min or mix */
+        if dist > max_route {
+            max_route = dist;
+        }
+        if dist < min_route {
+            min_route = dist;
+        }
     }
 
-    return *all_dist.iter().min().unwrap();
+    return (min_route, max_route);
 }
 
 fn main() {
     let route_data = read_dist_data("./data/input.txt");
-    println!("Part 1 = {}", find_shortest_path(&route_data));
+    let (r_min, r_max) = find_minmax_path(&route_data);
+
+    println!("Part 1 = {}\nPart 2 = {}", r_min, r_max);
 }
