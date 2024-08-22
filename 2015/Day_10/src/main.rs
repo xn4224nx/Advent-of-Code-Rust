@@ -13,6 +13,9 @@
  *
  * PART 1:  Starting with the digits in your puzzle input, apply this process 40
  *          times. What is the length of the result?
+ *
+ * PART 2:  Now, starting again with the digits in your puzzle input, apply this
+ *          process 50 times. What is the length of the new result?
  */
 
 /// Create the new version of the input based on the look & say game
@@ -41,9 +44,13 @@ pub fn look_and_say(input: String) -> String {
 fn main() {
     let mut in_seq = String::from("1113122113");
 
-    for _ in 0..40 {
+    for idx in 0..50 {
         in_seq = look_and_say(in_seq);
+
+        if idx == 39 {
+            println!("Part 1 = {}", in_seq.len());
+        }
     }
 
-    println!("Part 1 = {}", in_seq.len());
+    println!("Part 2 = {}", in_seq.len());
 }
