@@ -31,15 +31,61 @@
  *          next password be?
  */
 
+use std::collections::HashSet;
+
 /// Increment a string although it is a number.
-pub fn increm_str(pass: &mut Vec<u8>) {}
+pub fn increm_str(pass: &mut Vec<u8>) {
+    for idx in (0..pass.len()).rev() {
+        /* If the letter is a 'z' change it to a 'a' */
+        if pass[idx] == 122 {
+            pass[idx] = 97;
+
+        /* Otherwise increment the next letter on and then stop. */
+        } else {
+            pass[idx] += 1;
+            break;
+        }
+    }
+}
 
 /// Determine if a password passes all the rules.
 pub fn is_pass_valid(pass: &Vec<u8>) -> bool {
-    true
+    let mut inc_triple = false;
+    let mut pairs = HashSet::new();
+
+    for idx in 0..pass.len() {
+        /* Password may not contain i, o or l. */
+        if pass[idx] == 105 || pass[idx] == 111 || pass[idx] == 108 {
+            return false;
+        };
+
+        /* Passwords must include an increasing range of three letters. */
+        if idx > 1 && pass[idx - 2] + 2 == pass[idx] && pass[idx - 1] + 1 == pass[idx] {
+            inc_triple = true;
+        };
+
+        /* Passwords must contain at least two different, pairs of letters. */
+        if idx > 1 && pass[idx] == pass[idx - 1] {
+            pairs.insert(pass[idx]);
+        };
+    }
+
+    return inc_triple && pairs.len() > 1;
 }
 
 /// Change the given password to the next valid password
-pub fn next_valid_pass(pass: &mut Vec<u8>) {}
+pub fn next_valid_pass(pass: &mut Vec<u8>) {
+    loop {
+        increm_str(pass);
 
-fn main() {}
+        if is_pass_valid(pass) {
+            return;
+        }
+    }
+}
+
+fn main() {
+    let mut pass_0 = "hxbxwxba".as_bytes().to_vec();
+    next_valid_pass(&mut pass_0);
+    println!("Part 1 = {}", std::str::from_utf8(&pass_0).unwrap());
+}
