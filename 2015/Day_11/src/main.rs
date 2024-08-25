@@ -32,14 +32,14 @@
  */
 
 /// Increment a string although it is a number.
-pub fn increm_str(pass: &mut String) {}
+pub fn increm_str(pass: &mut Vec<u8>) {}
 
 /// Determine if a password passes all the rules.
-pub fn is_pass_valid(pass: &String) -> bool {
+pub fn is_pass_valid(pass: &Vec<u8>) -> bool {
     true
 }
 
 /// Change the given password to the next valid password
-pub fn next_valid_pass(pass: &mut String) {}
+pub fn next_valid_pass(pass: &mut Vec<u8>) {}
 
 fn main() {}
