@@ -29,6 +29,8 @@
  *
  * PART 1:  Given Santa's current password (your puzzle input), what should his
  *          next password be?
+ *
+ * PART 2: Santa's password expired again. What's the next one?
  */
 
 use std::collections::HashSet;
@@ -88,4 +90,6 @@ fn main() {
     let mut pass_0 = "hxbxwxba".as_bytes().to_vec();
     next_valid_pass(&mut pass_0);
     println!("Part 1 = {}", std::str::from_utf8(&pass_0).unwrap());
+    next_valid_pass(&mut pass_0);
+    println!("Part 2 = {}", std::str::from_utf8(&pass_0).unwrap());
 }
