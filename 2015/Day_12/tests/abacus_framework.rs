@@ -8,27 +8,33 @@ use serde_json::json;
 
 #[test]
 fn read_account_data_ex_01() {
-    assert_eq!(read_account_data("./data/example_01.txt"), json!([1, 2, 3]));
+    assert_eq!(
+        read_account_data("./data/example_01.txt"),
+        String::from("[1,2,3]")
+    );
 }
 
 #[test]
 fn read_account_data_ex_02() {
     assert_eq!(
         read_account_data("./data/example_02.txt"),
-        json!({"a":2,"b":4})
+        String::from("{\"a\":2,\"b\":4}")
     );
 }
 
 #[test]
 fn read_account_data_ex_03() {
-    assert_eq!(read_account_data("./data/example_03.txt"), json!([[[3]]]));
+    assert_eq!(
+        read_account_data("./data/example_03.txt"),
+        String::from("[[[3]]]")
+    );
 }
 
 #[test]
 fn read_account_data_ex_04() {
     assert_eq!(
         read_account_data("./data/example_04.txt"),
-        json!({"a":{"b":4},"c":-1})
+        String::from("{\"a\":{\"b\":4},\"c\":-1}")
     );
 }
 
@@ -36,7 +42,7 @@ fn read_account_data_ex_04() {
 fn read_account_data_ex_05() {
     assert_eq!(
         read_account_data("./data/example_05.txt"),
-        json!({"a":[-1,1]})
+        String::from("{\"a\":[-1,1]}")
     );
 }
 
@@ -44,18 +50,24 @@ fn read_account_data_ex_05() {
 fn read_account_data_ex_06() {
     assert_eq!(
         read_account_data("./data/example_06.txt"),
-        json!([-1,{"a":1}])
+        String::from("[-1,{\"a\":1}]")
     );
 }
 
 #[test]
 fn read_account_data_ex_07() {
-    assert_eq!(read_account_data("./data/example_07.txt"), json!([]));
+    assert_eq!(
+        read_account_data("./data/example_07.txt"),
+        String::from("[]")
+    );
 }
 
 #[test]
 fn read_account_data_ex_08() {
-    assert_eq!(read_account_data("./data/example_08.txt"), json!({}));
+    assert_eq!(
+        read_account_data("./data/example_08.txt"),
+        String::from("{}")
+    );
 }
 
 #[test]

@@ -15,18 +15,28 @@
  * PART 1:  What is the sum of all numbers in the document?
  */
 
-use serde_json::{json, Value, from_str};
+use regex::Regex;
 use std::fs;
 
-pub fn read_account_data(filepath: &str) -> serde_json::Value {
-    let file_conts: String = fs::read_to_string(filepath).unwrap();
-    let mem_json = serde_json::from_str(&file_conts).unwrap();
-
-    return mem_json;
+/// Read a text file and convert it to a single string value.
+pub fn read_account_data(filepath: &str) -> String {
+    return fs::read_to_string(filepath).unwrap().trim().to_string();
 }
 
-pub fn sum_all_nums(acc_data: &serde_json::Value) -> i32 {
-    0
+/// Find all numbers in the string and sum them together.
+pub fn sum_all_nums(acc_data: &String) -> i32 {
+    let num_re = Regex::new(r"-?\d+").unwrap();
+    let mut sum = 0;
+
+    for raw_num in num_re.find_iter(acc_data) {
+        sum += raw_num.as_str().parse::<i32>().unwrap();
+    }
+
+    return sum;
 }
 
-fn main() {}
+fn main() {
+    let acc_data = read_account_data("./data/input.txt");
+
+    println!("Part 1 = {}", sum_all_nums(&acc_data));
+}
