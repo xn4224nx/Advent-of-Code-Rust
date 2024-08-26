@@ -15,10 +15,14 @@
  * PART 1:  What is the sum of all numbers in the document?
  */
 
-use serde_json::{json, Value};
+use serde_json::{json, Value, from_str};
+use std::fs;
 
 pub fn read_account_data(filepath: &str) -> serde_json::Value {
-    return json!({});
+    let file_conts: String = fs::read_to_string(filepath).unwrap();
+    let mem_json = serde_json::from_str(&file_conts).unwrap();
+
+    return mem_json;
 }
 
 pub fn sum_all_nums(acc_data: &serde_json::Value) -> i32 {
