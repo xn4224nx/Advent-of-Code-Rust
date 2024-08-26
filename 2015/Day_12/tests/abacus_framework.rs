@@ -71,6 +71,30 @@ fn read_account_data_ex_08() {
 }
 
 #[test]
+fn read_account_data_ex_09() {
+    assert_eq!(
+        read_account_data("./data/example_09.txt"),
+        String::from("[1,{\"c\":\"red\",\"b\":2},3]")
+    );
+}
+
+#[test]
+fn read_account_data_ex_10() {
+    assert_eq!(
+        read_account_data("./data/example_10.txt"),
+        String::from("{\"d\":\"red\",\"e\":[1,2,3,4],\"f\":5")
+    );
+}
+
+#[test]
+fn read_account_data_ex_11() {
+    assert_eq!(
+        read_account_data("./data/example_11.txt"),
+        String::from("[1,\"red\",5]")
+    );
+}
+
+#[test]
 fn sum_all_nums_ex_01() {
     assert_eq!(sum_all_nums(&read_account_data("./data/example_01.txt")), 6)
 }

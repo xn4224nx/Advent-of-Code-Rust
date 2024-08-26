@@ -13,6 +13,15 @@
  * You will not encounter any strings containing numbers.
  *
  * PART 1:  What is the sum of all numbers in the document?
+ *
+ * Uh oh - the Accounting-Elves have realized that they double-counted
+ * everything red.
+ *
+ * Ignore any object (and all of its children) which has any property with the
+ * value "red". Do this only for objects ({...}), not arrays ([...]).
+ *
+ * PART 2:  What is the sum of all numbers in the document excluding red objects
+ *          and the children of red objects?
  */
 
 use regex::Regex;
@@ -33,6 +42,11 @@ pub fn sum_all_nums(acc_data: &String) -> i32 {
     }
 
     return sum;
+}
+
+/// Sum the account numbers that are not associated with red.
+pub fn sum_non_red(acc_data: &String) -> i32 {
+    0
 }
 
 fn main() {
