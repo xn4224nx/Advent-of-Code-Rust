@@ -17,6 +17,7 @@
  */
 
 use regex::Regex;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -35,10 +36,17 @@ pub struct Relationship {
     pub end: String,
 }
 
-pub fn read_guest_prefs(data_file: &str) -> Vec<Relationship> {
+/// Read the relationship file and return a vector of each person and a HashMap
+/// of the relationships to one another.
+pub fn read_guest_prefs(data_file: &str) -> (Vec<String>, HashMap<(String, String), Relationship>) {
+    let mut guests = HashSet::new();
+    let mut prefs = HashMap::new();
+
+    /* Open the file. */
     let file = File::open(data_file).unwrap();
     let mut fp = BufReader::new(file);
 
+    /* Each line strictly conforms to a set structure. */
     let re_rel = Regex::new(
         format!(
             r"{}{}{}",
@@ -50,39 +58,58 @@ pub fn read_guest_prefs(data_file: &str) -> Vec<Relationship> {
     )
     .unwrap();
 
+    /* Each line to put in a buffer that is wiped after the line is processed. */
     let mut buffer = String::new();
-    let mut prefs = Vec::new();
 
+    /* Try and parse each line of the file. */
     while fp.read_line(&mut buffer).unwrap() > 0 {
         let caps = re_rel.captures(&buffer).unwrap();
 
+        /* Match the feeling to an enum variant. */
         let feel_parsed = match &caps[2] {
             "gain" => FeelingChange::Gain,
             "lose" => FeelingChange::Lose,
             _ => FeelingChange::Neutral,
         };
 
-        prefs.push(Relationship {
-            start: caps[1].to_string(),
-            feel: feel_parsed,
-            mag: caps[3].parse::<u32>().unwrap(),
-            end: caps[4].to_string(),
-        });
+        let guest_1 = caps[1].to_string();
+        let guest_2 = caps[4].to_string();
+
+        /* Save how the guests feel about one another. */
+        prefs.insert(
+            (guest_1.clone(), guest_2.clone()),
+            Relationship {
+                start: guest_1.clone(),
+                feel: feel_parsed,
+                mag: caps[3].parse::<u32>().unwrap(),
+                end: guest_2.clone(),
+            },
+        );
+
+        /* Save a copy of the unique guests at the party. */
+        guests.insert(guest_1);
+        guests.insert(guest_2);
 
         buffer.clear();
     }
 
-    return prefs;
+    return (Vec::from_iter(guests), prefs);
 }
 
-pub fn score_seating_arrange(guest_prefs: &Vec<Relationship>, guest_order: &Vec<String>) -> u32 {
+pub fn score_seating_arrange(
+    guest_order: &Vec<String>,
+    guest_prefs: &HashMap<(String, String), Relationship>,
+) -> u32 {
     0
 }
 
-pub fn find_minimum_change(guest_prefs: &Vec<Relationship>, guest_order: &Vec<String>) -> u32 {
+pub fn find_minimum_change(
+    guest_order: &Vec<String>,
+    guest_prefs: &HashMap<(String, String), Relationship>,
+) -> u32 {
     0
 }
 
 fn main() {
-    let rels = read_guest_prefs("./data/input.txt");
+    let (guests, rels) = read_guest_prefs("./data/input.txt");
 }
