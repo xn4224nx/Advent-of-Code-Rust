@@ -58,14 +58,39 @@ pub fn read_reindeer_data(data_file: &str) -> Vec<Reindeer> {
 
 /// Determine the distance traveled at each interval for a racing
 /// Reindeer and return a vector of those distances.
-pub fn dist_travelled(contestant: &Reindeer) -> Vec<u32> {
-    Vec::new()
+pub fn dist_travelled(rein: &Reindeer, race_time: u32) -> Vec<u32> {
+    let mut dists: Vec<u32> = Vec::new();
+
+    for sec_idx in 0..=race_time {
+        let comp_cycles = sec_idx / (rein.run_time + rein.rest_time);
+        let cycle_dist = comp_cycles * rein.speed * rein.run_time;
+        let rem_time = sec_idx - comp_cycles * (rein.run_time + rein.rest_time);
+
+        /* Determine if the Reindeer is currently resting. */
+        let rem_dist = if rem_time > rein.run_time {
+            rein.run_time * rein.speed
+        } else {
+            rem_time * rein.speed
+        };
+
+        dists.push(cycle_dist + rem_dist)
+    }
+    return dists;
 }
 
 /// Work out which of the Reindeer will win the race by travelling the
 /// furthest distance in the given time. Return the winning distance.
 pub fn winning_dist(competitors: &Vec<Reindeer>, race_time: u32) -> u32 {
-    0
+    let mut max_dist = 0;
+
+    for rein in competitors.iter() {
+        let com_dist = dist_travelled(&rein, race_time)[race_time as usize];
+
+        if com_dist > max_dist {
+            max_dist = com_dist;
+        }
+    }
+    return max_dist;
 }
 
 fn main() {}

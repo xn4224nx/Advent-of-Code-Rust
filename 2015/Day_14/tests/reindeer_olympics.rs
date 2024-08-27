@@ -26,11 +26,14 @@ fn read_reindeer_data_ex_01() {
 #[test]
 fn dist_travelled_comet() {
     assert_eq!(
-        *dist_travelled(&Reindeer {
-            speed: 14,
-            run_time: 10,
-            rest_time: 127
-        })
+        *dist_travelled(
+            &Reindeer {
+                speed: 14,
+                run_time: 10,
+                rest_time: 127
+            },
+            1000
+        )
         .last()
         .unwrap(),
         1120
@@ -40,11 +43,14 @@ fn dist_travelled_comet() {
 #[test]
 fn dist_travelled_dancer() {
     assert_eq!(
-        *dist_travelled(&Reindeer {
-            speed: 16,
-            run_time: 11,
-            rest_time: 162
-        })
+        *dist_travelled(
+            &Reindeer {
+                speed: 16,
+                run_time: 11,
+                rest_time: 162
+            },
+            1000
+        )
         .last()
         .unwrap(),
         1056
