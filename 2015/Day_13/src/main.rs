@@ -29,7 +29,7 @@ enum FeelingChange {
 }
 
 #[derive(PartialEq, Debug)]
-struct Relationship {
+pub struct Relationship {
     start: usize,
     feel: FeelingChange,
     mag: i32,
@@ -121,6 +121,13 @@ pub fn score_seating_arrange(
             guest_order[idx + 1]
         };
 
+        /* Account for a person not having details. */
+        if !guest_prefs.contains_key(&(guest_1, guest_2))
+            || !guest_prefs.contains_key(&(guest_2, guest_1))
+        {
+            continue;
+        };
+
         /* Lookup the details of the relationships between the guests. */
         let rel_1_2 = guest_prefs.get(&(guest_1, guest_2)).unwrap();
         let rel_2_1 = guest_prefs.get(&(guest_2, guest_1)).unwrap();
@@ -138,22 +145,33 @@ pub fn score_seating_arrange(
     return score;
 }
 
-pub fn find_maximum_happy(guest_prefs: &HashMap<(usize, usize), Relationship>) -> i32 {
-    let mut max_rel = 0;
-    let num_guests = guest_prefs.keys().map(|x| x.0).max().unwrap() + 1;
+pub fn find_maximum_happy(
+    guest_prefs: &HashMap<(usize, usize), Relationship>,
+    add_my_seat: bool,
+) -> i32 {
+    let mut max_rel_score = 0;
+    let max_guest_in_hash = guest_prefs.keys().map(|x| x.0).max().unwrap();
+
+    /* Add an extra guest to the table */
+    let num_guests = if add_my_seat {
+        max_guest_in_hash + 2
+    } else {
+        max_guest_in_hash + 1
+    };
 
     for guest_perm in (0..num_guests).permutations(num_guests) {
         let perm_score = score_seating_arrange(&guest_perm, &guest_prefs);
 
-        if perm_score > max_rel {
-            max_rel = perm_score;
+        if perm_score > max_rel_score {
+            max_rel_score = perm_score;
         }
     }
 
-    return max_rel;
+    return max_rel_score;
 }
 
 fn main() {
     let guest_prefs = read_guest_prefs("./data/input.txt");
-    println!("Part 1 = {}", find_maximum_happy(&guest_prefs));
+    println!("Part 1 = {}", find_maximum_happy(&guest_prefs, false));
+    println!("Part 2 = {}", find_maximum_happy(&guest_prefs, true));
 }
