@@ -11,6 +11,18 @@
  * PART 1:  Given the descriptions of each reindeer (in your puzzle input),
  *          after exactly 2503 seconds, what distance has the winning reindeer
  *          traveled?
+ *
+ * Seeing how reindeer move in bursts, Santa decides he's not pleased with the
+ * old scoring system.
+ *
+ * Instead, at the end of each second, he awards one point to the reindeer
+ * currently in the lead. (If there are multiple reindeer tied for the lead,
+ * they each get one point.) He keeps the traditional 2503 second time limit, of
+ * course, as doing otherwise would be entirely ridiculous.
+ *
+ * PART 2:  Again given the descriptions of each reindeer (in your puzzle
+ *          input), after exactly 2503 seconds, how many points does the winning
+ *          reindeer have?
  */
 
 use regex::Regex;
@@ -56,26 +68,21 @@ pub fn read_reindeer_data(data_file: &str) -> Vec<Reindeer> {
     return data;
 }
 
-/// Determine the distance traveled at each interval for a racing
+/// Determine the distance traveled for an interval for a racing
 /// Reindeer and return a vector of those distances.
-pub fn dist_travelled(rein: &Reindeer, race_time: u32) -> Vec<u32> {
-    let mut dists: Vec<u32> = Vec::new();
+pub fn dist_travelled(rein: &Reindeer, curr_race_time: u32) -> u32 {
+    let comp_cycles = curr_race_time / (rein.run_time + rein.rest_time);
+    let cycle_dist = comp_cycles * rein.speed * rein.run_time;
+    let rem_time = curr_race_time - comp_cycles * (rein.run_time + rein.rest_time);
 
-    for sec_idx in 0..=race_time {
-        let comp_cycles = sec_idx / (rein.run_time + rein.rest_time);
-        let cycle_dist = comp_cycles * rein.speed * rein.run_time;
-        let rem_time = sec_idx - comp_cycles * (rein.run_time + rein.rest_time);
+    /* Determine if the Reindeer is currently resting. */
+    let rem_dist = if rem_time > rein.run_time {
+        rein.run_time * rein.speed
+    } else {
+        rem_time * rein.speed
+    };
 
-        /* Determine if the Reindeer is currently resting. */
-        let rem_dist = if rem_time > rein.run_time {
-            rein.run_time * rein.speed
-        } else {
-            rem_time * rein.speed
-        };
-
-        dists.push(cycle_dist + rem_dist)
-    }
-    return dists;
+    return cycle_dist + rem_dist;
 }
 
 /// Work out which of the Reindeer will win the race by travelling the
@@ -84,7 +91,7 @@ pub fn winning_dist(competitors: &Vec<Reindeer>, race_time: u32) -> u32 {
     let mut max_dist = 0;
 
     for rein in competitors.iter() {
-        let com_dist = dist_travelled(&rein, race_time)[race_time as usize];
+        let com_dist = dist_travelled(&rein, race_time);
 
         if com_dist > max_dist {
             max_dist = com_dist;
@@ -93,7 +100,30 @@ pub fn winning_dist(competitors: &Vec<Reindeer>, race_time: u32) -> u32 {
     return max_dist;
 }
 
+/// Work out which of the Reindeer will win the race by accruing the highest
+/// score. Return the winning score.
+pub fn winning_score(competitors: &Vec<Reindeer>, race_time: u32) -> u32 {
+    let mut scores = vec![0; competitors.len()];
+
+    for sec_idx in 1..=race_time {
+        let curr_dists: Vec<u32> = competitors
+            .iter()
+            .map(|x| dist_travelled(&x, sec_idx))
+            .collect();
+        let curr_max: u32 = *curr_dists.iter().max().unwrap();
+
+        /* If a Reindeer is at the maximum distance it gets a point. */
+        for rein_idx in 0..curr_dists.len() {
+            if curr_dists[rein_idx] == curr_max {
+                scores[rein_idx] += 1;
+            }
+        }
+    }
+    return *scores.iter().max().unwrap();
+}
+
 fn main() {
     let data = read_reindeer_data("./data/input.txt");
     println!("Part 1 = {}", winning_dist(&data, 2503));
+    println!("Part 2 = {}", winning_score(&data, 2503));
 }
