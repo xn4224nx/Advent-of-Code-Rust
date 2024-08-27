@@ -13,6 +13,10 @@
  *          traveled?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(Debug, PartialEq)]
 pub struct Reindeer {
     pub speed: u32,
@@ -22,7 +26,34 @@ pub struct Reindeer {
 
 /// Read a Reindeer data file and return a vector of the key characteristics.
 pub fn read_reindeer_data(data_file: &str) -> Vec<Reindeer> {
-    Vec::new()
+    let mut data = Vec::new();
+
+    /* Open the file. */
+    let file = File::open(data_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Extract the three +VE integers in the line. */
+    let re_uint = Regex::new(r"\d+").unwrap();
+
+    /* Read the file line by line into a buffer. */
+    let mut buffer = String::new();
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        let nums: Vec<u32> = re_uint
+            .find_iter(&buffer)
+            .map(|x| x.as_str().parse::<u32>().unwrap())
+            .collect();
+
+        /* Insert the extracted integers into a structure and then vector. */
+        data.push(Reindeer {
+            speed: nums[0],
+            run_time: nums[1],
+            rest_time: nums[2],
+        });
+
+        buffer.clear();
+    }
+
+    return data;
 }
 
 /// Determine the distance traveled at each interval for a racing
