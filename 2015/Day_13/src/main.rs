@@ -16,6 +16,10 @@
  *          arrangement of the actual guest list?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(PartialEq, Debug)]
 pub enum FeelingChange {
     Gain,
@@ -32,7 +36,43 @@ pub struct Relationship {
 }
 
 pub fn read_guest_prefs(data_file: &str) -> Vec<Relationship> {
-    Vec::new()
+    let file = File::open(data_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    let re_rel = Regex::new(
+        format!(
+            r"{}{}{}",
+            r"([a-zA-Z]+) would ([a-zA-Z]+) ",
+            r"(\d+) happiness units by ",
+            r"sitting next to ([a-zA-Z]+)"
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    let mut buffer = String::new();
+    let mut prefs = Vec::new();
+
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        let caps = re_rel.captures(&buffer).unwrap();
+
+        let feel_parsed = match &caps[2] {
+            "gain" => FeelingChange::Gain,
+            "lose" => FeelingChange::Lose,
+            _ => FeelingChange::Neutral,
+        };
+
+        prefs.push(Relationship {
+            start: caps[1].to_string(),
+            feel: feel_parsed,
+            mag: caps[3].parse::<u32>().unwrap(),
+            end: caps[4].to_string(),
+        });
+
+        buffer.clear();
+    }
+
+    return prefs;
 }
 
 pub fn score_seating_arrange(guest_prefs: &Vec<Relationship>, guest_order: &Vec<String>) -> u32 {
@@ -43,4 +83,6 @@ pub fn find_minimum_change(guest_prefs: &Vec<Relationship>, guest_order: &Vec<St
     0
 }
 
-fn main() {}
+fn main() {
+    let rels = read_guest_prefs("./data/input.txt");
+}
