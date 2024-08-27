@@ -93,4 +93,7 @@ pub fn winning_dist(competitors: &Vec<Reindeer>, race_time: u32) -> u32 {
     return max_dist;
 }
 
-fn main() {}
+fn main() {
+    let data = read_reindeer_data("./data/input.txt");
+    println!("Part 1 = {}", winning_dist(&data, 2503));
+}
