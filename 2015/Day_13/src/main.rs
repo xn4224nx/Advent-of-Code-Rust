@@ -16,30 +16,31 @@
  *          arrangement of the actual guest list?
  */
 
+use itertools::Itertools;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 #[derive(PartialEq, Debug)]
-pub enum FeelingChange {
+enum FeelingChange {
     Gain,
     Lose,
-    Neutral,
 }
 
 #[derive(PartialEq, Debug)]
-pub struct Relationship {
-    pub start: String,
-    pub feel: FeelingChange,
-    pub mag: u32,
-    pub end: String,
+struct Relationship {
+    start: usize,
+    feel: FeelingChange,
+    mag: i32,
+    end: usize,
 }
 
 /// Read the relationship file and return a vector of each person and a HashMap
 /// of the relationships to one another.
-pub fn read_guest_prefs(data_file: &str) -> (Vec<String>, HashMap<(String, String), Relationship>) {
-    let mut guests = HashSet::new();
+pub fn read_guest_prefs(data_file: &str) -> HashMap<(usize, usize), Relationship> {
+    let mut guest_lookup = HashMap::new();
+    let mut guest_idx: usize = 0;
     let mut prefs = HashMap::new();
 
     /* Open the file. */
@@ -69,47 +70,90 @@ pub fn read_guest_prefs(data_file: &str) -> (Vec<String>, HashMap<(String, Strin
         let feel_parsed = match &caps[2] {
             "gain" => FeelingChange::Gain,
             "lose" => FeelingChange::Lose,
-            _ => FeelingChange::Neutral,
+            _ => panic!("Unknown feeling!"),
         };
 
-        let guest_1 = caps[1].to_string();
-        let guest_2 = caps[4].to_string();
+        /* Determine the actual name of the guests. */
+        let guest_nm_1 = &caps[1].to_string();
+        let guest_nm_2 = &caps[4].to_string();
+
+        /* Replace the guest name with a number derived from guest_idx */
+        if !guest_lookup.contains_key(guest_nm_1) {
+            guest_lookup.insert(guest_nm_1.clone(), guest_idx);
+            guest_idx += 1
+        }
+        if !guest_lookup.contains_key(guest_nm_2) {
+            guest_lookup.insert(guest_nm_2.clone(), guest_idx);
+            guest_idx += 1
+        }
+
+        /* Extract the numerical guest indicators from the HashMap. */
+        let g1_idx = guest_lookup.get(guest_nm_1).unwrap();
+        let g2_idx = guest_lookup.get(guest_nm_2).unwrap();
 
         /* Save how the guests feel about one another. */
         prefs.insert(
-            (guest_1.clone(), guest_2.clone()),
+            (*g1_idx, *g2_idx),
             Relationship {
-                start: guest_1.clone(),
+                start: *g1_idx,
                 feel: feel_parsed,
-                mag: caps[3].parse::<u32>().unwrap(),
-                end: guest_2.clone(),
+                mag: caps[3].parse::<i32>().unwrap(),
+                end: *g2_idx,
             },
         );
-
-        /* Save a copy of the unique guests at the party. */
-        guests.insert(guest_1);
-        guests.insert(guest_2);
-
         buffer.clear();
     }
-
-    return (Vec::from_iter(guests), prefs);
+    return prefs;
 }
 
 pub fn score_seating_arrange(
-    guest_order: &Vec<String>,
-    guest_prefs: &HashMap<(String, String), Relationship>,
-) -> u32 {
-    0
+    guest_order: &Vec<usize>,
+    guest_prefs: &HashMap<(usize, usize), Relationship>,
+) -> i32 {
+    let mut score = 0;
+    let num_guests = guest_order.len();
+
+    for idx in 0..num_guests {
+        let guest_1 = guest_order[idx];
+        let guest_2 = if idx == num_guests - 1 {
+            guest_order[0]
+        } else {
+            guest_order[idx + 1]
+        };
+
+        /* Lookup the details of the relationships between the guests. */
+        let rel_1_2 = guest_prefs.get(&(guest_1, guest_2)).unwrap();
+        let rel_2_1 = guest_prefs.get(&(guest_2, guest_1)).unwrap();
+
+        /* Change the score based on the relationships. */
+        match rel_2_1.feel {
+            FeelingChange::Gain => score += rel_2_1.mag,
+            FeelingChange::Lose => score -= rel_2_1.mag,
+        };
+        match rel_1_2.feel {
+            FeelingChange::Gain => score += rel_1_2.mag,
+            FeelingChange::Lose => score -= rel_1_2.mag,
+        };
+    }
+    return score;
 }
 
-pub fn find_minimum_change(
-    guest_order: &Vec<String>,
-    guest_prefs: &HashMap<(String, String), Relationship>,
-) -> u32 {
-    0
+pub fn find_maximum_happy(guest_prefs: &HashMap<(usize, usize), Relationship>) -> i32 {
+    let mut max_rel = 0;
+    let num_guests = guest_prefs.keys().map(|x| x.0).max().unwrap() + 1;
+
+    for guest_perm in (0..num_guests).permutations(num_guests) {
+        let perm_score = score_seating_arrange(&guest_perm, &guest_prefs);
+
+        if perm_score > max_rel {
+            max_rel = perm_score;
+        }
+    }
+
+    return max_rel;
 }
 
 fn main() {
-    let (guests, rels) = read_guest_prefs("./data/input.txt");
+    let guest_prefs = read_guest_prefs("./data/input.txt");
+    println!("Part 1 = {}", find_maximum_happy(&guest_prefs));
 }
