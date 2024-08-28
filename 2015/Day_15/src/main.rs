@@ -31,4 +31,29 @@
  *          the total score of the highest-scoring cookie you can make?
  */
 
+#[derive(PartialEq, Debug)]
+pub struct Cookie {
+    pub capacity: i32,
+    pub durability: i32,
+    pub flavor: i32,
+    pub texture: i32,
+    pub calories: i32,
+}
+
+/// Read the ingredients file and return it in a structured format
+pub fn read_cookie_data(file_path: &str) -> Vec<Cookie> {
+    Vec::new()
+}
+
+/// Score a particular combination of ingredient ammounts and return the score.
+pub fn score_cookie_comb(ingr_data: &Vec<Cookie>, weights: &Vec<i32>) -> i32 {
+    0
+}
+
+/// Find the combination of ingredients that give the highest score
+/// and return that score.
+pub fn highest_cookie_score(ingr_data: &Vec<Cookie>, total_ingr: i32) -> i32 {
+    0
+}
+
 fn main() {}
