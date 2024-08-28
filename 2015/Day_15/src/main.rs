@@ -31,6 +31,7 @@
  *          the total score of the highest-scoring cookie you can make?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::cmp::max;
 use std::fs::File;
@@ -104,8 +105,23 @@ pub fn score_cookie_comb(data: &Vec<Cookie>, weights: &Vec<i32>) -> i32 {
 
 /// Find the combination of ingredients that give the highest score
 /// and return that score.
-pub fn highest_cookie_score(ingr_data: &Vec<Cookie>, total_ingr: i32) -> i32 {
-    0
+pub fn highest_cookie_score(ingr_data: &Vec<Cookie>, total_weight: i32) -> i32 {
+    let mut high_score = 0;
+
+    /* select a combination (with replacement) of the different weights .*/
+    for weight_comb in (0..=total_weight).combinations_with_replacement(ingr_data.len()) {
+        /* Ensure the weight combination can actually be used. */
+        if weight_comb.iter().sum::<i32>() != total_weight {
+            continue;
+        }
+
+        let curr_score = score_cookie_comb(&ingr_data, &weight_comb);
+
+        if curr_score > high_score {
+            high_score = curr_score;
+        }
+    }
+    return high_score;
 }
 
 fn main() {}
