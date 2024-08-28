@@ -31,6 +31,11 @@
  *          the total score of the highest-scoring cookie you can make?
  */
 
+use regex::Regex;
+use std::cmp::max;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(PartialEq, Debug)]
 pub struct Cookie {
     pub capacity: i32,
@@ -42,12 +47,59 @@ pub struct Cookie {
 
 /// Read the ingredients file and return it in a structured format
 pub fn read_cookie_data(file_path: &str) -> Vec<Cookie> {
-    Vec::new()
+    let mut data = Vec::new();
+
+    /* Open the file. */
+    let file = File::open(file_path).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Extract all the integers in the line. */
+    let re_int = Regex::new(r"-?\d+").unwrap();
+
+    /* Read the file line by line into a buffer. */
+    let mut buffer = String::new();
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        let nums: Vec<i32> = re_int
+            .find_iter(&buffer)
+            .map(|x| x.as_str().parse::<i32>().unwrap())
+            .collect();
+
+        data.push(Cookie {
+            capacity: nums[0],
+            durability: nums[1],
+            flavor: nums[2],
+            texture: nums[3],
+            calories: nums[4],
+        });
+        buffer.clear();
+    }
+    return data;
 }
 
 /// Score a particular combination of ingredient ammounts and return the score.
-pub fn score_cookie_comb(ingr_data: &Vec<Cookie>, weights: &Vec<i32>) -> i32 {
-    0
+pub fn score_cookie_comb(data: &Vec<Cookie>, weights: &Vec<i32>) -> i32 {
+    let mut scores = vec![0; 4];
+
+    /* For each property and ingredient, sum the scores for each property. */
+    for s_idx in 0..scores.len() {
+        for d_idx in 0..data.len() {
+            match s_idx {
+                0 => scores[s_idx] += weights[d_idx] * data[d_idx].capacity,
+                1 => scores[s_idx] += weights[d_idx] * data[d_idx].durability,
+                2 => scores[s_idx] += weights[d_idx] * data[d_idx].flavor,
+                3 => scores[s_idx] += weights[d_idx] * data[d_idx].texture,
+                _ => panic!("Unknown score index."),
+            }
+        }
+    }
+
+    /* Determine the product of the combined ingredient scores. */
+    let mut final_scr = 1;
+    for scr in scores {
+        final_scr *= max(scr, 0);
+    }
+
+    return final_scr;
 }
 
 /// Find the combination of ingredients that give the highest score
