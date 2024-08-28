@@ -99,7 +99,6 @@ pub fn score_cookie_comb(data: &Vec<Cookie>, weights: &Vec<i32>) -> i32 {
     for scr in scores {
         final_scr *= max(scr, 0);
     }
-
     return final_scr;
 }
 
@@ -115,13 +114,20 @@ pub fn highest_cookie_score(ingr_data: &Vec<Cookie>, total_weight: i32) -> i32 {
             continue;
         }
 
-        let curr_score = score_cookie_comb(&ingr_data, &weight_comb);
+        /* Iterate over the possible combinations of the weight vector. */
+        for weight_perm in weight_comb.into_iter().permutations(ingr_data.len()) {
+            let curr_score = score_cookie_comb(&ingr_data, &weight_perm);
 
-        if curr_score > high_score {
-            high_score = curr_score;
+            /* Record if a new high score has been found. */
+            if curr_score > high_score {
+                high_score = curr_score;
+            }
         }
     }
     return high_score;
 }
 
-fn main() {}
+fn main() {
+    let data = read_cookie_data("./data/input.txt");
+    println!("Part 1 = {}", highest_cookie_score(&data, 100));
+}
