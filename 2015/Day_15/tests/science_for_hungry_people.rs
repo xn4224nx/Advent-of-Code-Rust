@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_15;
-use day_15::{highest_cookie_score, read_cookie_data, score_cookie_comb, Cookie};
+use day_15::{cookie_calories, highest_cookie_score, read_cookie_data, score_cookie_comb, Cookie};
 
 #[test]
 fn read_cookie_data_ex_01() {
@@ -36,5 +36,17 @@ fn score_cookie_comb_ex_01() {
 #[test]
 fn highest_cookie_score_ex_01() {
     let data = read_cookie_data("./data/example_01.txt");
-    assert_eq!(highest_cookie_score(&data, 100), 62842880);
+    assert_eq!(highest_cookie_score(&data, 100, false), 62842880);
+}
+
+#[test]
+fn highest_cookie_score_cal_cnt_ex_01() {
+    let data = read_cookie_data("./data/example_01.txt");
+    assert_eq!(highest_cookie_score(&data, 100, true), 57600000);
+}
+
+#[test]
+fn cookie_calories_ex_01() {
+    let data = read_cookie_data("./data/example_01.txt");
+    assert_eq!(cookie_calories(&data, &vec![40, 60]), 500)
 }
