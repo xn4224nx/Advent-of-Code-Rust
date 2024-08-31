@@ -113,4 +113,9 @@ pub fn find_true_aunt_index(
     panic!("Valid aunt not found!");
 }
 
-fn main() {}
+fn main() {
+    let true_aunt = &read_aunt_data("./data/p1_aunt.txt")[0];
+    let all_aunts = read_aunt_data("./data/input.txt");
+
+    println!("Part 1 = {}", find_true_aunt_index(true_aunt, &all_aunts));
+}
