@@ -52,6 +52,18 @@
  * missing from your list aren't zero - you simply don't remember the value.
  *
  * PART 1:  What is the number of the Sue that got you the gift?
+ *
+ * As you're about to send the thank you note, something in the MFCSAM's
+ * instructions catches your eye. Apparently, it has an outdated
+ * retroencabulator, and so the output from the machine isn't exact values -
+ * some of them indicate ranges.
+ *
+ * In particular, the cats and trees readings indicates that there are greater
+ * than that many (due to the unpredictable nuclear decay of cat dander and tree
+ * pollen), while the pomeranians and goldfish readings indicate that there are
+ * fewer than that many (due to the modial interaction of magnetoreluctance).
+ *
+ * PART 2:  What is the number of the real Aunt Sue?
  */
 
 use regex::Regex;
@@ -90,10 +102,28 @@ pub fn read_aunt_data(data_file: &str) -> Vec<HashMap<String, u32>> {
 pub fn could_aunt_match(
     true_aunt: &HashMap<String, u32>,
     posib_aunt: &HashMap<String, u32>,
+    retro: bool,
 ) -> bool {
     for (compound, value) in posib_aunt.iter() {
-        if true_aunt.contains_key(compound) && true_aunt[compound] != *value {
-            return false;
+        if true_aunt.contains_key(compound) {
+            /* If the complex rules are used. */
+            if retro {
+                if *compound == String::from("cats") || *compound == String::from("trees") {
+                    if true_aunt[compound] >= *value {
+                        return false;
+                    }
+                } else if *compound == String::from("pomeranians")
+                    || *compound == String::from("goldfish")
+                {
+                    if true_aunt[compound] <= *value {
+                        return false;
+                    }
+                } else if true_aunt[compound] != *value {
+                    return false;
+                }
+            } else if true_aunt[compound] != *value {
+                return false;
+            }
         }
     }
 
@@ -104,9 +134,10 @@ pub fn could_aunt_match(
 pub fn find_true_aunt_index(
     true_aunt: &HashMap<String, u32>,
     aunt_data: &Vec<HashMap<String, u32>>,
+    retro: bool,
 ) -> usize {
     for (idx, aunt) in aunt_data.iter().enumerate() {
-        if could_aunt_match(true_aunt, aunt) {
+        if could_aunt_match(true_aunt, aunt, retro) {
             return idx + 1;
         }
     }
@@ -117,5 +148,12 @@ fn main() {
     let true_aunt = &read_aunt_data("./data/p1_aunt.txt")[0];
     let all_aunts = read_aunt_data("./data/input.txt");
 
-    println!("Part 1 = {}", find_true_aunt_index(true_aunt, &all_aunts));
+    println!(
+        "Part 1 = {}",
+        find_true_aunt_index(true_aunt, &all_aunts, false)
+    );
+    println!(
+        "Part 2 = {}",
+        find_true_aunt_index(true_aunt, &all_aunts, true)
+    );
 }
