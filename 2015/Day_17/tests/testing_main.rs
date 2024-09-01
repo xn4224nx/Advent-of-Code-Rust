@@ -44,5 +44,10 @@ fn does_comb_fit_ex6() {
 
 #[test]
 fn count_cont_combs_ex1() {
-    assert_eq!(count_cont_combs(&vec![20, 15, 10, 5, 5], 25), 4);
+    assert_eq!(count_cont_combs(&vec![20, 15, 10, 5, 5], 25, false), 4);
+}
+
+#[test]
+fn count_cont_combs_ex2() {
+    assert_eq!(count_cont_combs(&vec![20, 15, 10, 5, 5], 25, true), 3);
 }
