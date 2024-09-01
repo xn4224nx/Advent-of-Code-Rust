@@ -22,7 +22,7 @@ pub fn read_container_sizes(container_file: &str) -> Vec<u32> {
 
 /// Ensure that a set of continers can contain the supplied volume of eggnog
 pub fn does_comb_fit(cont_comb: &Vec<u32>, eggnog_vol: u32) -> bool {
-    true
+    return cont_comb.iter().sum::<u32>() == eggnog_vol;
 }
 
 /// Test every combination of container and count the number of combinations
