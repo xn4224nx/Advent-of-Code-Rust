@@ -35,20 +35,30 @@
 
 use ndarray::{arr2, Array2};
 
+#[derive(Debug, Eq, Hash, PartialEq)]
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
+}
+
 pub fn read_light_grid(light_file: &str) -> Array2<bool> {
     arr2(&[[false, false], [false, false]])
 }
 
-pub fn find_adj_lights(light: (usize, usize), grid_size: (usize, usize)) -> Vec<(usize, usize)> {
+pub fn find_adj_lights(light: &Point, grid_size: &Point) -> Vec<Point> {
     Vec::new()
 }
 
-pub fn new_light_state(light: (usize, usize)) -> bool {
+pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
     false
 }
 
-pub fn incre_light_grid(light_grid: Array2<bool>, steps: usize) -> Array2<bool> {
-    arr2(&[[false, false], [false, false]])
+pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool> {
+    arr2(&[
+        [false, false, false],
+        [false, false, false],
+        [false, false, false],
+    ])
 }
 
 fn main() {}
