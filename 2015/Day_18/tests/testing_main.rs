@@ -175,10 +175,7 @@ fn read_light_grid_ex11() {
 #[test]
 fn find_adj_lights_ex01() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 0, y: 0 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 0, y: 0 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 1 },
             Point { x: 1, y: 0 },
@@ -190,10 +187,7 @@ fn find_adj_lights_ex01() {
 #[test]
 fn find_adj_lights_ex02() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 0, y: 1 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 0, y: 1 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 0 },
             Point { x: 0, y: 2 },
@@ -207,10 +201,7 @@ fn find_adj_lights_ex02() {
 #[test]
 fn find_adj_lights_ex03() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 0, y: 2 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 0, y: 2 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 1 },
             Point { x: 1, y: 1 },
@@ -222,10 +213,7 @@ fn find_adj_lights_ex03() {
 #[test]
 fn find_adj_lights_ex04() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 1, y: 0 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 1, y: 0 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 0 },
             Point { x: 0, y: 1 },
@@ -239,10 +227,7 @@ fn find_adj_lights_ex04() {
 #[test]
 fn find_adj_lights_ex05() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 1, y: 1 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 1, y: 1 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 0 },
             Point { x: 0, y: 1 },
@@ -259,10 +244,7 @@ fn find_adj_lights_ex05() {
 #[test]
 fn find_adj_lights_ex06() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 1, y: 2 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 1, y: 2 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 0, y: 1 },
             Point { x: 0, y: 2 },
@@ -276,10 +258,7 @@ fn find_adj_lights_ex06() {
 #[test]
 fn find_adj_lights_ex07() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 2, y: 0 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 2, y: 0 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 1, y: 0 },
             Point { x: 1, y: 1 },
@@ -291,10 +270,7 @@ fn find_adj_lights_ex07() {
 #[test]
 fn find_adj_lights_ex08() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 2, y: 1 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 2, y: 1 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 1, y: 0 },
             Point { x: 1, y: 1 },
@@ -308,10 +284,7 @@ fn find_adj_lights_ex08() {
 #[test]
 fn find_adj_lights_ex09() {
     assert_eq!(
-        HashSet::<Point>::from_iter(find_adj_lights(
-            &Point { x: 2, y: 2 },
-            &Point { x: 3, y: 3 }
-        )),
+        HashSet::<Point>::from_iter(find_adj_lights(&Point { x: 2, y: 2 }, &[3, 3],)),
         HashSet::<Point>::from_iter(vec![
             Point { x: 1, y: 1 },
             Point { x: 1, y: 2 },

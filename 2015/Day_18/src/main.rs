@@ -71,8 +71,74 @@ pub fn read_light_grid(light_file: &str) -> Array2<bool> {
     return Array2::from_shape_vec((line_idx, raw.len() / line_idx), raw).unwrap();
 }
 
-pub fn find_adj_lights(light: &Point, grid_size: &Point) -> Vec<Point> {
-    Vec::new()
+pub fn find_adj_lights(light: &Point, grid_size: &[usize]) -> Vec<Point> {
+    let mut adj_points = Vec::new();
+
+    /* Points above the current one. */
+    if light.y > 0 {
+        adj_points.push(Point {
+            x: light.x,
+            y: light.y - 1,
+        });
+
+        /* Points to the left. */
+        if light.x > 0 {
+            adj_points.push(Point {
+                x: light.x - 1,
+                y: light.y - 1,
+            });
+        }
+
+        /* Points to the right. */
+        if light.x < grid_size[1] - 1 {
+            adj_points.push(Point {
+                x: light.x + 1,
+                y: light.y - 1,
+            });
+        }
+    }
+
+    /* Points to the left. */
+    if light.x > 0 {
+        adj_points.push(Point {
+            x: light.x - 1,
+            y: light.y,
+        });
+    }
+
+    /* Points to the right. */
+    if light.x < grid_size[1] - 1 {
+        adj_points.push(Point {
+            x: light.x + 1,
+            y: light.y,
+        });
+    }
+
+    /* Points below the current one. */
+    if light.y < grid_size[0] - 1 {
+        adj_points.push(Point {
+            x: light.x,
+            y: light.y + 1,
+        });
+
+        /* Points to the left. */
+        if light.x > 0 {
+            adj_points.push(Point {
+                x: light.x - 1,
+                y: light.y + 1,
+            });
+        }
+
+        /* Points to the right. */
+        if light.x < grid_size[1] - 1 {
+            adj_points.push(Point {
+                x: light.x + 1,
+                y: light.y + 1,
+            });
+        }
+    }
+
+    return adj_points;
 }
 
 pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
