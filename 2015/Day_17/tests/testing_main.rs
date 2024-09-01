@@ -14,32 +14,32 @@ fn read_container_sizes_ex1() {
 
 #[test]
 fn does_comb_fit_ex1() {
-    assert_eq!(does_comb_fit(&vec![15, 10], 25), true);
+    assert_eq!(does_comb_fit(&vec![15, 10].iter().collect(), 25), true);
 }
 
 #[test]
 fn does_comb_fit_ex2() {
-    assert_eq!(does_comb_fit(&vec![20, 5], 25), true);
+    assert_eq!(does_comb_fit(&vec![20, 5].iter().collect(), 25), true);
 }
 
 #[test]
 fn does_comb_fit_ex3() {
-    assert_eq!(does_comb_fit(&vec![15, 5, 5], 25), true);
+    assert_eq!(does_comb_fit(&vec![15, 5, 5].iter().collect(), 25), true);
 }
 
 #[test]
 fn does_comb_fit_ex4() {
-    assert_eq!(does_comb_fit(&vec![15, 10, 5], 25), false);
+    assert_eq!(does_comb_fit(&vec![15, 10, 5].iter().collect(), 25), false);
 }
 
 #[test]
 fn does_comb_fit_ex5() {
-    assert_eq!(does_comb_fit(&vec![20], 25), false);
+    assert_eq!(does_comb_fit(&vec![20].iter().collect(), 25), false);
 }
 
 #[test]
 fn does_comb_fit_ex6() {
-    assert_eq!(does_comb_fit(&vec![20, 5, 5], 25), false);
+    assert_eq!(does_comb_fit(&vec![20, 5, 5].iter().collect(), 25), false);
 }
 
 #[test]
