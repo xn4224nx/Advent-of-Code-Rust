@@ -9,9 +9,15 @@
  *          containers can exactly fit all 150 liters of eggnog?
  */
 
+use std::fs;
+
 /// Read the container sizes and return a vector of the sizes
 pub fn read_container_sizes(container_file: &str) -> Vec<u32> {
-    Vec::new()
+    return fs::read_to_string(container_file)
+        .unwrap()
+        .lines()
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect();
 }
 
 /// Ensure that a set of continers can contain the supplied volume of eggnog
