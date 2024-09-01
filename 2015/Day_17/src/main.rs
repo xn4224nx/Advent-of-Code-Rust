@@ -45,4 +45,7 @@ pub fn count_cont_combs(containers: &Vec<u32>, eggnog_vol: u32) -> u32 {
     return valid_combs;
 }
 
-fn main() {}
+fn main() {
+    let conts = read_container_sizes("./data/input.txt");
+    println!("Part 1 = {}", count_cont_combs(&conts, 150));
+}
