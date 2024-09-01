@@ -34,6 +34,8 @@
  */
 
 use ndarray::{arr2, Array2};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Point {
@@ -42,7 +44,31 @@ pub struct Point {
 }
 
 pub fn read_light_grid(light_file: &str) -> Array2<bool> {
-    arr2(&[[false, false], [false, false]])
+    let mut raw: Vec<bool> = Vec::new();
+
+    /* Open the file */
+    let file = File::open(light_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Iterate over the file line by line. */
+    let mut buffer = String::new();
+    let mut line_idx = 0;
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        line_idx += 1;
+
+        /* Parse the line as either true or falses, ignoring everything else. */
+        for li_char in buffer.chars() {
+            match li_char {
+                '.' => raw.push(false),
+                '#' => raw.push(true),
+                _ => (),
+            }
+        }
+        buffer.clear();
+    }
+
+    /* Convert the read data into a ndarray. */
+    return Array2::from_shape_vec((line_idx, raw.len() / line_idx), raw).unwrap();
 }
 
 pub fn find_adj_lights(light: &Point, grid_size: &Point) -> Vec<Point> {
