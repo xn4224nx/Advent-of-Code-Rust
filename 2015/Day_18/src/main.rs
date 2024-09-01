@@ -43,6 +43,7 @@ pub struct Point {
     pub y: usize,
 }
 
+/// Read a light grid data file and return a 2D array of booleans
 pub fn read_light_grid(light_file: &str) -> Array2<bool> {
     let mut raw: Vec<bool> = Vec::new();
 
@@ -71,6 +72,7 @@ pub fn read_light_grid(light_file: &str) -> Array2<bool> {
     return Array2::from_shape_vec((line_idx, raw.len() / line_idx), raw).unwrap();
 }
 
+/// For a 2D grid find adjacent points for a particular light on the grid.
 pub fn find_adj_lights(light: &Point, grid_size: &[usize]) -> Vec<Point> {
     let mut adj_points = Vec::new();
 
@@ -98,7 +100,7 @@ pub fn find_adj_lights(light: &Point, grid_size: &[usize]) -> Vec<Point> {
         }
     }
 
-    /* Points to the left. */
+    /* Points to the left on the same level. */
     if light.x > 0 {
         adj_points.push(Point {
             x: light.x - 1,
@@ -106,7 +108,7 @@ pub fn find_adj_lights(light: &Point, grid_size: &[usize]) -> Vec<Point> {
         });
     }
 
-    /* Points to the right. */
+    /* Points to the right on the same level. */
     if light.x < grid_size[1] - 1 {
         adj_points.push(Point {
             x: light.x + 1,
@@ -137,14 +139,38 @@ pub fn find_adj_lights(light: &Point, grid_size: &[usize]) -> Vec<Point> {
             });
         }
     }
-
     return adj_points;
 }
 
-pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
-    false
+/// Count the number of adjacent lights are on.
+pub fn count_on_adj_lights(light_grid: &Array2<bool>, light: &Point) -> usize {
+    let mut num = 0;
+
+    for adj_light in find_adj_lights(light, light_grid.shape()) {
+        if light_grid[[adj_light.x, adj_light.y]] {
+            num += 1;
+        }
+    }
+    return num;
 }
 
+/// Determine what the new state of a light will be based on its neighbours.
+pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
+    let curr_light_state = light_grid[[light.x, light.y]];
+    let num_adj = count_on_adj_lights(light_grid, light);
+
+    if curr_light_state && (num_adj == 2 || num_adj == 3) {
+        return true;
+    }
+
+    if !curr_light_state && num_adj == 3 {
+        return true;
+    }
+
+    return false;
+}
+
+/// Create a new grid, a certain number of steps from the supplied grid.
 pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool> {
     arr2(&[
         [false, false, false],
