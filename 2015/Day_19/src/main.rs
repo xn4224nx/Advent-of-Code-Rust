@@ -59,7 +59,30 @@ pub fn read_molc_replacements(datafile: &str) -> (Vec<(Vec<u8>, Vec<u8>)>, Vec<u
 
 /// Count the number of distinct chemicals that can be made.
 pub fn cnt_distinct_chems(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, chem: &Vec<u8>) -> usize {
-    0
+    let mut found_chems: HashSet<Vec<u8>> = HashSet::new();
+
+    /* Find each before segment in the chem and replace it once to make new chems. */
+    for (before, after) in molc_reps.into_iter() {
+        'char: for ch_idx in 0..chem.len() {
+            for b_idx in 0..before.len() {
+                let adv_idx = ch_idx + b_idx;
+
+                /* Ensure all of `before` is in the chem. */
+                if adv_idx >= chem.len() || chem[adv_idx] != before[b_idx] {
+                    continue 'char;
+                }
+            }
+
+            /* Create the new chemical. */
+            let new_chem = [&chem[..ch_idx], &after[..], &chem[ch_idx + before.len()..]].concat();
+            found_chems.insert(new_chem);
+        }
+    }
+
+    return found_chems.len();
 }
 
-fn main() {}
+fn main() {
+    let (reps, chem) = read_molc_replacements("./data/input.txt");
+    println!("Part 1 = {}", cnt_distinct_chems(&reps, &chem));
+}
