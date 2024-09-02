@@ -8,13 +8,13 @@ use day_19::{cnt_distinct_chems, read_molc_replacements};
 fn read_molc_replacements_ex01() {
     let (reps, chem) = read_molc_replacements("./data/example_01.txt");
 
-    assert_eq!(chem, String::from("HOH"));
+    assert_eq!(chem, "HOH".as_bytes().to_vec());
     assert_eq!(
         reps,
         vec![
-            (String::from("H"), String::from("HO")),
-            (String::from("H"), String::from("OH")),
-            (String::from("O"), String::from("HH"))
+            ("H".as_bytes().to_vec(), "HO".as_bytes().to_vec()),
+            ("H".as_bytes().to_vec(), "OH".as_bytes().to_vec()),
+            ("O".as_bytes().to_vec(), "HH".as_bytes().to_vec())
         ]
     );
 }
@@ -23,15 +23,15 @@ fn read_molc_replacements_ex01() {
 fn read_molc_replacements_ex02() {
     let (reps, chem) = read_molc_replacements("./data/example_02.txt");
 
-    assert_eq!(chem, String::from("HOHOHO"));
+    assert_eq!(chem, "HOHOHO".as_bytes().to_vec());
     assert_eq!(
         reps,
         vec![
-            (String::from("e"), String::from("H")),
-            (String::from("e"), String::from("O")),
-            (String::from("H"), String::from("HO")),
-            (String::from("H"), String::from("OH")),
-            (String::from("O"), String::from("HH"))
+            ("e".as_bytes().to_vec(), "H".as_bytes().to_vec()),
+            ("e".as_bytes().to_vec(), "O".as_bytes().to_vec()),
+            ("H".as_bytes().to_vec(), "HO".as_bytes().to_vec()),
+            ("H".as_bytes().to_vec(), "OH".as_bytes().to_vec()),
+            ("O".as_bytes().to_vec(), "HH".as_bytes().to_vec())
         ]
     );
 }
@@ -40,15 +40,27 @@ fn read_molc_replacements_ex02() {
 fn read_molc_replacements_ex03() {
     let (reps, chem) = read_molc_replacements("./data/example_03.txt");
 
-    assert_eq!(chem, String::from("HOH"));
+    assert_eq!(chem, "HOH".as_bytes().to_vec());
     assert_eq!(
         reps,
         vec![
-            (String::from("e"), String::from("H")),
-            (String::from("e"), String::from("O")),
-            (String::from("H"), String::from("HO")),
-            (String::from("H"), String::from("OH")),
-            (String::from("O"), String::from("HH"))
+            ("e".as_bytes().to_vec(), "H".as_bytes().to_vec()),
+            ("e".as_bytes().to_vec(), "O".as_bytes().to_vec()),
+            ("H".as_bytes().to_vec(), "HO".as_bytes().to_vec()),
+            ("H".as_bytes().to_vec(), "OH".as_bytes().to_vec()),
+            ("O".as_bytes().to_vec(), "HH".as_bytes().to_vec())
         ]
     );
+}
+
+#[test]
+fn cnt_distinct_chems_ex1() {
+    let (reps, chem) = read_molc_replacements("./data/example_01.txt");
+    assert_eq!(cnt_distinct_chems(&reps, &chem), 4);
+}
+
+#[test]
+fn cnt_distinct_chems_ex2() {
+    let (reps, _) = read_molc_replacements("./data/example_01.txt");
+    assert_eq!(cnt_distinct_chems(&reps, &"HOHOHO".as_bytes().to_vec()), 7);
 }

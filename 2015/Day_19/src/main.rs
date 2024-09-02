@@ -24,30 +24,33 @@
  *          ways you can do one replacement on the medicine molecule?
  */
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 /// Read the replacement molecules and initial chemical data.
-pub fn read_molc_replacements(datafile: &str) -> (Vec<(String, String)>, String) {
+pub fn read_molc_replacements(datafile: &str) -> (Vec<(Vec<u8>, Vec<u8>)>, Vec<u8>) {
     let mut molc_reps = Vec::new();
-    let mut chem = String::new();
+    let mut chem = Vec::new();
 
     /* Open the file. */
     let file = File::open(datafile).unwrap();
     let mut fp = BufReader::new(file);
+
+    let spl_inc = " => ";
 
     /* Process the file line by line. */
     let mut buffer = String::new();
     while fp.read_line(&mut buffer).unwrap() > 0 {
         let line = buffer.as_str().trim();
 
-        if line.contains(" => ") {
-            let parts: Vec<&str> = line.split(" => ").collect();
-            molc_reps.push((parts[0].to_string(), parts[1].to_string()));
+        if line.contains(spl_inc) {
+            let parts: Vec<&str> = line.split(spl_inc).collect();
+            molc_reps.push((parts[0].as_bytes().to_vec(), parts[1].as_bytes().to_vec()));
         } else if line == "" {
             continue;
         } else {
-            chem = line.to_string();
+            chem = line.as_bytes().to_vec();
         }
         buffer.clear();
     }
@@ -55,7 +58,7 @@ pub fn read_molc_replacements(datafile: &str) -> (Vec<(String, String)>, String)
 }
 
 /// Count the number of distinct chemicals that can be made.
-pub fn cnt_distinct_chems(molc_reps: Vec<(String, String)>, chem: String) -> usize {
+pub fn cnt_distinct_chems(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, chem: &Vec<u8>) -> usize {
     0
 }
 
