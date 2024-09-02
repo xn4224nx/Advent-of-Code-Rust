@@ -387,33 +387,75 @@ fn new_light_state_ex6() {
 fn incre_light_grid_ex1() {
     let start = read_light_grid("./data/example_01.txt");
     let end = read_light_grid("./data/example_05.txt");
-    assert!(incre_light_grid(&start, 4) == end);
+    assert!(incre_light_grid(&start, 4, false) == end);
 }
 
 #[test]
 fn incre_light_grid_ex2() {
     let start = read_light_grid("./data/example_01.txt");
     let end = read_light_grid("./data/example_02.txt");
-    assert!(incre_light_grid(&start, 1) == end);
+    assert!(incre_light_grid(&start, 1, false) == end);
 }
 
 #[test]
 fn incre_light_grid_ex3() {
     let start = read_light_grid("./data/example_02.txt");
     let end = read_light_grid("./data/example_03.txt");
-    assert!(incre_light_grid(&start, 1) == end);
+    assert!(incre_light_grid(&start, 1, false) == end);
 }
 
 #[test]
 fn incre_light_grid_ex4() {
     let start = read_light_grid("./data/example_03.txt");
     let end = read_light_grid("./data/example_04.txt");
-    assert!(incre_light_grid(&start, 1) == end);
+    assert!(incre_light_grid(&start, 1, false) == end);
 }
 
 #[test]
 fn incre_light_grid_ex5() {
     let start = read_light_grid("./data/example_04.txt");
     let end = read_light_grid("./data/example_05.txt");
-    assert!(incre_light_grid(&start, 1) == end);
+    assert!(incre_light_grid(&start, 1, false) == end);
+}
+
+#[test]
+fn incre_light_grid_ex1_cor() {
+    let start = read_light_grid("./data/example_06.txt");
+    let end = read_light_grid("./data/example_11.txt");
+    assert!(incre_light_grid(&start, 5, true) == end);
+}
+
+#[test]
+fn incre_light_grid_ex2_cor() {
+    let start = read_light_grid("./data/example_06.txt");
+    let end = read_light_grid("./data/example_07.txt");
+    assert!(incre_light_grid(&start, 1, true) == end);
+}
+
+#[test]
+fn incre_light_grid_ex3_cor() {
+    let start = read_light_grid("./data/example_07.txt");
+    let end = read_light_grid("./data/example_08.txt");
+    assert!(incre_light_grid(&start, 1, true) == end);
+}
+
+#[test]
+fn incre_light_grid_ex4_cor() {
+    let start = read_light_grid("./data/example_08.txt");
+    let end = read_light_grid("./data/example_09.txt");
+    assert!(incre_light_grid(&start, 1, true) == end);
+}
+
+#[test]
+fn incre_light_grid_ex5_cor() {
+    let start = read_light_grid("./data/example_09.txt");
+    let end = read_light_grid("./data/example_10.txt");
+    assert!(incre_light_grid(&start, 1, true) == end);
+}
+
+#[test]
+fn incre_light_grid_ex6_cor() {
+    let start = read_light_grid("./data/example_10.txt");
+    let end = read_light_grid("./data/example_11.txt");
+    assert!(incre_light_grid(&start, 1, true) == end);
 }
