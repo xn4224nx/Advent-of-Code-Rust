@@ -189,4 +189,14 @@ pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool>
     return old_grid;
 }
 
-fn main() {}
+fn main() {
+    let start_grid = read_light_grid("./data/input.txt");
+
+    println!(
+        "Part 1 = {}",
+        incre_light_grid(&start_grid, 100)
+            .iter()
+            .filter(|v| **v)
+            .count()
+    );
+}
