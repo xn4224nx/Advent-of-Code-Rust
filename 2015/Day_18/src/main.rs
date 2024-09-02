@@ -33,7 +33,7 @@
  *          many lights are on after 100 steps?
  */
 
-use ndarray::{arr2, Array2};
+use ndarray::Array2;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -172,11 +172,21 @@ pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
 
 /// Create a new grid, a certain number of steps from the supplied grid.
 pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool> {
-    arr2(&[
-        [false, false, false],
-        [false, false, false],
-        [false, false, false],
-    ])
+    let rows = light_grid.shape()[0];
+    let cols = light_grid.shape()[1];
+    let mut old_grid = light_grid.clone();
+
+    for _ in 0..steps {
+        let mut new_grid = Array2::from_elem((rows, cols), false);
+
+        for x in 0..rows {
+            for y in 0..cols {
+                new_grid[[x, y]] = new_light_state(&old_grid, &Point { x, y });
+            }
+        }
+        old_grid = new_grid;
+    }
+    return old_grid;
 }
 
 fn main() {}
