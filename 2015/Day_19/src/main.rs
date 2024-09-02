@@ -98,11 +98,12 @@ pub fn cnt_distinct_chems(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, chem: &Vec<u8>) -
 pub fn count_chem_build(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, start_chem: &Vec<u8>) -> usize {
     let target_chem = "e".as_bytes();
 
+    /* Keep randomly applying transformations until `target_chem` is found. */
     loop {
         let mut chem = start_chem.clone();
         let mut steps = 0;
 
-        /* Try commands till there are too many fails or the target is found. */
+        /* Try commands till the target is found or there are no valid swaps. */
         loop {
             steps += 1;
             let mut valid_cmd: Vec<(usize, Vec<usize>)> = Vec::new();
@@ -131,7 +132,7 @@ pub fn count_chem_build(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, start_chem: &Vec<u8
                 };
             }
 
-            /* If there are no possible transformations then reset. */
+            /* If there are no possible transformations then reset chem. */
             if valid_cmd.is_empty() {
                 break;
             }
@@ -144,7 +145,7 @@ pub fn count_chem_build(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, start_chem: &Vec<u8
             let tr_idx = rand::thread_rng().gen_range(0..valid_cmd[cmd_idx].1.len());
             let pos_idx = valid_cmd[cmd_idx].1[tr_idx];
 
-            /* Make the transformation. */
+            /* Make the swap and make a new chem. */
             let before = &molc_reps[cmd].0;
             let after = &molc_reps[cmd].1;
             chem = [
