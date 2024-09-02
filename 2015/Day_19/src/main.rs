@@ -22,8 +22,20 @@
  *
  * PART 1:  How many distinct molecules can be created after all the different
  *          ways you can do one replacement on the medicine molecule?
+ *
+ * Now that the machine is calibrated, you're ready to begin molecule
+ * fabrication.
+ *
+ * Molecule fabrication always begins with just a single electron, e, and
+ * applying replacements one at a time, just like the ones during calibration.
+ *
+ * PART 2:  How long will it take to make the medicine? Given the available
+ *          replacements and the medicine molecule in your puzzle input, what
+ *          is the fewest number of steps to go from e to the medicine
+ *          molecule?
  */
 
+use rand::Rng;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -82,7 +94,76 @@ pub fn cnt_distinct_chems(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, chem: &Vec<u8>) -
     return found_chems.len();
 }
 
+/// Count the minimum number of steps required to create a chemical
+pub fn count_chem_build(molc_reps: &Vec<(Vec<u8>, Vec<u8>)>, start_chem: &Vec<u8>) -> usize {
+    let target_chem = "e".as_bytes();
+
+    loop {
+        let mut chem = start_chem.clone();
+        let mut steps = 0;
+
+        /* Try commands till there are too many fails or the target is found. */
+        loop {
+            steps += 1;
+            let mut valid_cmd: Vec<(usize, Vec<usize>)> = Vec::new();
+
+            /* Determine the possible commands and their positions. */
+            for (idx, (_, after)) in molc_reps.iter().enumerate() {
+                let mut positions = Vec::new();
+
+                'char: for ch_idx in 0..chem.len() {
+                    for a_idx in 0..after.len() {
+                        let adv_idx = ch_idx + a_idx;
+
+                        /* Ensure all of `after` is in the chem. */
+                        if adv_idx >= chem.len() || chem[adv_idx] != after[a_idx] {
+                            continue 'char;
+                        }
+                    }
+
+                    /* Record the index of the start. */
+                    positions.push(ch_idx);
+                }
+
+                /* Save the positions for this molecular transformation. */
+                if !positions.is_empty() {
+                    valid_cmd.push((idx, positions));
+                };
+            }
+
+            /* If there are no possible transformations then reset. */
+            if valid_cmd.is_empty() {
+                break;
+            }
+
+            /* Pick a random valid molecular swap. */
+            let cmd_idx = rand::thread_rng().gen_range(0..valid_cmd.len());
+            let cmd = valid_cmd[cmd_idx].0;
+
+            /* Pick a random index of after in the chem to swap to before. */
+            let tr_idx = rand::thread_rng().gen_range(0..valid_cmd[cmd_idx].1.len());
+            let pos_idx = valid_cmd[cmd_idx].1[tr_idx];
+
+            /* Make the transformation. */
+            let before = &molc_reps[cmd].0;
+            let after = &molc_reps[cmd].1;
+            chem = [
+                &chem[..pos_idx],
+                &before[..],
+                &chem[pos_idx + after.len()..],
+            ]
+            .concat();
+
+            /* Test for the final chemical. */
+            if chem == target_chem {
+                return steps;
+            }
+        }
+    }
+}
+
 fn main() {
     let (reps, chem) = read_molc_replacements("./data/input.txt");
     println!("Part 1 = {}", cnt_distinct_chems(&reps, &chem));
+    println!("Part 2 = {}", count_chem_build(&reps, &chem));
 }

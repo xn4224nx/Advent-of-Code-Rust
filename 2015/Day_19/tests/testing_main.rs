@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_19;
-use day_19::{cnt_distinct_chems, read_molc_replacements};
+use day_19::{cnt_distinct_chems, count_chem_build, read_molc_replacements};
 
 #[test]
 fn read_molc_replacements_ex01() {
@@ -63,4 +63,16 @@ fn cnt_distinct_chems_ex1() {
 fn cnt_distinct_chems_ex2() {
     let (reps, _) = read_molc_replacements("./data/example_01.txt");
     assert_eq!(cnt_distinct_chems(&reps, &"HOHOHO".as_bytes().to_vec()), 7);
+}
+
+#[test]
+fn count_chem_build_ex1() {
+    let (reps, chem) = read_molc_replacements("./data/example_02.txt");
+    assert_eq!(count_chem_build(&reps, &chem), 6);
+}
+
+#[test]
+fn count_chem_build_ex2() {
+    let (reps, chem) = read_molc_replacements("./data/example_03.txt");
+    assert_eq!(count_chem_build(&reps, &chem), 3);
 }
