@@ -171,10 +171,18 @@ pub fn new_light_state(light_grid: &Array2<bool>, light: &Point) -> bool {
 }
 
 /// Create a new grid, a certain number of steps from the supplied grid.
-pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool> {
+pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize, corners: bool) -> Array2<bool> {
     let rows = light_grid.shape()[0];
     let cols = light_grid.shape()[1];
     let mut old_grid = light_grid.clone();
+
+    /* Force all the columns to be true no matter what */
+    if corners {
+        old_grid[[0, 0]] = true;
+        old_grid[[0, cols - 1]] = true;
+        old_grid[[rows - 1, 0]] = true;
+        old_grid[[rows - 1, cols - 1]] = true;
+    }
 
     for _ in 0..steps {
         let mut new_grid = Array2::from_elem((rows, cols), false);
@@ -185,6 +193,14 @@ pub fn incre_light_grid(light_grid: &Array2<bool>, steps: usize) -> Array2<bool>
             }
         }
         old_grid = new_grid;
+
+        /* Force all the columns to be true no matter what */
+        if corners {
+            old_grid[[0, 0]] = true;
+            old_grid[[0, cols - 1]] = true;
+            old_grid[[rows - 1, 0]] = true;
+            old_grid[[rows - 1, cols - 1]] = true;
+        }
     }
     return old_grid;
 }
@@ -194,7 +210,15 @@ fn main() {
 
     println!(
         "Part 1 = {}",
-        incre_light_grid(&start_grid, 100)
+        incre_light_grid(&start_grid, 100, false)
+            .iter()
+            .filter(|v| **v)
+            .count()
+    );
+
+    println!(
+        "Part 2 = {}",
+        incre_light_grid(&start_grid, 100, true)
             .iter()
             .filter(|v| **v)
             .count()
