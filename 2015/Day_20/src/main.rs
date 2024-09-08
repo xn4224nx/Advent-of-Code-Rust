@@ -22,10 +22,18 @@
  *
  * PART 1:  What is the lowest house number of the house to get at least as
  *          many presents as the number in your puzzle input, 34000000?
+ *
+ * The Elves decide they don't want to visit an infinite number of houses.
+ * Instead, each Elf will stop after delivering presents to 50 houses. To make
+ * up for it, they decide to deliver presents equal to eleven times their number
+ * at each house.
+ *
+ * PART 2:  With these changes, what is the new lowest house number of the house
+ *          to get at least as many presents as the number in your puzzle input?
  */
 
-/// Find the lowest house number to get a certain number of presents
-fn find_lowest_house(num_pres: usize) -> usize {
+/// Fill houses with presents delivered by elves
+pub fn deliver_presents(num_pres: usize) -> Vec<usize> {
     let num_houses = num_pres / 10;
 
     /* Create the array of houses all with zero presents. */
@@ -37,10 +45,16 @@ fn find_lowest_house(num_pres: usize) -> usize {
             house_pres[idx] += elf * 10;
         }
     }
+    return house_pres;
+}
+
+/// Find the lowest house index with the set number of presents
+pub fn find_lowest_house(house_presents: &Vec<usize>, num_pres: usize) -> usize {
+    let num_houses = num_pres / 10;
 
     /* Find the lowest house that has the specified number of presents. */
     for house_idx in 1..num_houses {
-        if house_pres[house_idx] >= num_pres {
+        if house_presents[house_idx] >= num_pres {
             return house_idx;
         }
     }
@@ -48,5 +62,11 @@ fn find_lowest_house(num_pres: usize) -> usize {
 }
 
 fn main() {
-    println!("Part 1 = {}", find_lowest_house(34000000));
+    let min_presents = 34000000;
+
+    let houses_part1 = deliver_presents(min_presents);
+    println!(
+        "Part 1 = {}",
+        find_lowest_house(&houses_part1, min_presents)
+    );
 }
