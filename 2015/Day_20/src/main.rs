@@ -24,6 +24,29 @@
  *          many presents as the number in your puzzle input, 34000000?
  */
 
-use ndarray::{s, Array1};
+/// Find the lowest house number to get a certain number of presents
+fn find_lowest_house(num_pres: usize) -> usize {
+    let num_houses = num_pres / 10;
 
-fn main() {}
+    /* Create the array of houses all with zero presents. */
+    let mut house_pres = vec![0; num_houses];
+
+    /* Simulate the elves delivering presents. */
+    for elf in 1..num_houses {
+        for idx in (0..num_houses).step_by(elf) {
+            house_pres[idx] += elf * 10;
+        }
+    }
+
+    /* Find the lowest house that has the specified number of presents. */
+    for house_idx in 1..num_houses {
+        if house_pres[house_idx] >= num_pres {
+            return house_idx;
+        }
+    }
+    panic!("House not found!");
+}
+
+fn main() {
+    println!("Part 1 = {}", find_lowest_house(34000000));
+}
