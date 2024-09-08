@@ -33,7 +33,7 @@
  */
 
 /// Fill houses with presents delivered by elves
-pub fn deliver_presents(num_pres: usize) -> Vec<usize> {
+pub fn deliver_presents(num_pres: usize, limit: bool) -> Vec<usize> {
     let num_houses = num_pres / 10;
 
     /* Create the array of houses all with zero presents. */
@@ -41,8 +41,19 @@ pub fn deliver_presents(num_pres: usize) -> Vec<usize> {
 
     /* Simulate the elves delivering presents. */
     for elf in 1..num_houses {
-        for idx in (0..num_houses).step_by(elf) {
-            house_pres[idx] += elf * 10;
+        if limit {
+            for (cnt, idx) in (0..num_houses).step_by(elf).enumerate() {
+                house_pres[idx] += elf * 11;
+
+                /* With the limit elves only deliver to 50 houses. */
+                if cnt >= 50 {
+                    break;
+                }
+            }
+        } else {
+            for idx in (0..num_houses).step_by(elf) {
+                house_pres[idx] += elf * 10;
+            }
         }
     }
     return house_pres;
@@ -64,9 +75,11 @@ pub fn find_lowest_house(house_presents: &Vec<usize>, num_pres: usize) -> usize 
 fn main() {
     let min_presents = 34000000;
 
-    let houses_part1 = deliver_presents(min_presents);
+    let houses_part1 = deliver_presents(min_presents, false);
+    let houses_part2 = deliver_presents(min_presents, true);
     println!(
-        "Part 1 = {}",
-        find_lowest_house(&houses_part1, min_presents)
+        "Part 1 = {}\nPart 2 = {}",
+        find_lowest_house(&houses_part1, min_presents),
+        find_lowest_house(&houses_part2, min_presents),
     );
 }
