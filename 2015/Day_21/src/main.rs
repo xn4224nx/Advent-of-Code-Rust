@@ -56,6 +56,7 @@
  */
 
 use regex::Regex;
+use std::cmp::max;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -163,7 +164,24 @@ pub fn calc_player_stats(equip: &Vec<ShopItem>) -> Stats {
 
 /// Work out if the player beats the boss
 pub fn does_player_win(player: &Stats, boss: &Stats) -> bool {
-    false
+    let mut player_health = player.hit_points;
+    let mut boss_health = boss.hit_points;
+
+    loop {
+        /* The player attacks. */
+        boss_health -= max(1, player.damage.saturating_sub(boss.armour));
+
+        if boss_health <= 0 {
+            return true;
+        }
+
+        /* The boss attacks. */
+        player_health -= max(1, boss.damage.saturating_sub(player.armour));
+
+        if player_health <= 0 {
+            return false;
+        }
+    }
 }
 
 /// Search for the cheapest way to beat the boss
