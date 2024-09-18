@@ -141,7 +141,7 @@ pub fn read_shop_data(file_path: &str) -> HashMap<Item, Vec<ShopItem>> {
 
 /// Calculate the cost of a set of equipment
 pub fn calc_equip_cost(equip: &Vec<ShopItem>) -> u32 {
-    0
+    return equip.iter().map(|x| x.cost).sum::<u32>();
 }
 
 /// Determine the player statistics based on their equipment
