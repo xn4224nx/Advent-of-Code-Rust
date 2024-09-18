@@ -146,11 +146,19 @@ pub fn calc_equip_cost(equip: &Vec<ShopItem>) -> u32 {
 
 /// Determine the player statistics based on their equipment
 pub fn calc_player_stats(equip: &Vec<ShopItem>) -> Stats {
-    Stats {
-        hit_points: 0,
-        damage: 0,
-        armour: 0,
+    let mut sum_damage = 0;
+    let mut sum_armour = 0;
+
+    for s_item in equip.iter() {
+        sum_damage += s_item.damage;
+        sum_armour += s_item.armour;
     }
+
+    return Stats {
+        hit_points: 100,
+        damage: sum_damage,
+        armour: sum_armour,
+    };
 }
 
 /// Work out if the player beats the boss
