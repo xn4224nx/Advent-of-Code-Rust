@@ -69,21 +69,21 @@ fn read_small_shop_data() {
 fn test_cost_store_purchases_1() {
     assert_eq!(
         calc_equip_cost(&vec![
-            ShopItem {
+            &ShopItem {
                 name: String::from("Dagger"),
                 cost: 8,
                 damage: 4,
                 armour: 0,
                 stype: Item::Weapon
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Chainmail"),
                 cost: 31,
                 damage: 0,
                 armour: 2,
                 stype: Item::Armour
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Damage +1"),
                 cost: 25,
                 damage: 1,
@@ -98,7 +98,7 @@ fn test_cost_store_purchases_1() {
 #[test]
 fn test_cost_store_purchases_2() {
     assert_eq!(
-        calc_equip_cost(&vec![ShopItem {
+        calc_equip_cost(&vec![&ShopItem {
             name: String::from("Dagger"),
             cost: 8,
             damage: 4,
@@ -113,28 +113,28 @@ fn test_cost_store_purchases_2() {
 fn test_cost_store_purchases_3() {
     assert_eq!(
         calc_equip_cost(&vec![
-            ShopItem {
+            &ShopItem {
                 name: String::from("Dagger"),
                 cost: 8,
                 damage: 4,
                 armour: 0,
                 stype: Item::Weapon
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Leather"),
                 cost: 13,
                 damage: 0,
                 armour: 1,
                 stype: Item::Armour
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Damage +1"),
                 cost: 25,
                 damage: 1,
                 armour: 0,
                 stype: Item::Ring
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Defense +1"),
                 cost: 20,
                 damage: 0,
@@ -150,21 +150,21 @@ fn test_cost_store_purchases_3() {
 fn test_determine_stats_1() {
     assert_eq!(
         calc_player_stats(&vec![
-            ShopItem {
+            &ShopItem {
                 name: String::from("Dagger"),
                 cost: 8,
                 damage: 4,
                 armour: 0,
                 stype: Item::Weapon
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Chainmail"),
                 cost: 31,
                 damage: 0,
                 armour: 2,
                 stype: Item::Armour
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Damage +1"),
                 cost: 25,
                 damage: 1,
@@ -183,7 +183,7 @@ fn test_determine_stats_1() {
 #[test]
 fn test_determine_stats_2() {
     assert_eq!(
-        calc_player_stats(&vec![ShopItem {
+        calc_player_stats(&vec![&ShopItem {
             name: String::from("Dagger"),
             cost: 8,
             damage: 4,
@@ -202,28 +202,28 @@ fn test_determine_stats_2() {
 fn test_determine_stats_3() {
     assert_eq!(
         calc_player_stats(&vec![
-            ShopItem {
+            &ShopItem {
                 name: String::from("Dagger"),
                 cost: 8,
                 damage: 4,
                 armour: 0,
                 stype: Item::Weapon
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Leather"),
                 cost: 13,
                 damage: 0,
                 armour: 1,
                 stype: Item::Armour
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Damage +1"),
                 cost: 25,
                 damage: 1,
                 armour: 0,
                 stype: Item::Ring
             },
-            ShopItem {
+            &ShopItem {
                 name: String::from("Defense +1"),
                 cost: 20,
                 damage: 0,

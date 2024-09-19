@@ -55,6 +55,7 @@
  *          the fight?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::cmp::max;
 use std::collections::HashMap;
@@ -68,6 +69,7 @@ pub enum Item {
     Ring,
 }
 
+#[derive(Clone)]
 #[derive(PartialEq, Debug)]
 pub struct ShopItem {
     pub name: String,
@@ -141,12 +143,12 @@ pub fn read_shop_data(file_path: &str) -> HashMap<Item, Vec<ShopItem>> {
 }
 
 /// Calculate the cost of a set of equipment
-pub fn calc_equip_cost(equip: &Vec<ShopItem>) -> u32 {
+pub fn calc_equip_cost(equip: &Vec<&ShopItem>) -> u32 {
     return equip.iter().map(|x| x.cost).sum::<u32>();
 }
 
 /// Determine the player statistics based on their equipment
-pub fn calc_player_stats(equip: &Vec<ShopItem>) -> Stats {
+pub fn calc_player_stats(equip: &Vec<&ShopItem>) -> Stats {
     let mut sum_damage = 0;
     let mut sum_armour = 0;
 
@@ -169,14 +171,14 @@ pub fn does_player_win(player: &Stats, boss: &Stats) -> bool {
 
     loop {
         /* The player attacks. */
-        boss_health -= max(1, player.damage.saturating_sub(boss.armour));
+        boss_health = boss_health.saturating_sub(max(1, player.damage.saturating_sub(boss.armour)));
 
         if boss_health <= 0 {
             return true;
         }
 
         /* The boss attacks. */
-        player_health -= max(1, boss.damage.saturating_sub(player.armour));
+        player_health = player_health.saturating_sub(max(1, boss.damage.saturating_sub(player.armour)));
 
         if player_health <= 0 {
             return false;
@@ -185,8 +187,49 @@ pub fn does_player_win(player: &Stats, boss: &Stats) -> bool {
 }
 
 /// Search for the cheapest way to beat the boss
-pub fn find_cheapest_win(store: &HashMap<Item, Vec<ShopItem>>, boss: Stats) -> u32 {
-    0
+pub fn find_cheapest_win(store: &HashMap<Item, Vec<ShopItem>>, boss: &Stats) -> u32 {
+    let mut min_cost = u32::MAX;
+
+    /* Iterate over each weapon. */
+    for weapon in store[&Item::Weapon].iter() {
+
+        /* Iterate over each armour type and no armour */
+        for num_armour in 0..=1 {
+            for armour_comb in store[&Item::Armour].iter().combinations(num_armour) {
+
+
+                /* Iterate over the rings. */
+                for num_rings in 0..=2 {
+                    for ring_comb in store[&Item::Ring].iter().combinations(num_rings) {
+
+                        let equip_comb =
+                            [vec![weapon], armour_comb.clone(), ring_comb.clone()].concat();
+                        let comb_stats = calc_player_stats(&equip_comb);
+
+                        /* Does this equipment combination beat the boss? */
+                        if does_player_win(&comb_stats, boss) {
+                            let comb_cost = calc_equip_cost(&equip_comb);
+
+                            if comb_cost < min_cost {
+                                min_cost = comb_cost;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return min_cost;
 }
 
-fn main() {}
+fn main() {
+    let merchant = read_shop_data("./data/shop.txt");
+    let boss_stats = Stats {
+        hit_points: 100,
+        damage: 8,
+        armour: 2,
+    };
+
+    println!("Part 1 = {}", find_cheapest_win(&merchant, &boss_stats));
+}
