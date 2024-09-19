@@ -25,7 +25,7 @@ Archive of Advent of Code attempts using the Rust language.
 | 18  | :star2: |      |      |      |      |      |      |      |      |
 | 19  | :star2: |      |      |      |      |      |      |      |      |
 | 20  | :star2: |      |      |      |      |      |      |      |      |
-| 21  |         |      |      |      |      |      |      |      |      |
+| 21  | :star2: |      |      |      |      |      |      |      |      |
 | 22  |         |      |      |      |      |      |      |      |      |
 | 23  |         |      |      |      |      |      |      |      |      |
 | 24  |         |      |      |      |      |      |      |      |      |
