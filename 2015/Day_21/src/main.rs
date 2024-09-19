@@ -69,8 +69,7 @@ pub enum Item {
     Ring,
 }
 
-#[derive(Clone)]
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct ShopItem {
     pub name: String,
     pub cost: u32,
@@ -178,7 +177,8 @@ pub fn does_player_win(player: &Stats, boss: &Stats) -> bool {
         }
 
         /* The boss attacks. */
-        player_health = player_health.saturating_sub(max(1, boss.damage.saturating_sub(player.armour)));
+        player_health =
+            player_health.saturating_sub(max(1, boss.damage.saturating_sub(player.armour)));
 
         if player_health <= 0 {
             return false;
@@ -192,16 +192,12 @@ pub fn find_cheapest_win(store: &HashMap<Item, Vec<ShopItem>>, boss: &Stats) -> 
 
     /* Iterate over each weapon. */
     for weapon in store[&Item::Weapon].iter() {
-
         /* Iterate over each armour type and no armour */
         for num_armour in 0..=1 {
             for armour_comb in store[&Item::Armour].iter().combinations(num_armour) {
-
-
                 /* Iterate over the rings. */
                 for num_rings in 0..=2 {
                     for ring_comb in store[&Item::Ring].iter().combinations(num_rings) {
-
                         let equip_comb =
                             [vec![weapon], armour_comb.clone(), ring_comb.clone()].concat();
                         let comb_stats = calc_player_stats(&equip_comb);
@@ -219,7 +215,6 @@ pub fn find_cheapest_win(store: &HashMap<Item, Vec<ShopItem>>, boss: &Stats) -> 
             }
         }
     }
-
     return min_cost;
 }
 
