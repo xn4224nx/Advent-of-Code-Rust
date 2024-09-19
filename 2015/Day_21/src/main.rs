@@ -218,6 +218,38 @@ pub fn find_cheapest_win(store: &HashMap<Item, Vec<ShopItem>>, boss: &Stats) -> 
     return min_cost;
 }
 
+/// Search for the most expensive way to loose to the boss
+pub fn find_costliest_loss(store: &HashMap<Item, Vec<ShopItem>>, boss: &Stats) -> u32 {
+    let mut max_cost = u32::MIN;
+
+    /* Iterate over each weapon. */
+    for weapon in store[&Item::Weapon].iter() {
+        /* Iterate over each armour type and no armour */
+        for num_armour in 0..=1 {
+            for armour_comb in store[&Item::Armour].iter().combinations(num_armour) {
+                /* Iterate over the rings. */
+                for num_rings in 0..=2 {
+                    for ring_comb in store[&Item::Ring].iter().combinations(num_rings) {
+                        let equip_comb =
+                            [vec![weapon], armour_comb.clone(), ring_comb.clone()].concat();
+                        let comb_stats = calc_player_stats(&equip_comb);
+
+                        /* Does this equipment combination beat the boss? */
+                        if !does_player_win(&comb_stats, boss) {
+                            let comb_cost = calc_equip_cost(&equip_comb);
+
+                            if comb_cost > max_cost {
+                                max_cost = comb_cost;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return max_cost;
+}
+
 fn main() {
     let merchant = read_shop_data("./data/shop.txt");
     let boss_stats = Stats {
@@ -227,4 +259,5 @@ fn main() {
     };
 
     println!("Part 1 = {}", find_cheapest_win(&merchant, &boss_stats));
+    println!("Part 2 = {}", find_costliest_loss(&merchant, &boss_stats));
 }
