@@ -53,6 +53,46 @@
  *          fight?
  */
 
-fn main() {
-    println!("Hello, world!");
+pub struct WizardBattle {
+    pub wiz_health: u32,
+    pub wiz_mana: u32,
+    pub bos_health: u32,
+    pub bos_damage: u32,
+    pub shield_turns: u32,
+    pub poison_turns: u32,
+    pub recharge_turns: u32,
 }
+
+impl WizardBattle {
+    pub fn new(wiz_he: u32, wiz_ma: u32, bos_he: u32, bos_da: u32) -> WizardBattle {
+        return WizardBattle {
+            wiz_health: wiz_he,
+            wiz_mana: wiz_ma,
+            bos_health: bos_he,
+            bos_damage: bos_da,
+            shield_turns: 0,
+            poison_turns: 0,
+            recharge_turns: 0,
+        };
+    }
+
+    pub fn boss_attacks(&mut self) {}
+
+    pub fn cast_magic_missile(&mut self) {}
+
+    pub fn cast_drain(&mut self) {}
+
+    pub fn cast_shield(&mut self) {}
+
+    pub fn cast_poison(&mut self) {}
+
+    pub fn cast_recharge(&mut self) {}
+
+    pub fn impl_active_effects(&mut self) {}
+
+    pub fn find_lowest_mana_to_win(&mut self) -> u32 {
+        0
+    }
+}
+
+fn main() {}
