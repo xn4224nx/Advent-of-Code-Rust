@@ -56,8 +56,11 @@ fn new_turn_3() {
 #[test]
 fn boss_attack_raw_1() {
     let mut test = WizardBattle::new(20, 100, 20, 3);
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 11);
 }
@@ -65,7 +68,9 @@ fn boss_attack_raw_1() {
 #[test]
 fn boss_attack_raw_2() {
     let mut test = WizardBattle::new(21, 100, 20, 4);
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 13);
 }
@@ -73,6 +78,7 @@ fn boss_attack_raw_2() {
 #[test]
 fn boss_attack_raw_3() {
     let mut test = WizardBattle::new(35, 100, 20, 5);
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 30);
 }
@@ -80,9 +86,11 @@ fn boss_attack_raw_3() {
 #[test]
 fn boss_attack_while_shield_1() {
     let mut test = WizardBattle::new(100, 120, 20, 4);
+    test.impl_active_effects();
     test.cast_shield();
 
     for _ in 0..10 {
+        test.impl_active_effects();
         test.boss_attacks();
     }
 
@@ -93,8 +101,11 @@ fn boss_attack_while_shield_1() {
 #[test]
 fn boss_attack_while_shield_2() {
     let mut test = WizardBattle::new(21, 113, 20, 7);
+    test.impl_active_effects();
     test.cast_shield();
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 19);
     assert_eq!(test.wiz_mana, 0);
@@ -103,8 +114,11 @@ fn boss_attack_while_shield_2() {
 #[test]
 fn boss_attack_while_shield_3() {
     let mut test = WizardBattle::new(21, 120, 20, 8);
+    test.impl_active_effects();
     test.cast_shield();
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 19);
     assert_eq!(test.wiz_mana, 7);
@@ -113,8 +127,11 @@ fn boss_attack_while_shield_3() {
 #[test]
 fn boss_attack_while_shield_4() {
     let mut test = WizardBattle::new(21, 120, 20, 10);
+    test.impl_active_effects();
     test.cast_shield();
+    test.impl_active_effects();
     test.boss_attacks();
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 15);
     assert_eq!(test.wiz_mana, 7);
@@ -123,8 +140,11 @@ fn boss_attack_while_shield_4() {
 #[test]
 fn magic_missile_1() {
     let mut test = WizardBattle::new(21, 500, 20, 10);
+    test.impl_active_effects();
     test.cast_magic_missile();
+    test.impl_active_effects();
     test.cast_magic_missile();
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.bos_health, 8);
     assert_eq!(test.wiz_mana, 341);
@@ -133,6 +153,7 @@ fn magic_missile_1() {
 #[test]
 fn magic_missile_2() {
     let mut test = WizardBattle::new(21, 53, 20, 10);
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.bos_health, 16);
     assert_eq!(test.wiz_mana, 0);
@@ -141,7 +162,9 @@ fn magic_missile_2() {
 #[test]
 fn magic_missile_3() {
     let mut test = WizardBattle::new(21, 250, 20, 10);
+    test.impl_active_effects();
     test.cast_magic_missile();
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.bos_health, 12);
     assert_eq!(test.wiz_mana, 144);
@@ -150,6 +173,7 @@ fn magic_missile_3() {
 #[test]
 fn drain_1() {
     let mut test = WizardBattle::new(21, 250, 20, 10);
+    test.impl_active_effects();
     test.cast_drain();
 
     assert_eq!(test.bos_health, 18);
@@ -160,7 +184,9 @@ fn drain_1() {
 #[test]
 fn drain_2() {
     let mut test = WizardBattle::new(21, 250, 20, 10);
+    test.impl_active_effects();
     test.cast_drain();
+    test.impl_active_effects();
     test.cast_drain();
 
     assert_eq!(test.bos_health, 16);
@@ -171,8 +197,11 @@ fn drain_2() {
 #[test]
 fn drain_3() {
     let mut test = WizardBattle::new(21, 250, 20, 10);
+    test.impl_active_effects();
     test.cast_drain();
+    test.impl_active_effects();
     test.cast_drain();
+    test.impl_active_effects();
     test.cast_drain();
 
     assert_eq!(test.bos_health, 14);
@@ -184,23 +213,31 @@ fn drain_3() {
 fn shield() {
     let mut test = WizardBattle::new(100, 1000, 100, 4);
 
+    test.impl_active_effects();
     test.cast_shield();
     assert_eq!(test.wiz_mana, 887);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 99);
+    test.impl_active_effects();
     test.cast_magic_missile();
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 98);
+    test.impl_active_effects();
     test.cast_magic_missile();
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 97);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 93);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_health, 89);
 }
@@ -209,23 +246,31 @@ fn shield() {
 fn poison() {
     let mut test = WizardBattle::new(100, 1000, 100, 4);
 
+    test.impl_active_effects();
     test.cast_poison();
     assert_eq!(test.wiz_mana, 827);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.bos_health, 97);
+    test.impl_active_effects();
     test.cast_magic_missile();
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.bos_health, 87);
+    test.impl_active_effects();
     test.cast_magic_missile();
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.bos_health, 77);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.bos_health, 74);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.bos_health, 74);
 }
@@ -233,27 +278,35 @@ fn poison() {
 #[test]
 fn recharge() {
     let mut test = WizardBattle::new(100, 1000, 100, 4);
+    test.impl_active_effects();
     test.cast_recharge();
     assert_eq!(test.wiz_mana, 771);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_mana, 872);
 
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.wiz_mana, 920);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_mana, 1021);
 
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.wiz_mana, 1069);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_mana, 1170);
 
+    test.impl_active_effects();
     test.cast_magic_missile();
     assert_eq!(test.wiz_mana, 1117);
 
+    test.impl_active_effects();
     test.boss_attacks();
     assert_eq!(test.wiz_mana, 1117);
 }
@@ -261,18 +314,21 @@ fn recharge() {
 #[test]
 fn test_battle_1() {
     let mut test = WizardBattle::new(10, 250, 13, 8);
+    test.impl_active_effects();
     test.cast_poison();
 
     assert_eq!(test.bos_health, 13);
     assert_eq!(test.wiz_health, 10);
     assert_eq!(test.wiz_mana, 77);
 
+    test.impl_active_effects();
     test.boss_attacks();
 
     assert_eq!(test.bos_health, 10);
     assert_eq!(test.wiz_health, 2);
     assert_eq!(test.wiz_mana, 77);
 
+    test.impl_active_effects();
     test.cast_magic_missile();
 
     assert_eq!(test.bos_health, 3);
@@ -283,46 +339,55 @@ fn test_battle_1() {
 #[test]
 fn test_battle_2() {
     let mut test = WizardBattle::new(10, 250, 14, 8);
+    test.impl_active_effects();
     test.cast_recharge();
 
     assert_eq!(test.wiz_health, 10);
     assert_eq!(test.wiz_mana, 21);
     assert_eq!(test.bos_health, 14);
+    test.impl_active_effects();
     test.boss_attacks();
 
     assert_eq!(test.wiz_health, 2);
     assert_eq!(test.wiz_mana, 122);
     assert_eq!(test.bos_health, 14);
+    test.impl_active_effects();
     test.cast_shield();
 
     assert_eq!(test.wiz_health, 2);
     assert_eq!(test.wiz_mana, 110);
     assert_eq!(test.bos_health, 14);
+    test.impl_active_effects();
     test.boss_attacks();
 
     assert_eq!(test.wiz_health, 1);
     assert_eq!(test.wiz_mana, 211);
     assert_eq!(test.bos_health, 14);
+    test.impl_active_effects();
     test.cast_drain();
 
     assert_eq!(test.wiz_health, 3);
     assert_eq!(test.wiz_mana, 239);
     assert_eq!(test.bos_health, 12);
+    test.impl_active_effects();
     test.boss_attacks();
 
     assert_eq!(test.wiz_health, 2);
     assert_eq!(test.wiz_mana, 340);
     assert_eq!(test.bos_health, 12);
+    test.impl_active_effects();
     test.cast_poison();
 
     assert_eq!(test.wiz_health, 2);
     assert_eq!(test.wiz_mana, 167);
     assert_eq!(test.bos_health, 12);
+    test.impl_active_effects();
     test.boss_attacks();
 
     assert_eq!(test.wiz_health, 1);
     assert_eq!(test.wiz_mana, 167);
     assert_eq!(test.bos_health, 9);
+    test.impl_active_effects();
     test.cast_magic_missile();
 
     assert_eq!(test.wiz_health, 1);

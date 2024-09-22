@@ -53,6 +53,7 @@
  *          fight?
  */
 
+use itertools::Itertools;
 use std::cmp::max;
 
 pub struct WizardBattle {
@@ -63,6 +64,23 @@ pub struct WizardBattle {
     pub shield_turns: u32,
     pub poison_turns: u32,
     pub recharge_turns: u32,
+    pub spent_mana: u32,
+}
+
+#[derive(Debug)]
+enum Spell {
+    Missile,
+    Drain,
+    Shield,
+    Poison,
+    Recharge,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum BattleStatus {
+    BossWin,
+    WizardWin,
+    Undecided,
 }
 
 impl WizardBattle {
@@ -76,12 +94,31 @@ impl WizardBattle {
             shield_turns: 0,
             poison_turns: 0,
             recharge_turns: 0,
+            spent_mana: 0,
+        };
+    }
+
+    /// Cast a generic spell of a certain cost
+    fn spell_econ(&mut self, spell_cost: u32) -> bool {
+        let (new_mana, mana_run_out) = self.wiz_mana.overflowing_sub(spell_cost);
+        self.wiz_mana = new_mana;
+        self.spent_mana += spell_cost;
+        return mana_run_out;
+    }
+
+    /// Determine the result of a battle based on certain factors
+    fn det_battle_outcome(&self, mana_run_out: bool) -> BattleStatus {
+        return if mana_run_out || self.wiz_health == 0 {
+            BattleStatus::BossWin
+        } else if self.bos_health == 0 {
+            BattleStatus::WizardWin
+        } else {
+            BattleStatus::Undecided
         };
     }
 
     /// Simulate the boss attacking the wizard
-    pub fn boss_attacks(&mut self) {
-        self.impl_active_effects();
+    pub fn boss_attacks(&mut self) -> BattleStatus {
         let damage = if self.shield_turns > 0 {
             self.bos_damage.saturating_sub(7)
         } else {
@@ -89,46 +126,47 @@ impl WizardBattle {
         };
 
         self.wiz_health = self.wiz_health.saturating_sub(max(damage, 1));
+        return self.det_battle_outcome(false);
     }
 
     /// The wizard casts magic missile against the boss.
-    pub fn cast_magic_missile(&mut self) {
-        self.impl_active_effects();
-        self.wiz_mana -= 53;
+    pub fn cast_magic_missile(&mut self) -> BattleStatus {
+        let mana_run_out = self.spell_econ(53);
         self.bos_health = self.bos_health.saturating_sub(4);
+        return self.det_battle_outcome(mana_run_out);
     }
 
     /// The wizard casts the drain spell
-    pub fn cast_drain(&mut self) {
-        self.impl_active_effects();
-        self.wiz_mana -= 73;
+    pub fn cast_drain(&mut self) -> BattleStatus {
+        let mana_run_out = self.spell_econ(73);
         self.bos_health = self.bos_health.saturating_sub(2);
         self.wiz_health += 2;
+        return self.det_battle_outcome(mana_run_out);
     }
 
     /// The wizard casts the shield spell
-    pub fn cast_shield(&mut self) {
-        self.impl_active_effects();
-        self.wiz_mana -= 113;
+    pub fn cast_shield(&mut self) -> BattleStatus {
+        let mana_run_out = self.spell_econ(113);
         self.shield_turns = 6;
+        return self.det_battle_outcome(mana_run_out);
     }
 
     /// The wizard casts the poison spell
-    pub fn cast_poison(&mut self) {
-        self.impl_active_effects();
-        self.wiz_mana -= 173;
+    pub fn cast_poison(&mut self) -> BattleStatus {
+        let mana_run_out = self.spell_econ(173);
         self.poison_turns = 6;
+        return self.det_battle_outcome(mana_run_out);
     }
 
     /// The wizard casts the recharge spell
-    pub fn cast_recharge(&mut self) {
-        self.impl_active_effects();
-        self.wiz_mana -= 229;
+    pub fn cast_recharge(&mut self) -> BattleStatus {
+        let mana_run_out = self.spell_econ(229);
         self.recharge_turns = 5;
+        return self.det_battle_outcome(mana_run_out);
     }
 
     /// Take care of the housekeeping tasks at the start of a turn
-    pub fn impl_active_effects(&mut self) {
+    pub fn impl_active_effects(&mut self) -> BattleStatus {
         if self.shield_turns > 0 {
             self.shield_turns -= 1;
         };
@@ -142,11 +180,98 @@ impl WizardBattle {
             self.recharge_turns -= 1;
             self.wiz_mana += 101;
         };
-    }
-
-    pub fn find_lowest_mana_to_win(&mut self) -> u32 {
-        0
+        return self.det_battle_outcome(false);
     }
 }
 
-fn main() {}
+/// Work out the maximum mana that would be spent to cast all the spells
+fn spells_cost(all_spells: &Vec<&Spell>) -> u32 {
+    return all_spells
+        .iter()
+        .map(|x| match x {
+            Spell::Missile => 53,
+            Spell::Drain => 73,
+            Spell::Shield => 113,
+            Spell::Poison => 173,
+            Spell::Recharge => 229,
+        })
+        .sum::<u32>();
+}
+
+/// Simulate multiple wizard battles and find the way to win with the least mana.
+fn find_lowest_mana_to_win() -> u32 {
+    let mut lowest_mana = u32::MAX;
+
+    /* Assume that the solution is found by casting 100 or less spells. */
+    for num_spells in 1..=100 {
+        let mut no_sols_for_this_num = true;
+
+        /* Pick a number of spells to cast. */
+        for spell_comb in [
+            Spell::Missile,
+            Spell::Drain,
+            Spell::Shield,
+            Spell::Poison,
+            Spell::Recharge,
+        ]
+        .iter()
+        .combinations_with_replacement(num_spells)
+        {
+            /* Check if this combination could actually yield a solution. */
+            if spells_cost(&spell_comb) > lowest_mana {
+                continue;
+            };
+
+            /* Iterate over the permutations of this combination of spells. */
+            for spell_perm in spell_comb.iter().permutations(num_spells) {
+                let mut simul = WizardBattle::new(50, 500, 51, 9);
+                let mut battle_result = BattleStatus::Undecided;
+
+                /* Track this battle and see how it ends. */
+                for spell in spell_perm.iter() {
+                    battle_result = simul.impl_active_effects();
+                    if battle_result != BattleStatus::Undecided {
+                        break;
+                    };
+
+                    battle_result = match spell {
+                        Spell::Missile => simul.cast_magic_missile(),
+                        Spell::Drain => simul.cast_drain(),
+                        Spell::Shield => simul.cast_shield(),
+                        Spell::Poison => simul.cast_poison(),
+                        Spell::Recharge => simul.cast_recharge(),
+                    };
+                    if battle_result != BattleStatus::Undecided {
+                        break;
+                    };
+
+                    battle_result = simul.impl_active_effects();
+                    if battle_result != BattleStatus::Undecided {
+                        break;
+                    };
+
+                    battle_result = simul.boss_attacks();
+                    if battle_result != BattleStatus::Undecided {
+                        break;
+                    };
+                }
+
+                /* Detect a new record for lowest mana spent to win. */
+                if battle_result == BattleStatus::WizardWin && simul.spent_mana < lowest_mana {
+                    lowest_mana = simul.spent_mana;
+                    no_sols_for_this_num = false;
+                }
+            }
+        }
+
+        if lowest_mana != u32::MAX && no_sols_for_this_num {
+            break;
+        }
+    }
+
+    return lowest_mana;
+}
+
+fn main() {
+    println!("Part 1 = {}", find_lowest_mana_to_win());
+}
