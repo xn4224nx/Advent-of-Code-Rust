@@ -53,6 +53,8 @@
  *          fight?
  */
 
+use std::cmp::max;
+
 pub struct WizardBattle {
     pub wiz_health: u32,
     pub wiz_mana: u32,
@@ -77,17 +79,53 @@ impl WizardBattle {
         };
     }
 
-    pub fn boss_attacks(&mut self) {}
+    /// Simulate the boss attacking the wizard
+    pub fn boss_attacks(&mut self) {
+        self.impl_active_effects();
+        let damage = if self.shield_turns > 0 {
+            self.bos_damage.saturating_sub(7)
+        } else {
+            self.bos_damage
+        };
 
-    pub fn cast_magic_missile(&mut self) {}
+        self.wiz_health = self.wiz_health.saturating_sub(max(damage, 1));
+    }
 
-    pub fn cast_drain(&mut self) {}
+    /// The wizard casts magic missile against the boss.
+    pub fn cast_magic_missile(&mut self) {
+        self.impl_active_effects();
+        self.wiz_mana -= 53;
+        self.bos_health = self.bos_health.saturating_sub(4);
+    }
 
-    pub fn cast_shield(&mut self) {}
+    /// The wizard casts the drain spell
+    pub fn cast_drain(&mut self) {
+        self.impl_active_effects();
+        self.wiz_mana -= 73;
+        self.bos_health = self.bos_health.saturating_sub(2);
+        self.wiz_health += 2;
+    }
 
-    pub fn cast_poison(&mut self) {}
+    /// The wizard casts the shield spell
+    pub fn cast_shield(&mut self) {
+        self.impl_active_effects();
+        self.wiz_mana -= 113;
+        self.shield_turns = 6;
+    }
 
-    pub fn cast_recharge(&mut self) {}
+    /// The wizard casts the poison spell
+    pub fn cast_poison(&mut self) {
+        self.impl_active_effects();
+        self.wiz_mana -= 173;
+        self.poison_turns = 6;
+    }
+
+    /// The wizard casts the recharge spell
+    pub fn cast_recharge(&mut self) {
+        self.impl_active_effects();
+        self.wiz_mana -= 229;
+        self.recharge_turns = 5;
+    }
 
     /// Take care of the housekeeping tasks at the start of a turn
     pub fn impl_active_effects(&mut self) {
