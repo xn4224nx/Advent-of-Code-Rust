@@ -51,6 +51,14 @@
  *
  * PART 1:  What is the least amount of mana you can spend and still win the
  *          fight?
+ *
+ * On the next run through the game, you increase the difficulty to hard.
+ *
+ * At the start of each player turn (before any other effects apply), you lose 1
+ * hit point. If this brings you to or below 0 hit points, you lose.
+ *
+ * PART 2:  With the same starting stats for you and the boss, what is the least
+ *          amount of mana you can spend and still win the fight?
  */
 
 use itertools::Itertools;
@@ -167,6 +175,7 @@ impl WizardBattle {
 
     /// Take care of the housekeeping tasks at the start of a turn
     pub fn impl_active_effects(&mut self) -> BattleStatus {
+
         if self.shield_turns > 0 {
             self.shield_turns -= 1;
         };
@@ -199,7 +208,7 @@ fn spells_cost(all_spells: &Vec<&Spell>) -> u32 {
 }
 
 /// Simulate multiple wizard battles and find the way to win with the least mana.
-fn find_lowest_mana_to_win() -> u32 {
+fn find_lowest_mana_to_win(hrd_mode: bool) -> u32 {
     let mut lowest_mana = u32::MAX;
 
     /* Assume that the solution is found by casting 100 or less spells. */
@@ -218,9 +227,7 @@ fn find_lowest_mana_to_win() -> u32 {
         .combinations_with_replacement(num_spells)
         {
             /* Check if this combination could actually yield a solution. */
-            if spells_cost(&spell_comb) > lowest_mana {
-                continue;
-            };
+            if spells_cost(&spell_comb) > lowest_mana {continue;};
 
             /* Iterate over the permutations of this combination of spells. */
             for spell_perm in spell_comb.iter().permutations(num_spells) {
@@ -229,6 +236,10 @@ fn find_lowest_mana_to_win() -> u32 {
 
                 /* Track this battle and see how it ends. */
                 for spell in spell_perm.iter() {
+                    if hrd_mode {
+                        simul.wiz_health = simul.wiz_health.saturating_sub(1);
+                    };
+
                     battle_result = simul.impl_active_effects();
                     if battle_result != BattleStatus::Undecided {
                         break;
@@ -254,24 +265,29 @@ fn find_lowest_mana_to_win() -> u32 {
                     if battle_result != BattleStatus::Undecided {
                         break;
                     };
+
+                    /* Ensure that the upcoming steps could yield a solution. */
+                    if simul.spent_mana > lowest_mana {
+                        break;
+                    };
                 }
 
                 /* Detect a new record for lowest mana spent to win. */
                 if battle_result == BattleStatus::WizardWin && simul.spent_mana < lowest_mana {
                     lowest_mana = simul.spent_mana;
                     no_sols_for_this_num = false;
+                    no_sols = 0;
                 }
             }
         }
-
         if lowest_mana != u32::MAX && no_sols_for_this_num {
             break;
         }
     }
-
     return lowest_mana;
 }
 
 fn main() {
-    println!("Part 1 = {}", find_lowest_mana_to_win());
+    println!("Part 1 = {}", find_lowest_mana_to_win(false));
+    println!("Part 2 = {}", find_lowest_mana_to_win(true));
 }
