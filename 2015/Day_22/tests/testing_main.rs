@@ -10,8 +10,9 @@ fn new_turn_1() {
 
     test.poison_turns = 3;
     test.shield_turns = 2;
-    test.recharge_turns = 1;
+    test.recharge_turns = 4;
 
+    test.impl_active_effects();
     test.impl_active_effects();
     test.impl_active_effects();
 
@@ -31,9 +32,9 @@ fn new_turn_2() {
     test.impl_active_effects();
     test.impl_active_effects();
 
-    assert_eq!(test.poison_turns, 0);
+    assert_eq!(test.poison_turns, 1);
     assert_eq!(test.shield_turns, 0);
-    assert_eq!(test.recharge_turns, 1);
+    assert_eq!(test.recharge_turns, 0);
 }
 
 #[test]

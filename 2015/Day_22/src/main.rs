@@ -64,6 +64,7 @@ pub struct WizardBattle {
 }
 
 impl WizardBattle {
+    /// Create a new instance of the wizard battle.
     pub fn new(wiz_he: u32, wiz_ma: u32, bos_he: u32, bos_da: u32) -> WizardBattle {
         return WizardBattle {
             wiz_health: wiz_he,
@@ -88,7 +89,22 @@ impl WizardBattle {
 
     pub fn cast_recharge(&mut self) {}
 
-    pub fn impl_active_effects(&mut self) {}
+    /// Take care of the housekeeping tasks at the start of a turn
+    pub fn impl_active_effects(&mut self) {
+        if self.shield_turns > 0 {
+            self.shield_turns -= 1;
+        };
+
+        if self.poison_turns > 0 {
+            self.poison_turns -= 1;
+            self.bos_health = self.bos_health.saturating_sub(3);
+        };
+
+        if self.recharge_turns > 0 {
+            self.recharge_turns -= 1;
+            self.wiz_mana += 101;
+        };
+    }
 
     pub fn find_lowest_mana_to_win(&mut self) -> u32 {
         0
