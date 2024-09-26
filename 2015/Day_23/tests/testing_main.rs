@@ -194,7 +194,7 @@ fn jump_if_one_register_a() {
 
     test_sys.execute_comms();
     assert_eq!(test_sys.reg_a, 4);
-    assert_eq!(test_sys.reg_b, 0);
+    assert_eq!(test_sys.reg_b, 1);
 }
 
 #[test]

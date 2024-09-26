@@ -94,7 +94,7 @@ impl Comm {
 pub struct Computer {
     pub reg_a: u32,
     pub reg_b: u32,
-    pub ptr: usize,
+    pub ptr: i32,
     pub comms: Vec<Comm>,
 }
 
@@ -108,7 +108,56 @@ impl Computer {
         }
     }
 
-    pub fn execute_comms(&mut self) {}
+    /// Execute every command in `comms`.
+    pub fn execute_comms(&mut self) {
+        while self.ptr >= 0 && self.ptr < self.comms.len() as i32 {
+            match self.comms[self.ptr as usize] {
+                Comm::Half(reg) => {
+                    if reg == 'a' {
+                        self.reg_a /= 2;
+                    } else {
+                        self.reg_b /= 2;
+                    }
+                    self.ptr += 1;
+                }
+                Comm::Triple(reg) => {
+                    if reg == 'a' {
+                        self.reg_a *= 3;
+                    } else {
+                        self.reg_b *= 3;
+                    }
+                    self.ptr += 1;
+                }
+                Comm::Increm(reg) => {
+                    if reg == 'a' {
+                        self.reg_a += 1;
+                    } else {
+                        self.reg_b += 1;
+                    }
+                    self.ptr += 1;
+                }
+                Comm::Jump(offs) => self.ptr += offs,
+                Comm::JumpIfEven((reg, offs)) => {
+                    if reg == 'a' && self.reg_a % 2 == 0 {
+                        self.ptr += offs
+                    } else if reg == 'b' && self.reg_b % 2 == 0 {
+                        self.ptr += offs
+                    } else {
+                        self.ptr += 1
+                    }
+                }
+                Comm::JumpIfOne((reg, offs)) => {
+                    if reg == 'a' && self.reg_a == 1 {
+                        self.ptr += offs
+                    } else if reg == 'b' && self.reg_b == 1 {
+                        self.ptr += offs
+                    } else {
+                        self.ptr += 1
+                    }
+                }
+            }
+        }
+    }
 
     /// Read the commands from file
     pub fn read_comms(&mut self, file_path: &str) {
