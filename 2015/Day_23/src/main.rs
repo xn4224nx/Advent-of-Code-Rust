@@ -72,8 +72,22 @@ pub enum Comm {
 }
 
 impl Comm {
-    pub fn new(raw_instruction: String) -> Self {
-        Comm::Half('a')
+    pub fn new(raw_instruction: &String) -> Self {
+        let parts: Vec<&str> = raw_instruction.split(' ').collect();
+
+        /* Determine the register that gets changed. */
+        let reg = parts[1].chars().nth(0).unwrap();
+
+        /* Detect the command and process the details. */
+        return match parts[0] {
+            "hlf" => Comm::Half(reg),
+            "tpl" => Comm::Triple(reg),
+            "inc" => Comm::Increm(reg),
+            "jmp" => Comm::Jump(parse_signed_num(parts[1])),
+            "jie" => Comm::JumpIfEven((reg, parse_signed_num(parts[2]))),
+            "jio" => Comm::JumpIfOne((reg, parse_signed_num(parts[2]))),
+            _ => panic!("Command '{}', not found!", parts[0]),
+        };
     }
 }
 
@@ -107,29 +121,7 @@ impl Computer {
 
         /* Iterate over the file line by line. */
         while file_ptr.read_line(&mut buffer).unwrap() > 0 {
-            let parts: Vec<&str> = buffer.split(' ').collect();
-
-            println!("{:?}", parts);
-
-            /* Determine the register that gets changed. */
-            let reg = parts[1].chars().nth(0).unwrap();
-
-            /* Detect the command and process the details. */
-            if parts[0] == "hlf" {
-                comms.push(Comm::Half(reg));
-            } else if parts[0] == "tpl" {
-                comms.push(Comm::Triple(reg));
-            } else if parts[0] == "inc" {
-                comms.push(Comm::Increm(reg));
-            } else if parts[0] == "jmp" {
-                comms.push(Comm::Jump(parse_signed_num(parts[1])));
-            } else if parts[0] == "jie" {
-                comms.push(Comm::JumpIfEven((reg, parse_signed_num(parts[2]))));
-            } else if parts[0] == "jio" {
-                comms.push(Comm::JumpIfOne((reg, parse_signed_num(parts[2]))));
-            } else {
-                panic!("Command '{}', not found!", parts[0]);
-            }
+            comms.push(Comm::new(&buffer));
             buffer.clear();
         }
         self.comms = comms;
