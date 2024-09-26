@@ -177,4 +177,9 @@ impl Computer {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut ljm_comp = Computer::new(0, 0);
+    ljm_comp.read_comms("./data/input.txt");
+    ljm_comp.execute_comms();
+    println!("Part 1 = {}", ljm_comp.reg_b);
+}
