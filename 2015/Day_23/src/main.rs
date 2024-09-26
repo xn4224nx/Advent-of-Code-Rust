@@ -40,6 +40,12 @@
  *
  * PART 1:  What is the value in register b when the program in your puzzle
  *          input is finished executing?
+ *
+ * The unknown benefactor is very thankful for releasi-- er, helping little Jane
+ * Marie with her computer. Definitely not to distract you.
+ *
+ * PART 2:  What is the value in register b after the program is finished
+ *          executing if register a starts as 1 instead?
  */
 
 use regex::Regex;
@@ -182,4 +188,9 @@ fn main() {
     ljm_comp.read_comms("./data/input.txt");
     ljm_comp.execute_comms();
     println!("Part 1 = {}", ljm_comp.reg_b);
+
+    let mut ljm_comp = Computer::new(1, 0);
+    ljm_comp.read_comms("./data/input.txt");
+    ljm_comp.execute_comms();
+    println!("Part 2 = {}", ljm_comp.reg_b);
 }
