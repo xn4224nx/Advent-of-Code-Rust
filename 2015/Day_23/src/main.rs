@@ -42,6 +42,25 @@
  *          input is finished executing?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+/// Parse a singned integer number
+fn parse_signed_num(raw: &str) -> i32 {
+    let re_sig_num = Regex::new(r"([-|\+])(\d+)").unwrap();
+    let parts = re_sig_num.captures(raw).unwrap();
+
+    /* Parse the number. */
+    let mut num = parts[2].parse::<i32>().unwrap();
+
+    /* Determine the sign of the number. */
+    if parts[1] == *"-" {
+        num *= -1;
+    }
+    return num;
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Comm {
     Half(char),
@@ -62,7 +81,7 @@ pub struct Computer {
     pub reg_a: u32,
     pub reg_b: u32,
     pub ptr: usize,
-    pub coms: Vec<Comm>,
+    pub comms: Vec<Comm>,
 }
 
 impl Computer {
@@ -71,13 +90,50 @@ impl Computer {
             reg_a: value_of_a,
             reg_b: value_of_b,
             ptr: 0,
-            coms: Vec::new(),
+            comms: Vec::new(),
         }
     }
 
     pub fn execute_comms(&mut self) {}
 
-    pub fn read_comms(&mut self, file_path: &str) {}
+    /// Read the commands from file
+    pub fn read_comms(&mut self, file_path: &str) {
+        let mut comms: Vec<Comm> = Vec::new();
+
+        /* Open the file. */
+        let file = File::open(file_path).unwrap();
+        let mut file_ptr = BufReader::new(file);
+        let mut buffer = String::new();
+
+        /* Iterate over the file line by line. */
+        while file_ptr.read_line(&mut buffer).unwrap() > 0 {
+            let parts: Vec<&str> = buffer.split(' ').collect();
+
+            println!("{:?}", parts);
+
+            /* Determine the register that gets changed. */
+            let reg = parts[1].chars().nth(0).unwrap();
+
+            /* Detect the command and process the details. */
+            if parts[0] == "hlf" {
+                comms.push(Comm::Half(reg));
+            } else if parts[0] == "tpl" {
+                comms.push(Comm::Triple(reg));
+            } else if parts[0] == "inc" {
+                comms.push(Comm::Increm(reg));
+            } else if parts[0] == "jmp" {
+                comms.push(Comm::Jump(parse_signed_num(parts[1])));
+            } else if parts[0] == "jie" {
+                comms.push(Comm::JumpIfEven((reg, parse_signed_num(parts[2]))));
+            } else if parts[0] == "jio" {
+                comms.push(Comm::JumpIfOne((reg, parse_signed_num(parts[2]))));
+            } else {
+                panic!("Command '{}', not found!", parts[0]);
+            }
+            buffer.clear();
+        }
+        self.comms = comms;
+    }
 }
 
 fn main() {}
