@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_24;
-use day_24::{find_ideal_config_qe, qe_calc, read_box_weights, valid_grouping};
+use day_24::{find_ideal_config_qe, qe_calc, read_box_weights};
 
 #[test]
 fn read_example_box_weights() {
@@ -26,7 +26,7 @@ fn read_input_box_weights() {
 #[test]
 fn qe_calc_0() {
     assert_eq!(
-        qe_calc(vec![vec![11, 9], vec![10, 8, 2], vec![7, 5, 4, 3, 1],]),
+        qe_calc(&vec![vec![11, 9], vec![10, 8, 2], vec![7, 5, 4, 3, 1],]),
         99
     );
 }
@@ -34,7 +34,7 @@ fn qe_calc_0() {
 #[test]
 fn qe_calc_1() {
     assert_eq!(
-        qe_calc(vec![vec![10, 9, 1], vec![11, 7, 2], vec![8, 5, 4, 3],]),
+        qe_calc(&vec![vec![10, 9, 1], vec![11, 7, 2], vec![8, 5, 4, 3],]),
         90
     );
 }
@@ -42,7 +42,7 @@ fn qe_calc_1() {
 #[test]
 fn qe_calc_2() {
     assert_eq!(
-        qe_calc(vec![vec![10, 4, 3, 2, 1], vec![11, 9], vec![8, 7, 5],]),
+        qe_calc(&vec![vec![10, 4, 3, 2, 1], vec![11, 9], vec![8, 7, 5],]),
         240
     );
 }

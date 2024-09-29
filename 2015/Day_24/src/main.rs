@@ -33,14 +33,20 @@
  *          the ideal configuration?
  */
 
+use std::fs::read_to_string;
+
 /// Read the box weights from a file
 pub fn read_box_weights(file_path: &str) -> Vec<u32> {
-    Vec::new()
+    read_to_string(file_path)
+        .unwrap()
+        .lines()
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect()
 }
 
 /// What is the quantum entanglement of this grouping
 pub fn qe_calc(grouping: &Vec<Vec<u32>>) -> u32 {
-    0
+    grouping[0].iter().product()
 }
 
 /// Find the smallest possible quantum entanglement for a group of boxes
