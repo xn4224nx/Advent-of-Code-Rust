@@ -72,18 +72,25 @@
  */
 
 /// Determine the next number in the manual
-pub fn next_num(prev_num: u32) -> u32 {
-    0
+pub fn next_num(prev_num: u64) -> u64 {
+    return (prev_num * 252533) % 33554393;
 }
 
 /// Work out where in the grid a particular grid point is.
-pub fn place_in_order(row: u32, col: u32) -> u32 {
-    0
+pub fn place_in_order(row: u64, col: u64) -> u64 {
+    let side = row + col - 1;
+    return (side * (side + 1)) / 2 - row;
 }
 
 /// Determine the value at a coordinate of the grid.
-pub fn find_val_at_coord(start_num: u32, row: u32, col: u32) -> u32 {
-    0
+pub fn find_val_at_coord(start_num: u64, row: u64, col: u64) -> u64 {
+    let mut tmp = start_num;
+
+    for idx in 0..place_in_order(row, col) {
+        tmp = next_num(tmp);
+    }
+
+    return tmp;
 }
 
 fn main() {}
