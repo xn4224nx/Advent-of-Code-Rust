@@ -52,3 +52,9 @@ fn find_ideal_config_qe_for_example() {
     let example_boxes = read_box_weights("./data/example_01.txt");
     assert_eq!(find_ideal_config_qe(&example_boxes, 3), 99);
 }
+
+#[test]
+fn find_ideal_config_qe_for_example2() {
+    let example_boxes = read_box_weights("./data/example_01.txt");
+    assert_eq!(find_ideal_config_qe(&example_boxes, 4), 44);
+}

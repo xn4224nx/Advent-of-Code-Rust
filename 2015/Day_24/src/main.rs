@@ -31,6 +31,16 @@
  *
  * PART 1:  What is the quantum entanglement of the first group of packages in
  *          the ideal configuration?
+ *
+ * That's weird... the sleigh still isn't balancing.
+ *
+ * "Ho ho ho", Santa muses to himself. "I forgot the trunk".
+ *
+ * Balance the sleigh again, but this time, separate the packages into four
+ * groups instead of three. The other constraints still apply.
+ *
+ * PART 2:  Now, what is the quantum entanglement of the first group of
+ *          packages in the ideal configuration?
  */
 
 use itertools::Itertools;
@@ -107,13 +117,37 @@ pub fn find_ideal_config_qe(boxes: &Vec<u64>, groups: usize) -> u64 {
                             continue;
                         };
 
-                        /* Calculate the qe of this combination  */
-                        lowest_valid_size_found = true;
-                        let qe = grp_0.iter().map(|x| **x).product();
+                        if groups == 4 {
+                            let mut rem_boxes_3: Vec<u64> = rem_boxes_2
+                                .iter()
+                                .filter(|x| !grp_2.contains(x))
+                                .map(|x| *x)
+                                .collect();
 
-                        if qe < lowest_qe {
-                            println!("New qe found = {}", qe);
-                            lowest_qe = qe;
+                            /* Pick the fourth group. */
+                            for grp_3 in rem_boxes_3.iter().combinations(group_sizes[3]) {
+                                if grp_3.iter().map(|x| **x).sum::<u64>() != group_weight {
+                                    continue;
+                                };
+
+                                /* Calculate the qe of this combination  */
+                                lowest_valid_size_found = true;
+                                let qe = grp_0.iter().map(|x| **x).product();
+
+                                if qe < lowest_qe {
+                                    println!("New qe found = {}", qe);
+                                    lowest_qe = qe;
+                                }
+                            }
+                        } else {
+                            /* Calculate the qe of this combination  */
+                            lowest_valid_size_found = true;
+                            let qe = grp_0.iter().map(|x| **x).product();
+
+                            if qe < lowest_qe {
+                                println!("New qe found = {}", qe);
+                                lowest_qe = qe;
+                            }
                         }
                     }
                 }
@@ -127,4 +161,5 @@ pub fn find_ideal_config_qe(boxes: &Vec<u64>, groups: usize) -> u64 {
 fn main() {
     let boxes = read_box_weights("./data/input.txt");
     println!("Part 1 = {}", find_ideal_config_qe(&boxes, 3));
+    println!("Part 2 = {}", find_ideal_config_qe(&boxes, 4));
 }
