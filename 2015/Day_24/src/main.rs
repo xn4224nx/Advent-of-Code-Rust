@@ -43,11 +43,6 @@ pub fn qe_calc(grouping: &Vec<Vec<u32>>) -> u32 {
     0
 }
 
-/// Is a box grouping valid?
-pub fn valid_grouping(grouping: &Vec<Vec<u32>>) -> bool {
-    false
-}
-
 /// Find the smallest possible quantum entanglement for a group of boxes
 pub fn find_ideal_config_qe(boxes: &Vec<u32>, groups: u32) -> u32 {
     0
