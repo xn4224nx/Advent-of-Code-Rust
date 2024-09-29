@@ -93,4 +93,6 @@ pub fn find_val_at_coord(start_num: u64, row: u64, col: u64) -> u64 {
     return tmp;
 }
 
-fn main() {}
+fn main() {
+     println!("Part 1 = {}", find_val_at_coord(20151125, 2981, 3075));
+}
