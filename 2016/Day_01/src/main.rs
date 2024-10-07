@@ -72,6 +72,8 @@ pub fn find_shortest_path(directions: &Vec<Direc>) -> u32 {
 
     /* Process the directions in order. */
     for direc_t in directions.iter() {
+        let mut magniut = 0;
+
         /* Turn the curr_direc and extract the magnitude of the move. */
         match direc_t {
             Direc::L(mag) => {
