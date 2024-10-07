@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_01;
-use day_01::{find_shortest_path, move_point, read_directions, Direc};
+use day_01::{find_shortest_path, read_directions, Direc};
 
 #[test]
 fn test_read_directions_01() {
@@ -38,13 +38,16 @@ fn test_read_directions_04() {
 
 #[test]
 fn test_find_shortest_path_1() {
-    assert_eq!(find_shortest_path(&vec![Direc::R(2), Direc::L(3)]), 5)
+    assert_eq!(
+        find_shortest_path(&vec![Direc::R(2), Direc::L(3)], false),
+        5
+    )
 }
 
 #[test]
 fn test_find_shortest_path_2() {
     assert_eq!(
-        find_shortest_path(&vec![Direc::R(2), Direc::R(2), Direc::R(2)]),
+        find_shortest_path(&vec![Direc::R(2), Direc::R(2), Direc::R(2)], false),
         2
     )
 }
@@ -52,7 +55,21 @@ fn test_find_shortest_path_2() {
 #[test]
 fn test_find_shortest_path_3() {
     assert_eq!(
-        find_shortest_path(&vec![Direc::R(5), Direc::L(5), Direc::R(5), Direc::R(3)]),
+        find_shortest_path(
+            &vec![Direc::R(5), Direc::L(5), Direc::R(5), Direc::R(3)],
+            false
+        ),
         12
+    )
+}
+
+#[test]
+fn test_find_shortest_path_4() {
+    assert_eq!(
+        find_shortest_path(
+            &vec![Direc::R(8), Direc::R(4), Direc::R(4), Direc::R(8),],
+            true
+        ),
+        4
     )
 }

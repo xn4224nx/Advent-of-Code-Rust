@@ -26,10 +26,16 @@
  * destination?
  *
  * PART 1:  How many blocks away is Easter Bunny HQ?
+ *
+ * Then, you notice the instructions continue on the back of the Recruiting
+ * Document. Easter Bunny HQ is actually at the first location you visit twice.
+ *
+ * PART 2:  How many blocks away is the first location you visit twice?
  */
 
 use num_complex::Complex;
 use regex::Regex;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -66,26 +72,41 @@ pub fn read_directions(file_path: &str) -> Vec<Direc> {
 }
 
 /// Follow directions and work out the grid distance from the origin
-pub fn find_shortest_path(directions: &Vec<Direc>) -> u32 {
+pub fn find_shortest_path(directions: &Vec<Direc>, overlap: bool) -> u32 {
     let mut curr_direc = Complex::<i32>::new(0, 1);
     let mut curr_point = Complex::<i32>::new(0, 0);
+    let mut visited_locs = HashSet::new();
 
     /* Process the directions in order. */
-    for direc_t in directions.iter() {
+    'outer: for direc_t in directions.iter() {
         let mut magniut = 0;
 
         /* Turn the curr_direc and extract the magnitude of the move. */
         match direc_t {
             Direc::L(mag) => {
-                curr_direc *= Complex::<i32>::new(0, -1);
-                magniut = *mag;
-            }
-            Direc::R(mag) => {
                 curr_direc *= Complex::<i32>::new(0, 1);
                 magniut = *mag;
             }
+            Direc::R(mag) => {
+                curr_direc *= Complex::<i32>::new(0, -1);
+                magniut = *mag;
+            }
         }
-        /* Move the point along its currect direction. */
+
+        /* Move the point along its currect direction one block at a time. */
+        if overlap {
+            for mv_mag in 1..=magniut {
+                let tmp_point = curr_point + curr_direc.scale(mv_mag as i32);
+
+                /* If the point has been visited before this is the HQ. */
+                if visited_locs.contains(&tmp_point) {
+                    curr_point = tmp_point;
+                    break 'outer;
+                }
+                visited_locs.insert(tmp_point);
+            }
+        }
+        /* Only move to the end of the movement. */
         curr_point += curr_direc.scale(magniut as i32);
     }
     /* Work out the grid distance from the origin to the current point. */
@@ -94,5 +115,6 @@ pub fn find_shortest_path(directions: &Vec<Direc>) -> u32 {
 
 fn main() {
     let directs = read_directions("./data/input.txt");
-    println!("Part 1 = {}", find_shortest_path(&directs));
+    println!("Part 1 = {}", find_shortest_path(&directs, false));
+    println!("Part 2 = {}", find_shortest_path(&directs, true));
 }
