@@ -29,6 +29,9 @@
  */
 
 use num_complex::Complex;
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(PartialEq, Debug)]
 pub enum Direc {
@@ -38,15 +41,56 @@ pub enum Direc {
 
 /// Open a directions file and parse it into a structured format
 pub fn read_directions(file_path: &str) -> Vec<Direc> {
-    Vec::new()
-}
+    let mut buffer = String::new();
+    let mut results = Vec::new();
+    let dir_re_pat = Regex::new(r"(R|L)(\d+)").unwrap();
 
-/// Change a point on the complex plane according to a direction
-pub fn move_point(pnt: &mut Complex<i32>, move_direc: Direc) {}
+    /* Open the file. */
+    let file = File::open(file_path).unwrap();
+    let mut file_ptr = BufReader::new(file);
+
+    /* Parse the file line by line. */
+    while file_ptr.read_line(&mut buffer).unwrap() > 0 {
+        for capture in dir_re_pat.captures_iter(&buffer) {
+            let mag = capture[2].parse::<u8>().unwrap();
+
+            results.push(match &capture[1] {
+                "L" => Direc::L(mag),
+                "R" => Direc::R(mag),
+                _ => panic!("{} is not a recognised direction", &capture[0]),
+            })
+        }
+        buffer.clear();
+    }
+    return results;
+}
 
 /// Follow directions and work out the grid distance from the origin
 pub fn find_shortest_path(directions: &Vec<Direc>) -> u32 {
-    0
+    let mut curr_direc = Complex::<i32>::new(0, 1);
+    let mut curr_point = Complex::<i32>::new(0, 0);
+
+    /* Process the directions in order. */
+    for direc_t in directions.iter() {
+        /* Turn the curr_direc and extract the magnitude of the move. */
+        match direc_t {
+            Direc::L(mag) => {
+                curr_direc *= Complex::<i32>::new(0, -1);
+                magniut = *mag;
+            }
+            Direc::R(mag) => {
+                curr_direc *= Complex::<i32>::new(0, 1);
+                magniut = *mag;
+            }
+        }
+        /* Move the point along its currect direction. */
+        curr_point += curr_direc.scale(magniut as i32);
+    }
+    /* Work out the grid distance from the origin to the current point. */
+    return (curr_point.im.abs() + curr_point.re.abs()) as u32;
 }
 
-fn main() {}
+fn main() {
+    let directs = read_directions("./data/input.txt");
+    println!("Part 1 = {}", find_shortest_path(&directs));
+}

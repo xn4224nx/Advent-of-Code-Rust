@@ -7,7 +7,7 @@ use day_01::{find_shortest_path, move_point, read_directions, Direc};
 #[test]
 fn test_read_directions_01() {
     assert_eq!(
-        read_directions("./data/example_01"),
+        read_directions("./data/example_01.txt"),
         vec![Direc::R(2), Direc::L(3)]
     );
 }
@@ -15,7 +15,7 @@ fn test_read_directions_01() {
 #[test]
 fn test_read_directions_02() {
     assert_eq!(
-        read_directions("./data/example_02"),
+        read_directions("./data/example_02.txt"),
         vec![Direc::R(2), Direc::R(2), Direc::R(2)]
     );
 }
@@ -23,7 +23,7 @@ fn test_read_directions_02() {
 #[test]
 fn test_read_directions_03() {
     assert_eq!(
-        read_directions("./data/example_03"),
+        read_directions("./data/example_03.txt"),
         vec![Direc::R(5), Direc::L(5), Direc::R(5), Direc::R(3)]
     );
 }
@@ -31,7 +31,7 @@ fn test_read_directions_03() {
 #[test]
 fn test_read_directions_04() {
     assert_eq!(
-        read_directions("./data/example_04"),
+        read_directions("./data/example_04.txt"),
         vec![Direc::R(8), Direc::R(4), Direc::R(4), Direc::R(8),]
     );
 }
