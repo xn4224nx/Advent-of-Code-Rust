@@ -21,6 +21,9 @@
  *          the front desk. What is the bathroom code?
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(PartialEq, Debug)]
 pub enum Direc {
     Up,
@@ -30,23 +33,73 @@ pub enum Direc {
 }
 
 pub struct KeyPad {
-    pub vals: Vec<Vec<char>>,
+    pub grid: Vec<Vec<char>>,
     pub pos: (usize, usize),
     pub directs: Vec<Vec<Direc>>,
 }
 
 impl KeyPad {
+    /// Define the keypad grid
     pub fn new(grid: Vec<Vec<char>>, start_pnt: (usize, usize)) -> Self {
         Self {
-            vals: grid,
+            grid: grid,
             pos: start_pnt,
             directs: Vec::new(),
         }
     }
 
-    pub fn read_keypad_commands(&mut self, file_path: &str) {}
+    /// Read the directions on the keypad from file
+    pub fn read_keypad_commands(&mut self, file_path: &str) {
+        let mut buffer = Vec::new();
 
-    pub fn move_position(&mut self, curr_direct: Direc) {}
+        /* Open the file */
+        let file = File::open(file_path).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line. */
+        while fp.read_until(b'\n', &mut buffer).unwrap() > 0 {
+            let mut line_instr = Vec::new();
+
+            /* For each character in the line */
+            for direction in &buffer {
+                match direction {
+                    85 => line_instr.push(Direc::Up),
+                    68 => line_instr.push(Direc::Down),
+                    76 => line_instr.push(Direc::Left),
+                    82 => line_instr.push(Direc::Right),
+                    _ => break,
+                }
+            }
+
+            self.directs.push(line_instr);
+            buffer.clear();
+        }
+    }
+
+    /// Move the position on the keypad based on a instruction
+    pub fn move_position(&mut self, curr_direct: Direc) {
+        let old_pos = self.pos;
+
+        /* Verify the move doesn't go beyond the range of the grid. */
+        if (self.pos.0 >= self.grid.len() - 1 && curr_direct == Direc::Down)
+            || (self.pos.1 >= self.grid[0].len() - 1 && curr_direct == Direc::Right)
+        {
+            return;
+        };
+
+        /* Move the pnt. */
+        match curr_direct {
+            Direc::Up => self.pos = (self.pos.0.saturating_sub(1), self.pos.1),
+            Direc::Down => self.pos = (self.pos.0 + 1, self.pos.1),
+            Direc::Left => self.pos = (self.pos.0, self.pos.1.saturating_sub(1)),
+            Direc::Right => self.pos = (self.pos.0, self.pos.1 + 1),
+        };
+
+        /* If the command moves it onto an out of bounds square, revert it. */
+        if self.grid[self.pos.0][self.pos.1] == '0' {
+            self.pos = old_pos;
+        }
+    }
 
     pub fn find_access_code(&mut self) -> String {
         String::from("")
