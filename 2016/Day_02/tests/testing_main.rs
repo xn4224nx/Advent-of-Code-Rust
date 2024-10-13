@@ -43,7 +43,8 @@ fn test_move_up() {
         (1, 1),
     );
 
-    test_pad.move_position(Direc::Up);
+    test_pad.directs = vec![vec![Direc::Up]];
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (0, 1));
 }
 
@@ -58,7 +59,8 @@ fn test_move_down() {
         (1, 1),
     );
 
-    test_pad.move_position(Direc::Down);
+    test_pad.directs = vec![vec![Direc::Down]];
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (2, 1));
 }
 
@@ -73,7 +75,8 @@ fn test_move_left() {
         (1, 1),
     );
 
-    test_pad.move_position(Direc::Left);
+    test_pad.directs = vec![vec![Direc::Left]];
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (1, 0));
 }
 
@@ -88,7 +91,8 @@ fn test_move_right() {
         (1, 1),
     );
 
-    test_pad.move_position(Direc::Right);
+    test_pad.directs = vec![vec![Direc::Right]];
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (1, 2));
 }
 
@@ -103,10 +107,12 @@ fn test_move_invalid_up() {
         (0, 1),
     );
 
-    test_pad.move_position(Direc::Up);
+    test_pad.directs = vec![vec![Direc::Up, Direc::Down]];
+
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (0, 1));
 
-    test_pad.move_position(Direc::Down);
+    test_pad.move_position(0, 1);
     assert_eq!(test_pad.pos, (1, 1));
 }
 
@@ -121,10 +127,12 @@ fn test_move_invalid_down() {
         (2, 1),
     );
 
-    test_pad.move_position(Direc::Down);
+    test_pad.directs = vec![vec![Direc::Down, Direc::Up]];
+
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (2, 1));
 
-    test_pad.move_position(Direc::Up);
+    test_pad.move_position(0, 1);
     assert_eq!(test_pad.pos, (1, 1));
 }
 
@@ -139,10 +147,12 @@ fn test_move_invalid_left() {
         (1, 0),
     );
 
-    test_pad.move_position(Direc::Left);
+    test_pad.directs = vec![vec![Direc::Left, Direc::Right]];
+
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (1, 0));
 
-    test_pad.move_position(Direc::Right);
+    test_pad.move_position(0, 1);
     assert_eq!(test_pad.pos, (1, 1));
 }
 
@@ -156,10 +166,13 @@ fn test_move_invalid_right() {
         ],
         (1, 2),
     );
-    test_pad.move_position(Direc::Right);
+
+    test_pad.directs = vec![vec![Direc::Right, Direc::Left]];
+
+    test_pad.move_position(0, 0);
     assert_eq!(test_pad.pos, (1, 2));
 
-    test_pad.move_position(Direc::Left);
+    test_pad.move_position(0, 1);
     assert_eq!(test_pad.pos, (1, 1));
 }
 
@@ -174,5 +187,6 @@ fn test_find_access_code_01() {
         (1, 1),
     );
 
+    test_pad.read_keypad_commands("./data/example_01.txt");
     assert_eq!(test_pad.find_access_code(), String::from("1985"));
 }

@@ -77,12 +77,13 @@ impl KeyPad {
     }
 
     /// Move the position on the keypad based on a instruction
-    pub fn move_position(&mut self, curr_direct: Direc) {
+    pub fn move_position(&mut self, line_idx: usize, direc_idx: usize) {
+        let curr_direct = &self.directs[line_idx][direc_idx];
         let old_pos = self.pos;
 
         /* Verify the move doesn't go beyond the range of the grid. */
-        if (self.pos.0 >= self.grid.len() - 1 && curr_direct == Direc::Down)
-            || (self.pos.1 >= self.grid[0].len() - 1 && curr_direct == Direc::Right)
+        if (self.pos.0 >= self.grid.len() - 1 && curr_direct == &Direc::Down)
+            || (self.pos.1 >= self.grid[0].len() - 1 && curr_direct == &Direc::Right)
         {
             return;
         };
@@ -102,7 +103,18 @@ impl KeyPad {
     }
 
     pub fn find_access_code(&mut self) -> String {
-        String::from("")
+        let mut password = String::new();
+
+        /* Go over every instruction line and instruction. */
+        for line_idx in 0..self.directs.len() {
+            for direc_idx in 0..self.directs[line_idx].len() {
+                self.move_position(line_idx, direc_idx);
+            }
+
+            /* Record the letter it finally lands on */
+            password.push(self.grid[self.pos.0][self.pos.1])
+        }
+        return password;
     }
 }
 
