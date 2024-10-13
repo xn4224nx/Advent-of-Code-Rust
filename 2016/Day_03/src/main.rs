@@ -17,6 +17,13 @@
  * because 5 + 10 is not larger than 25.
  *
  * PART 1:  In your puzzle input, how many of the listed triangles are possible?
+ *
+ * Now that you've helpfully marked up their design documents, it occurs to you
+ * that triangles are specified in groups of three vertically. Each set of three
+ * numbers in a column specifies a triangle. Rows are unrelated.
+ *
+ * PART 2:  In your puzzle input, and instead reading by columns, how many of
+ *          the listed triangles are possible?
  */
 
 use regex::Regex;
@@ -24,7 +31,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 /// Read the triangles sizes from file
-pub fn read_triangles(file_path: &str) -> Vec<(u32, u32, u32)> {
+pub fn read_triangles(file_path: &str, vert: bool) -> Vec<(u32, u32, u32)> {
     let re_tri = Regex::new(r"(\d+)\s+(\d+)\s+(\d+)").unwrap();
     let mut triangles = Vec::new();
     let mut buffer = String::new();
@@ -48,9 +55,35 @@ pub fn read_triangles(file_path: &str) -> Vec<(u32, u32, u32)> {
             raw_nums[2].parse::<u32>().unwrap(),
             raw_nums[3].parse::<u32>().unwrap(),
         ));
+
         buffer.clear();
     }
-    return triangles;
+
+    /* If the triangles are vertical change the data ordering. */
+    if vert && triangles.len() % 3 == 0 {
+        let mut v_tri = Vec::new();
+
+        for row_idx in (0..triangles.len()).step_by(3) {
+            v_tri.push((
+                triangles[row_idx].0,
+                triangles[row_idx + 1].0,
+                triangles[row_idx + 2].0,
+            ));
+            v_tri.push((
+                triangles[row_idx].1,
+                triangles[row_idx + 1].1,
+                triangles[row_idx + 2].1,
+            ));
+            v_tri.push((
+                triangles[row_idx].2,
+                triangles[row_idx + 1].2,
+                triangles[row_idx + 2].2,
+            ));
+        }
+        return v_tri;
+    } else {
+        return triangles;
+    };
 }
 
 /// Determine if a triangle is valid.
@@ -74,6 +107,11 @@ pub fn count_valid_triangles(all_tri: &Vec<(u32, u32, u32)>) -> usize {
 fn main() {
     println!(
         "Part 1 = {}",
-        count_valid_triangles(&read_triangles("./data/input.txt"))
+        count_valid_triangles(&read_triangles("./data/input.txt", false))
+    );
+
+    println!(
+        "Part 2 = {}",
+        count_valid_triangles(&read_triangles("./data/input.txt", true))
     );
 }

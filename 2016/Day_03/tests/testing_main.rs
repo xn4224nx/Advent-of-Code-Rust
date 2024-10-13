@@ -7,7 +7,7 @@ use day_03::{count_valid_triangles, is_valid_triangle, read_triangles};
 #[test]
 fn test_read_triangles_01() {
     assert_eq!(
-        read_triangles("./data/example_01.txt"),
+        read_triangles("./data/example_01.txt", false),
         vec![
             (330, 143, 338),
             (769, 547, 83),
@@ -21,7 +21,7 @@ fn test_read_triangles_01() {
 #[test]
 fn test_read_triangles_02() {
     assert_eq!(
-        read_triangles("./data/example_02.txt"),
+        read_triangles("./data/example_02.txt", false),
         vec![
             (101, 301, 501),
             (102, 302, 502),
@@ -29,6 +29,21 @@ fn test_read_triangles_02() {
             (201, 401, 601),
             (202, 402, 602),
             (203, 403, 603),
+        ]
+    );
+}
+
+#[test]
+fn test_read_triangles_03() {
+    assert_eq!(
+        read_triangles("./data/example_02.txt", true),
+        vec![
+            (101, 102, 103),
+            (301, 302, 303),
+            (501, 502, 503),
+            (201, 202, 203),
+            (401, 402, 403),
+            (601, 602, 603),
         ]
     );
 }
@@ -65,12 +80,12 @@ fn test_is_valid_triangle_06() {
 
 #[test]
 fn test_count_valid_triangles_01() {
-    let tri = read_triangles("./data/example_01.txt");
+    let tri = read_triangles("./data/example_01.txt", false);
     assert_eq!(count_valid_triangles(&tri), 2);
 }
 
 #[test]
 fn test_count_valid_triangles_02() {
-    let tri = read_triangles("./data/example_02.txt");
+    let tri = read_triangles("./data/example_02.txt", false);
     assert_eq!(count_valid_triangles(&tri), 3);
 }
