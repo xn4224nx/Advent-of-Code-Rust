@@ -190,3 +190,20 @@ fn test_find_access_code_01() {
     test_pad.read_keypad_commands("./data/example_01.txt");
     assert_eq!(test_pad.find_access_code(), String::from("1985"));
 }
+
+#[test]
+fn test_find_access_code_02() {
+    let mut test_pad = KeyPad::new(
+        vec![
+            vec!['0', '0', '1', '0', '0'],
+            vec!['0', '2', '3', '4', '0'],
+            vec!['5', '6', '7', '8', '9'],
+            vec!['0', 'A', 'B', 'C', '0'],
+            vec!['0', '0', 'D', '0', '0'],
+        ],
+        (2, 0),
+    );
+
+    test_pad.read_keypad_commands("./data/example_01.txt");
+    assert_eq!(test_pad.find_access_code(), String::from("5DB3"));
+}

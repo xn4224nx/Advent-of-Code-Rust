@@ -17,8 +17,32 @@
  * (or, for the first line, the "5" button); press whatever button you're on at
  * the end of each line. If a move doesn't lead to a button, ignore it.
  *
+ * You can't hold it much longer, so you decide to figure out the code as you
+ * walk to the bathroom. You picture a keypad like this:
+ *
+ * 1 2 3
+ * 4 5 6
+ * 7 8 9
+ *
  * PART 1:  Your puzzle input is the instructions from the document you found at
  *          the front desk. What is the bathroom code?
+ *
+ * You finally arrive at the bathroom (it's a several minute walk from the lobby
+ * so visitors can behold the many fancy conference rooms and water coolers on
+ * this floor) and go to punch in the code. Much to your bladder's dismay, the
+ * keypad is not at all like you imagined it. Instead, you are confronted with
+ * the result of hundreds of man-hours of bathroom-keypad-design meetings:
+ *
+ *     1
+ *   2 3 4
+ * 5 6 7 8 9
+ *   A B C
+ *     D
+ *
+ * You still start at "5" and stop when you're at an edge.
+ *
+ * PART 2:  Using the same instructions in your puzzle input, what is the
+ *          correct bathroom code?
  */
 
 use std::fs::File;
@@ -130,4 +154,18 @@ fn main() {
 
     normal_pad.read_keypad_commands("./data/input.txt");
     println!("Part 1 = {}", normal_pad.find_access_code());
+
+    let mut star_pad = KeyPad::new(
+        vec![
+            vec!['0', '0', '1', '0', '0'],
+            vec!['0', '2', '3', '4', '0'],
+            vec!['5', '6', '7', '8', '9'],
+            vec!['0', 'A', 'B', 'C', '0'],
+            vec!['0', '0', 'D', '0', '0'],
+        ],
+        (2, 0),
+    );
+
+    star_pad.read_keypad_commands("./data/input.txt");
+    println!("Part 2 = {}", star_pad.find_access_code());
 }
