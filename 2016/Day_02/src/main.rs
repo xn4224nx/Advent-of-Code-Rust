@@ -118,4 +118,16 @@ impl KeyPad {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut normal_pad = KeyPad::new(
+        vec![
+            vec!['1', '2', '3'],
+            vec!['4', '5', '6'],
+            vec!['7', '8', '9'],
+        ],
+        (1, 1),
+    );
+
+    normal_pad.read_keypad_commands("./data/input.txt");
+    println!("Part 1 = {}", normal_pad.find_access_code());
+}
