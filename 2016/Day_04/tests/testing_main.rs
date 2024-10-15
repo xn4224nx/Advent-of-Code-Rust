@@ -2,16 +2,23 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_04;
-use day_04::{Room, sum_real_rooms, read_rooms};
+use day_04::{read_rooms, sum_real_rooms, Room};
 
 #[test]
 fn read_exp1_rooms() {
-    assert_eq!(read_rooms("./data/example_01.txt"), vec![
-        Room::new(String::from("aaaaa-bbb-z-y-x"), 123, String::from("abxyz")),
-        Room::new(String::from("a-b-c-d-e-f-g-h"), 987, String::from("abcde")),
-        Room::new(String::from("not-a-real-room"), 404, String::from("oarel")),
-        Room::new(String::from("totally-real-room"), 200, String::from("decoy")),
-    ])
+    assert_eq!(
+        read_rooms("./data/example_01.txt"),
+        vec![
+            Room::new(String::from("aaaaa-bbb-z-y-x"), 123, String::from("abxyz")),
+            Room::new(String::from("a-b-c-d-e-f-g-h"), 987, String::from("abcde")),
+            Room::new(String::from("not-a-real-room"), 404, String::from("oarel")),
+            Room::new(
+                String::from("totally-real-room"),
+                200,
+                String::from("decoy")
+            ),
+        ]
+    )
 }
 
 #[test]
@@ -34,7 +41,11 @@ fn verify_room_3() {
 
 #[test]
 fn verify_room_4() {
-    let test_rm = Room::new(String::from("totally-real-room"), 200, String::from("decoy"));
+    let test_rm = Room::new(
+        String::from("totally-real-room"),
+        200,
+        String::from("decoy"),
+    );
     assert_eq!(test_rm.verify(), false);
 }
 
