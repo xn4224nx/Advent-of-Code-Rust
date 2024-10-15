@@ -50,7 +50,18 @@ fn verify_room_4() {
 }
 
 #[test]
-fn sum_real__example_01_rooms() {
+fn sum_real_example_01_rooms() {
     let exp1_rms = read_rooms("./data/example_01.txt");
     assert_eq!(sum_real_rooms(&exp1_rms), 1514)
+}
+
+#[test]
+fn decrypt_name() {
+    let test_rm = Room::new(
+        String::from("qzmt-zixmtkozy-ivhz"),
+        343,
+        String::from("ivhz"),
+    );
+
+    assert_eq!(test_rm.decrypt_name(), String::from("very encrypted name"));
 }
