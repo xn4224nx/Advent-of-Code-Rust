@@ -125,4 +125,7 @@ pub fn sum_real_rooms(rooms: &Vec<Room>) -> u32 {
         .sum::<u32>();
 }
 
-fn main() {}
+fn main() {
+    let rooms = read_rooms("./data/input.txt");
+    println!("Part 1 = {}", sum_real_rooms(&rooms));
+}
