@@ -44,4 +44,7 @@ pub fn decipher_password(seed: &String, password_len: usize) -> String {
     return password;
 }
 
-fn main() {}
+fn main() {
+    let input_seed = String::from("ffykfhsq");
+    println!("Part 1 = {}", decipher_password(&input_seed, 8));
+}
