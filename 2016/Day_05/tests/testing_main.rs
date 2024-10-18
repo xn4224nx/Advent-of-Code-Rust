@@ -64,7 +64,15 @@ fn is_char_hash_exp6() {
 #[test]
 fn decipher_password_exp1() {
     assert_eq!(
-        decipher_password(&"abc".to_string(), 8),
+        decipher_password(&"abc".to_string(), 8, false),
         "18f47a30".to_string()
+    )
+}
+
+#[test]
+fn decipher_password_exp2() {
+    assert_eq!(
+        decipher_password(&"abc".to_string(), 8, true),
+        "05ace8e3".to_string()
     )
 }
