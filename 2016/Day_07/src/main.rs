@@ -120,4 +120,12 @@ pub fn comp_has_abba(comp: &Vec<u8>) -> bool {
     return false;
 }
 
-fn main() {}
+/// Count the number of valid ip addresses in a list
+pub fn count_valid_addrs(all_addrs: &Vec<Vec<AddrComp>>) -> usize {
+    return all_addrs.iter().filter(|x| ip_support_tls(x)).count();
+}
+
+fn main() {
+    let vari_ip_addrs = read_ip_addresses("./data/input.txt");
+    println!("Part 1 = {}", count_valid_addrs(&vari_ip_addrs));
+}

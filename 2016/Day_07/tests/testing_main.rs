@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_07;
-use day_07::{comp_has_abba, ip_support_tls, read_ip_addresses, AddrComp};
+use day_07::{comp_has_abba, count_valid_addrs, ip_support_tls, read_ip_addresses, AddrComp};
 
 #[test]
 fn read_ip_addresses_exp1() {
@@ -168,4 +168,33 @@ fn comp_has_abba_exp11() {
 #[test]
 fn comp_has_abba_exp12() {
     assert_eq!(comp_has_abba(&vec![122, 120, 99, 118, 98, 110,]), false)
+}
+
+#[test]
+fn count_valid_addrs_exp1() {
+    assert_eq!(
+        count_valid_addrs(&vec![
+            vec![
+                AddrComp::Exter(vec![97, 98, 98, 97]),
+                AddrComp::Inter(vec![109, 110, 111, 112,]),
+                AddrComp::Exter(vec![113, 114, 115, 116])
+            ],
+            vec![
+                AddrComp::Exter(vec![97, 98, 99, 100]),
+                AddrComp::Inter(vec![98, 100, 100, 98,]),
+                AddrComp::Exter(vec![120, 121, 121, 120,])
+            ],
+            vec![
+                AddrComp::Exter(vec![97, 97, 97, 97]),
+                AddrComp::Inter(vec![113, 119, 101, 114,]),
+                AddrComp::Exter(vec![116, 121, 117, 105,])
+            ],
+            vec![
+                AddrComp::Exter(vec![105, 111, 120, 120, 111, 106]),
+                AddrComp::Inter(vec![97, 115, 100, 102, 103, 104,]),
+                AddrComp::Exter(vec![122, 120, 99, 118, 98, 110,])
+            ],
+        ]),
+        2
+    )
 }
