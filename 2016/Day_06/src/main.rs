@@ -16,12 +16,57 @@
  *          corrected version of the message being sent?
  */
 
-pub fn read_signal_data(data_file: &str) -> Vec<Vec<char>> {
-    Vec::new()
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+/// Read the signal data file and parse into a 2D vector of numbers.
+pub fn read_signal_data(data_file: &str) -> Vec<Vec<u8>> {
+    let mut sigs = Vec::new();
+    let mut buffer = Vec::new();
+
+    /* Open the file. */
+    let file = File::open(data_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Read the file line by line. */
+    while fp.read_until(b'\n', &mut buffer).unwrap() > 0 {
+        sigs.push(buffer[..buffer.len() - 1].to_vec());
+        buffer.clear();
+    }
+    return sigs;
 }
 
-pub fn find_freq_msg(data: &Vec<Vec<char>>) -> String {
-    String::from("")
+/// Using frequency analysis find the hidden message
+pub fn find_freq_msg(data: &Vec<Vec<u8>>) -> String {
+    let mut raw_msg = Vec::new();
+
+    /* For each column of the 2D vector determine the frequency dist */
+    for col_idx in 0..data[0].len() {
+        let mut char_cnts = HashMap::new();
+
+        /* Iterate over each character and record the frequencies */
+        for line in data.iter() {
+            char_cnts
+                .entry(line[col_idx])
+                .and_modify(|x| *x += 1)
+                .or_insert(1);
+        }
+
+        /* Find the correct char based on frequency. */
+        let freq_char = char_cnts
+            .iter()
+            .max_by(|a, b| a.1.cmp(&b.1))
+            .map(|(key, _val)| key)
+            .unwrap();
+        raw_msg.push(*freq_char);
+    }
+
+    /* Convert the number vector to a string. */
+    return String::from_utf8(raw_msg).unwrap();
 }
 
-fn main() {}
+fn main() {
+    let sig = read_signal_data("./data/input.txt");
+    println!("Part 1 = {}", find_freq_msg(&sig));
+}
