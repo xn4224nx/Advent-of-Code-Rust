@@ -65,7 +65,7 @@ fn read_ip_addresses_exp2() {
 #[test]
 fn ip_support_tls_exp1() {
     assert_eq!(
-        ip_support_tls(vec![
+        ip_support_tls(&vec![
             AddrComp::Exter(vec![97, 98, 98, 97]),
             AddrComp::Inter(vec![109, 110, 111, 112,]),
             AddrComp::Exter(vec![113, 114, 115, 116])
@@ -77,7 +77,7 @@ fn ip_support_tls_exp1() {
 #[test]
 fn ip_support_tls_exp2() {
     assert_eq!(
-        ip_support_tls(vec![
+        ip_support_tls(&vec![
             AddrComp::Exter(vec![97, 98, 99, 100]),
             AddrComp::Inter(vec![98, 100, 100, 98,]),
             AddrComp::Exter(vec![120, 121, 121, 120,])
@@ -89,7 +89,7 @@ fn ip_support_tls_exp2() {
 #[test]
 fn ip_support_tls_exp3() {
     assert_eq!(
-        ip_support_tls(vec![
+        ip_support_tls(&vec![
             AddrComp::Exter(vec![97, 97, 97, 97]),
             AddrComp::Inter(vec![113, 119, 101, 114,]),
             AddrComp::Exter(vec![116, 121, 117, 105,])
@@ -101,7 +101,7 @@ fn ip_support_tls_exp3() {
 #[test]
 fn ip_support_tls_exp4() {
     assert_eq!(
-        ip_support_tls(vec![
+        ip_support_tls(&vec![
             AddrComp::Exter(vec![105, 111, 120, 120, 111, 106]),
             AddrComp::Inter(vec![97, 115, 100, 102, 103, 104,]),
             AddrComp::Exter(vec![122, 120, 99, 118, 98, 110,])
@@ -112,60 +112,60 @@ fn ip_support_tls_exp4() {
 
 #[test]
 fn comp_has_abba_exp1() {
-    assert_eq!(comp_has_abba(vec![97, 98, 98, 97]), true)
+    assert_eq!(comp_has_abba(&vec![97, 98, 98, 97]), true)
 }
 
 #[test]
 fn comp_has_abba_exp2() {
-    assert_eq!(comp_has_abba(vec![109, 110, 111, 112,]), false)
+    assert_eq!(comp_has_abba(&vec![109, 110, 111, 112,]), false)
 }
 
 #[test]
 fn comp_has_abba_exp3() {
-    assert_eq!(comp_has_abba(vec![113, 114, 115, 116]), false)
+    assert_eq!(comp_has_abba(&vec![113, 114, 115, 116]), false)
 }
 
 #[test]
 fn comp_has_abba_exp4() {
-    assert_eq!(comp_has_abba(vec![97, 98, 99, 100]), false)
+    assert_eq!(comp_has_abba(&vec![97, 98, 99, 100]), false)
 }
 
 #[test]
 fn comp_has_abba_exp5() {
-    assert_eq!(comp_has_abba(vec![98, 100, 100, 98,]), true)
+    assert_eq!(comp_has_abba(&vec![98, 100, 100, 98,]), true)
 }
 
 #[test]
 fn comp_has_abba_exp6() {
-    assert_eq!(comp_has_abba(vec![120, 121, 121, 120,]), true)
+    assert_eq!(comp_has_abba(&vec![120, 121, 121, 120,]), true)
 }
 
 #[test]
 fn comp_has_abba_exp7() {
-    assert_eq!(comp_has_abba(vec![97, 97, 97, 97]), false)
+    assert_eq!(comp_has_abba(&vec![97, 97, 97, 97]), false)
 }
 
 #[test]
 fn comp_has_abba_exp8() {
-    assert_eq!(comp_has_abba(vec![113, 119, 101, 114,]), false)
+    assert_eq!(comp_has_abba(&vec![113, 119, 101, 114,]), false)
 }
 
 #[test]
 fn comp_has_abba_exp9() {
-    assert_eq!(comp_has_abba(vec![116, 121, 117, 105,]), false)
+    assert_eq!(comp_has_abba(&vec![116, 121, 117, 105,]), false)
 }
 
 #[test]
 fn comp_has_abba_exp10() {
-    assert_eq!(comp_has_abba(vec![105, 111, 120, 120, 111, 106]), true)
+    assert_eq!(comp_has_abba(&vec![105, 111, 120, 120, 111, 106]), true)
 }
 
 #[test]
 fn comp_has_abba_exp11() {
-    assert_eq!(comp_has_abba(vec![97, 115, 100, 102, 103, 104,]), false)
+    assert_eq!(comp_has_abba(&vec![97, 115, 100, 102, 103, 104,]), false)
 }
 
 #[test]
 fn comp_has_abba_exp12() {
-    assert_eq!(comp_has_abba(vec![122, 120, 99, 118, 98, 110,]), false)
+    assert_eq!(comp_has_abba(&vec![122, 120, 99, 118, 98, 110,]), false)
 }

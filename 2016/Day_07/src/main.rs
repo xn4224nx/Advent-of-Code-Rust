@@ -23,6 +23,7 @@ pub enum AddrComp {
     Exter(Vec<u8>),
 }
 
+/// Read the addresses and parse into a structured format.
 pub fn read_ip_addresses(file_path: &str) -> Vec<Vec<AddrComp>> {
     let mut results = Vec::new();
     let mut buffer = Vec::new();
@@ -81,12 +82,42 @@ pub fn read_ip_addresses(file_path: &str) -> Vec<Vec<AddrComp>> {
     return results;
 }
 
-pub fn ip_support_tls(addr: Vec<AddrComp>) -> bool {
-    false
+/// Test if an abba in outside the bracket and not inside them
+pub fn ip_support_tls(addr: &Vec<AddrComp>) -> bool {
+    let mut external_abba = false;
+
+    /* Iterate over the address components. */
+    for comp in addr.iter() {
+        match comp {
+            AddrComp::Inter(val) => {
+                /* Any internal abba means its not supported no matter what. */
+                if comp_has_abba(val) {
+                    return false;
+                }
+            }
+            AddrComp::Exter(val) => {
+                if comp_has_abba(val) {
+                    external_abba = true;
+                }
+            }
+        }
+    }
+    return external_abba;
 }
 
-pub fn comp_has_abba(comp: Vec<u8>) -> bool {
-    false
+/// Determine if a vector has an abba pattern within
+pub fn comp_has_abba(comp: &Vec<u8>) -> bool {
+    /* Compare the four characters together in a group. */
+    for idx in 3..comp.len() {
+        /* Test for an abba pattern. */
+        if comp[idx] == comp[idx - 3]
+            && comp[idx - 1] == comp[idx - 2]
+            && comp[idx - 1] != comp[idx]
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 fn main() {}
