@@ -32,7 +32,15 @@ fn read_signal_data_exp1() {
 #[test]
 fn find_freq_msg_exp1() {
     assert_eq!(
-        find_freq_msg(&read_signal_data("./data/example_01.txt")),
+        find_freq_msg(&read_signal_data("./data/example_01.txt"), false),
         String::from("easter")
+    )
+}
+
+#[test]
+fn find_freq_msg_exp2() {
+    assert_eq!(
+        find_freq_msg(&read_signal_data("./data/example_01.txt"), true),
+        String::from("advent")
     )
 }

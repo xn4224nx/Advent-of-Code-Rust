@@ -14,6 +14,19 @@
  *
  * PART 1:  Given the recording in your puzzle input, what is the error-
  *          corrected version of the message being sent?
+ *
+ * Of course, that would be the message - if you hadn't agreed to use a modified
+ * repetition code instead.
+ *
+ * In this modified code, the sender instead transmits what looks like random
+ * data, but for each character, the character they actually want to send is
+ * slightly less likely than the others. Even after signal-jamming noise, you
+ * can look at the letter distributions in each column and choose the least
+ * common letter to reconstruct the original message.
+ *
+ * PART 2:  Given the recording in your puzzle input and this new decoding
+ *          methodology, what is the original message that Santa is trying to
+ *          send?
  */
 
 use std::collections::HashMap;
@@ -38,7 +51,7 @@ pub fn read_signal_data(data_file: &str) -> Vec<Vec<u8>> {
 }
 
 /// Using frequency analysis find the hidden message
-pub fn find_freq_msg(data: &Vec<Vec<u8>>) -> String {
+pub fn find_freq_msg(data: &Vec<Vec<u8>>, minimal: bool) -> String {
     let mut raw_msg = Vec::new();
 
     /* For each column of the 2D vector determine the frequency dist */
@@ -54,11 +67,20 @@ pub fn find_freq_msg(data: &Vec<Vec<u8>>) -> String {
         }
 
         /* Find the correct char based on frequency. */
-        let freq_char = char_cnts
-            .iter()
-            .max_by(|a, b| a.1.cmp(&b.1))
-            .map(|(key, _val)| key)
-            .unwrap();
+        let freq_char = if minimal {
+            char_cnts
+                .iter()
+                .min_by(|a, b| a.1.cmp(&b.1))
+                .map(|(key, _val)| key)
+                .unwrap()
+        } else {
+            char_cnts
+                .iter()
+                .max_by(|a, b| a.1.cmp(&b.1))
+                .map(|(key, _val)| key)
+                .unwrap()
+        };
+
         raw_msg.push(*freq_char);
     }
 
@@ -68,5 +90,6 @@ pub fn find_freq_msg(data: &Vec<Vec<u8>>) -> String {
 
 fn main() {
     let sig = read_signal_data("./data/input.txt");
-    println!("Part 1 = {}", find_freq_msg(&sig));
+    println!("Part 1 = {}", find_freq_msg(&sig, false));
+    println!("Part 2 = {}", find_freq_msg(&sig, true));
 }
