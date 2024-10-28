@@ -12,6 +12,18 @@
  * sequences, which are contained by square brackets.
  *
  * PART 1:  How many IPs in your puzzle input support TLS?
+ *
+ * You would also like to know which IPs support SSL (super-secret listening).
+ *
+ * An IP supports SSL if it has an Area-Broadcast Accessor, or ABA, anywhere in
+ * the supernet sequences (outside any square bracketed sections), and a
+ * corresponding Byte Allocation Block, or BAB, anywhere in the hypernet
+ * sequences. An ABA is any three-character sequence which consists of the same
+ * character twice with a different character between them, such as xyx or aba.
+ * A corresponding BAB is the same characters but in reversed positions: yxy and
+ * bab, respectively.
+ *
+ * PART 2:  How many IPs in your puzzle input support SSL?
  */
 
 use std::fs::File;
@@ -82,7 +94,7 @@ pub fn read_ip_addresses(file_path: &str) -> Vec<Vec<AddrComp>> {
     return results;
 }
 
-/// Test if an abba in outside the bracket and not inside them
+/// Test if an abba is outside the bracket and not inside them
 pub fn ip_support_tls(addr: &Vec<AddrComp>) -> bool {
     let mut external_abba = false;
 
@@ -105,6 +117,16 @@ pub fn ip_support_tls(addr: &Vec<AddrComp>) -> bool {
     return external_abba;
 }
 
+/// Test if aba outside the brackets and a matching bab inside the brackets.
+pub fn ip_support_ssl(addr: &Vec<AddrComp>) -> bool {
+    false
+}
+
+/// Find aba groups in a ip address component
+pub fn find_aba_groups(comp: &Vec<u8>, reverse: bool) -> Vec<(u8, u8, u8)> {
+    Vec::new()
+}
+
 /// Determine if a vector has an abba pattern within
 pub fn comp_has_abba(comp: &Vec<u8>) -> bool {
     /* Compare the four characters together in a group. */
@@ -121,11 +143,15 @@ pub fn comp_has_abba(comp: &Vec<u8>) -> bool {
 }
 
 /// Count the number of valid ip addresses in a list
-pub fn count_valid_addrs(all_addrs: &Vec<Vec<AddrComp>>) -> usize {
-    return all_addrs.iter().filter(|x| ip_support_tls(x)).count();
+pub fn count_valid_addrs(all_addrs: &Vec<Vec<AddrComp>>, ssl: bool) -> usize {
+    return if ssl {
+        all_addrs.iter().filter(|x| ip_support_ssl(x)).count()
+    } else {
+        all_addrs.iter().filter(|x| ip_support_tls(x)).count()
+    };
 }
 
 fn main() {
     let vari_ip_addrs = read_ip_addresses("./data/input.txt");
-    println!("Part 1 = {}", count_valid_addrs(&vari_ip_addrs));
+    println!("Part 1 = {}", count_valid_addrs(&vari_ip_addrs, false));
 }
