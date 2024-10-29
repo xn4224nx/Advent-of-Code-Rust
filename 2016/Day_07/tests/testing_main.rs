@@ -116,7 +116,7 @@ fn ip_support_tls_exp4() {
 #[test]
 fn ip_support_ssl_exp1() {
     assert_eq!(
-        ip_support_tls(&vec![
+        ip_support_ssl(&vec![
             AddrComp::Exter(vec![97, 98, 97,]),
             AddrComp::Inter(vec![98, 97, 98,]),
             AddrComp::Exter(vec![120, 121, 122,])
@@ -128,7 +128,7 @@ fn ip_support_ssl_exp1() {
 #[test]
 fn ip_support_ssl_exp2() {
     assert_eq!(
-        ip_support_tls(&vec![
+        ip_support_ssl(&vec![
             AddrComp::Exter(vec![120, 121, 120,]),
             AddrComp::Inter(vec![120, 121, 120,]),
             AddrComp::Exter(vec![120, 121, 120,])
@@ -140,19 +140,19 @@ fn ip_support_ssl_exp2() {
 #[test]
 fn ip_support_ssl_exp3() {
     assert_eq!(
-        ip_support_tls(&vec![
+        ip_support_ssl(&vec![
             AddrComp::Exter(vec![97, 97, 97,]),
             AddrComp::Inter(vec![107, 101, 107,]),
             AddrComp::Exter(vec![101, 107, 101,])
         ]),
-        false
+        true
     )
 }
 
 #[test]
 fn ip_support_ssl_exp4() {
     assert_eq!(
-        ip_support_tls(&vec![
+        ip_support_ssl(&vec![
             AddrComp::Exter(vec![122, 97, 122, 98, 122,]),
             AddrComp::Inter(vec![98, 122, 98,]),
             AddrComp::Exter(vec![99, 100, 98,])
@@ -239,10 +239,7 @@ fn find_aba_groups_exp2() {
 
 #[test]
 fn find_aba_groups_exp3() {
-    assert_eq!(
-        find_aba_groups(&vec![99, 100, 98,], false),
-        vec![(99, 100, 98,)]
-    )
+    assert_eq!(find_aba_groups(&vec![99, 100, 98,], false), Vec::new())
 }
 
 #[test]
@@ -263,10 +260,7 @@ fn find_aba_groups_rev_exp2() {
 
 #[test]
 fn find_aba_groups_rev_exp3() {
-    assert_eq!(
-        find_aba_groups(&vec![99, 100, 98,], true),
-        vec![(100, 98, 100)]
-    )
+    assert_eq!(find_aba_groups(&vec![99, 100, 98,], true), Vec::new())
 }
 
 #[test]

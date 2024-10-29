@@ -119,12 +119,64 @@ pub fn ip_support_tls(addr: &Vec<AddrComp>) -> bool {
 
 /// Test if aba outside the brackets and a matching bab inside the brackets.
 pub fn ip_support_ssl(addr: &Vec<AddrComp>) -> bool {
-    false
+    let mut extr_grps = Vec::new();
+    let mut intr_grps = Vec::new();
+
+    /* Iterate over the components and assign the found groups. */
+    for comp in addr.iter() {
+        let mut tmp_grps: Vec<(u8, u8, u8)>;
+        let mut exter: bool;
+
+        /* Extract the groups and label the source. */
+        match comp {
+            AddrComp::Exter(val) => {
+                tmp_grps = find_aba_groups(val, false);
+                exter = true;
+            }
+            AddrComp::Inter(val) => {
+                tmp_grps = find_aba_groups(val, true);
+                exter = false;
+            }
+        };
+
+        /* If no groups have been found skip the checks. */
+        if tmp_grps.len() <= 0 {
+            continue;
+        };
+
+        /* Detect if a aba internal group matches an external bab group. */
+        for grp in tmp_grps.iter() {
+            if (exter && intr_grps.contains(grp)) || (!exter && extr_grps.contains(grp)) {
+                return true;
+            }
+        }
+
+        /* Save the results in the right group */
+        if exter {
+            extr_grps = [extr_grps, tmp_grps].concat();
+        } else {
+            intr_grps = [intr_grps, tmp_grps].concat();
+        }
+    }
+    /* If there have been no matches it doesn't support SSL. */
+    return false;
 }
 
 /// Find aba groups in a ip address component
 pub fn find_aba_groups(comp: &Vec<u8>, reverse: bool) -> Vec<(u8, u8, u8)> {
-    Vec::new()
+    let mut grps = Vec::new();
+
+    /* Iterate over the string and test each position for aba. */
+    for idx in 2..comp.len() {
+        if comp[idx] == comp[idx - 2] && comp[idx] != comp[idx - 1] {
+            grps.push(if reverse {
+                (comp[idx - 1], comp[idx], comp[idx - 1])
+            } else {
+                (comp[idx], comp[idx - 1], comp[idx - 2])
+            })
+        }
+    }
+    return grps;
 }
 
 /// Determine if a vector has an abba pattern within
@@ -154,4 +206,5 @@ pub fn count_valid_addrs(all_addrs: &Vec<Vec<AddrComp>>, ssl: bool) -> usize {
 fn main() {
     let vari_ip_addrs = read_ip_addresses("./data/input.txt");
     println!("Part 1 = {}", count_valid_addrs(&vari_ip_addrs, false));
+    println!("Part 2 = {}", count_valid_addrs(&vari_ip_addrs, true));
 }
