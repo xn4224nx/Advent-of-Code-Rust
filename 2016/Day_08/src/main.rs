@@ -39,6 +39,9 @@
  */
 
 use ndarray::Array2;
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, PartialEq)]
 pub enum Instruc {
@@ -64,7 +67,45 @@ impl Screen {
         };
     }
 
-    pub fn load_commands(&self) {}
+    /// Read and parse the commands from com_file_path
+    pub fn load_commands(&mut self) {
+        let mut buffer = String::new();
+
+        /* Define the regexes to extract the key bits of data from a line. */
+        let re_set_rec = Regex::new(r"rect (\d+)x(\d+)").unwrap();
+        let re_rot_row = Regex::new(r"rotate row y=(\d+) by (\d+)").unwrap();
+        let re_rot_col = Regex::new(r"rotate column x=(\d+) by (\d+)").unwrap();
+
+        /* Open the file. */
+        let file = File::open(&self.com_file_path).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            /* Test for a set command. */
+            if let Some(caps) = re_set_rec.captures(&buffer) {
+                self.commands.push(Instruc::Rect(
+                    caps[1].parse::<usize>().unwrap(),
+                    caps[2].parse::<usize>().unwrap(),
+                ));
+
+            /* Test for a rotate column command. */
+            } else if let Some(caps) = re_rot_row.captures(&buffer) {
+                self.commands.push(Instruc::RotRow(
+                    caps[1].parse::<usize>().unwrap(),
+                    caps[2].parse::<usize>().unwrap(),
+                ))
+
+            /* Test for a rotate row command. */
+            } else if let Some(caps) = re_rot_col.captures(&buffer) {
+                self.commands.push(Instruc::RotCol(
+                    caps[1].parse::<usize>().unwrap(),
+                    caps[2].parse::<usize>().unwrap(),
+                ))
+            };
+            buffer.clear();
+        }
+    }
 
     pub fn set_rect(&mut self, a_val: usize, b_val: usize) {}
 
