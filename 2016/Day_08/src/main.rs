@@ -183,4 +183,9 @@ impl Screen {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut sec_scr = Screen::new("./data/input.txt", (6, 50));
+    sec_scr.load_commands();
+    sec_scr.execute_commands();
+    println!("Part 1 = {}", sec_scr.on_pixels());
+}
