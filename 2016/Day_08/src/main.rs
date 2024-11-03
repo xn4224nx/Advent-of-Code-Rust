@@ -58,10 +58,10 @@ pub struct Screen {
 }
 
 impl Screen {
-    pub fn new(com_file_path: &str) -> Self {
+    pub fn new(com_file_path: &str, size: (usize, usize)) -> Self {
         return Screen {
-            size: (0, 0),
-            pixels: Array2::from(Vec::<[bool; 2]>::new()),
+            size,
+            pixels: Array2::from_elem(size, false),
             commands: Vec::new(),
             com_file_path: com_file_path.to_string(),
         };
@@ -104,7 +104,9 @@ impl Screen {
                 ))
             };
             buffer.clear();
-        }
+        };
+
+        /*  */
     }
 
     pub fn set_rect(&mut self, a_val: usize, b_val: usize) {}
