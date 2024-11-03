@@ -104,28 +104,49 @@ impl Screen {
                 ))
             };
             buffer.clear();
-        };
-
-        /*  */
+        }
     }
 
+    /// Set a particular rectangle at the origin to be on
     pub fn set_rect(&mut self, a_val: usize, b_val: usize) {}
 
+    /// Shift a row of the screen right by a certain amount
     pub fn rotate_row(&mut self, row_idx: usize, shift: usize) {}
 
+    /// Shift a column of the screen down by a certain amount
     pub fn rotate_col(&mut self, col_idx: usize, shift: usize) {}
 
+    /// Enact the all the commands stored in self.commands
     pub fn execute_commands(&mut self) {}
 
-    pub fn render(&self) -> Vec<String> {
-        Vec::new()
+    /// Create a string that represents the current state of the screen
+    pub fn render(&self) -> String {
+        let mut view = String::new();
+
+        /* Iterate over the array and conver to a char based on the value. */
+        for (idx, scr_char) in self.pixels.iter().enumerate() {
+            /* Detect the end of a row of pixels. */
+            if idx > 0 && idx % self.size.1 == 0 {
+                view.push('\n');
+            }
+
+            match scr_char {
+                true => view.push('#'),
+                false => view.push('.'),
+            }
+        }
+        return view;
     }
 
+    /// Determine the total number of on pixels in the screen
     pub fn on_pixels(&self) -> usize {
-        0
+        self.pixels.iter().filter(|x| **x).count()
     }
 
-    fn show(self) {}
+    /// Show the pixel array to screen
+    fn show(&self) {
+        println!("{}", self.render());
+    }
 }
 
 fn main() {}
