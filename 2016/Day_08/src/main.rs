@@ -36,6 +36,12 @@
  * PART 1:  There seems to be an intermediate check of the voltage used by the
  *          display: after you swipe your card, if the screen did work, how many
  *          pixels should be lit?
+ *
+ * You notice that the screen is only capable of displaying capital letters; in
+ * the font it uses, each letter is 5 pixels wide and 6 tall.
+ *
+ * PART 2:  After you swipe your card, what code is the screen trying to
+ *          display?
  */
 
 use ndarray::{s, Array, Array2};
@@ -187,5 +193,6 @@ fn main() {
     let mut sec_scr = Screen::new("./data/input.txt", (6, 50));
     sec_scr.load_commands();
     sec_scr.execute_commands();
-    println!("Part 1 = {}", sec_scr.on_pixels());
+    println!("Part 1 = {}\n", sec_scr.on_pixels());
+    sec_scr.show();
 }
