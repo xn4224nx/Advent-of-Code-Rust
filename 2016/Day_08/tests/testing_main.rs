@@ -115,10 +115,7 @@ fn rot_col_2x3() {
     test_src.load_commands();
 
     test_src.set_rect(3, 2);
-    assert_eq!(
-        test_src.render(),
-        String::from("###....\n###....\n.......\n")
-    );
+    assert_eq!(test_src.render(), String::from("###....\n###....\n......."));
 
     test_src.rotate_col(2, 3);
     assert_eq!(test_src.render(), String::from("###....\n###....\n......."));
@@ -145,18 +142,18 @@ fn rot_row_1x2() {
     assert_eq!(test_src.render(), String::from("##.....\n##.....\n##....."));
 
     test_src.rotate_row(1, 2);
-    assert_eq!(test_src.render(), String::from("##.....\n.##....\n##....."));
+    assert_eq!(test_src.render(), String::from("##.....\n..##...\n##....."));
 }
 
 #[test]
-fn rot_row_3x6() {
+fn rot_row_2x6() {
     let mut test_src = Screen::new("./data/example_01.txt", (3, 7));
     test_src.load_commands();
 
     test_src.set_rect(2, 3);
     assert_eq!(test_src.render(), String::from("##.....\n##.....\n##....."));
 
-    test_src.rotate_row(3, 6);
+    test_src.rotate_row(2, 6);
     assert_eq!(test_src.render(), String::from("##.....\n##.....\n#.....#"));
 }
 
@@ -169,7 +166,7 @@ fn rot_row_0x8() {
     assert_eq!(test_src.render(), String::from("##.....\n##.....\n##....."));
 
     test_src.rotate_row(0, 8);
-    assert_eq!(test_src.render(), String::from(".##....\n##.....\n#.....#"));
+    assert_eq!(test_src.render(), String::from(".##....\n##.....\n##....."));
 }
 
 #[test]

@@ -38,7 +38,7 @@
  *          pixels should be lit?
  */
 
-use ndarray::Array2;
+use ndarray::{s, Array, Array2};
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -108,16 +108,50 @@ impl Screen {
     }
 
     /// Set a particular rectangle at the origin to be on
-    pub fn set_rect(&mut self, a_val: usize, b_val: usize) {}
+    pub fn set_rect(&mut self, a_val: usize, b_val: usize) {
+        self.pixels.slice_mut(s![..b_val, ..a_val]).fill(true)
+    }
 
     /// Shift a row of the screen right by a certain amount
-    pub fn rotate_row(&mut self, row_idx: usize, shift: usize) {}
+    pub fn rotate_row(&mut self, row_idx: usize, shift: usize) {
+        /* Remove excess rotations */
+        let shift_r = shift % self.size.1;
+
+        /* Shift a copy of the row to the right */
+        let mut orig_row = self.pixels.row(row_idx).to_vec();
+        orig_row.rotate_right(shift_r);
+
+        /* Set the cycled column as the new version. */
+        self.pixels
+            .slice_mut(s![row_idx, ..])
+            .assign(&Array::from_vec(orig_row));
+    }
 
     /// Shift a column of the screen down by a certain amount
-    pub fn rotate_col(&mut self, col_idx: usize, shift: usize) {}
+    pub fn rotate_col(&mut self, col_idx: usize, shift: usize) {
+        /* Remove excess rotations */
+        let shift_c = shift % self.size.0;
+
+        /* Shift a copy of the column to the right */
+        let mut orig_col = self.pixels.column(col_idx).to_vec();
+        orig_col.rotate_right(shift_c);
+
+        /* Set the cycled column as the new version. */
+        self.pixels
+            .slice_mut(s![.., col_idx])
+            .assign(&Array::from_vec(orig_col));
+    }
 
     /// Enact the all the commands stored in self.commands
-    pub fn execute_commands(&mut self) {}
+    pub fn execute_commands(&mut self) {
+        for cmd_idx in 0..self.commands.len() {
+            match self.commands[cmd_idx] {
+                Instruc::Rect(a, b) => self.set_rect(a, b),
+                Instruc::RotRow(a, b) => self.rotate_row(a, b),
+                Instruc::RotCol(a, b) => self.rotate_col(a, b),
+            }
+        }
+    }
 
     /// Create a string that represents the current state of the screen
     pub fn render(&self) -> String {
