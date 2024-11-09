@@ -21,8 +21,15 @@
  *          Don't count whitespace.
  */
 
+use std::fs;
+
 pub fn read_compressed_data(file_path: &str) -> Vec<u8> {
-    Vec::new()
+    let mut whole_file = fs::read(file_path).unwrap();
+
+    /* Remove the newline character from the vector. */
+    whole_file.pop();
+
+    return whole_file;
 }
 
 pub fn decompressed_len(data: &Vec<u8>) -> usize {
