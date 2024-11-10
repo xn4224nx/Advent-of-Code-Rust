@@ -158,4 +158,7 @@ pub fn decompressed_len(data: &Vec<u8>) -> usize {
     return decom_len as usize;
 }
 
-fn main() {}
+fn main() {
+    let uncomp_data = read_compressed_data("./data/input.txt");
+    println!("Part 1 = {}", decompressed_len(&uncomp_data));
+}
