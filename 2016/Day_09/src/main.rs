@@ -97,8 +97,65 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
     return markers;
 }
 
+/// Measure the character length of the decompressed data file.
 pub fn decompressed_len(data: &Vec<u8>) -> usize {
-    0
+    let mut decom_len: u32 = 0;
+    let mut skipped_mkrs = Vec::new();
+    let mut valid_mkrs = Vec::new();
+
+    /* Generate the marker metadata */
+    let markers = find_markers(data);
+
+    /* If there are no markers mearly return the data length. */
+    if markers.is_empty() {
+        return data.len();
+    }
+
+    /* Determine the valid markers. */
+    for mk_idx in 0..markers.len() {
+        /* The first marker is always valid but other markers are only executed
+         * if a previous ones have not skipped it. */
+        if mk_idx == 0 || !skipped_mkrs.contains(&mk_idx) {
+            valid_mkrs.push(mk_idx);
+            let nxt_mkr_idx = mk_idx + 1;
+
+            /* Iterate over all the other markers determine the skipped ones. */
+            for n_idx in nxt_mkr_idx..markers.len() {
+                /* What is the index in the data that the current goes up to. */
+                let final_mkr_reach = markers[mk_idx].1 + markers[mk_idx].2;
+
+                /* Does this marker start in the range of the current one? */
+                if final_mkr_reach > markers[n_idx].0 {
+                    skipped_mkrs.push(n_idx);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    /* Add the length before the first marker */
+    decom_len += markers[0].0;
+
+    /* Iterate over the valid markers and determine the uncompressed length. */
+    for valid_mk_idx in 0..valid_mkrs.len() {
+        let mk_idx = valid_mkrs[valid_mk_idx];
+
+        /* Determine the expansion due to this marker */
+        decom_len += markers[mk_idx].2 * markers[mk_idx].3;
+
+        /* Determine the unexpanded data between this marker and the next. */
+        if valid_mk_idx != valid_mkrs.len() - 1 {
+            let nxt_mk_idx = valid_mkrs[valid_mk_idx + 1];
+            decom_len += markers[nxt_mk_idx].0 - (markers[mk_idx].1 + markers[mk_idx].2 + 1);
+        }
+    }
+
+    /* Add in uncompressed data beyond the final marker. */
+    let final_mk_idx = valid_mkrs[valid_mkrs.len() - 1];
+    decom_len += (data.len() - 1) as u32 - (markers[final_mk_idx].1 + markers[final_mk_idx].2);
+
+    return decom_len as usize;
 }
 
 fn main() {}
