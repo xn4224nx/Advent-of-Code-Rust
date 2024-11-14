@@ -19,6 +19,20 @@
  *
  * PART 1:  What is the decompressed length of the file (your puzzle input)?
  *          Don't count whitespace.
+ *
+ * Apparently, the file actually uses version two of the format.
+ *
+ * In version two, the only difference is that markers within decompressed data
+ * are decompressed. This, the documentation explains, provides much more
+ * substantial compression capabilities, allowing many-gigabyte files to be
+ * stored in only a few kilobytes.
+ *
+ * Unfortunately, the computer you brought probably doesn't have enough memory
+ * to actually decompress the file; you'll have to come up with another way to
+ * get its decompressed length.
+ *
+ * PART 2:  What is the decompressed length of the file using this improved
+ *          format?
  */
 
 use std::fs;
@@ -156,6 +170,11 @@ pub fn decompressed_len(data: &Vec<u8>) -> usize {
     decom_len += (data.len() - 1) as u32 - (markers[final_mk_idx].1 + markers[final_mk_idx].2);
 
     return decom_len as usize;
+}
+
+/// Measure the character length from a recursive decompresion of a data file
+pub fn rec_decomp_len(data: &Vec<u8>) -> usize {
+    0
 }
 
 fn main() {

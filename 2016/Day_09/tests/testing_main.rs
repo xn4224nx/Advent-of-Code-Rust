@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_09;
-use day_09::{decompressed_len, find_markers, read_compressed_data};
+use day_09::{decompressed_len, find_markers, read_compressed_data, rec_decomp_len};
 
 #[test]
 fn read_exp_data_1() {
@@ -180,4 +180,34 @@ fn decomp_len_exp_5() {
 #[test]
 fn decomp_len_exp_6() {
     assert_eq!(decompressed_len(&"X(8x2)(3x3)ABCY".as_bytes().to_vec()), 18)
+}
+
+#[test]
+fn rec_decomp_len_exp_1() {
+    assert_eq!(rec_decomp_len(&"(3x3)XYZ".as_bytes().to_vec()), 9)
+}
+
+#[test]
+fn rec_decomp_len_exp_2() {
+    assert_eq!(rec_decomp_len(&"X(8x2)(3x3)ABCY".as_bytes().to_vec()), 20)
+}
+
+#[test]
+fn rec_decomp_len_exp_3() {
+    assert_eq!(
+        rec_decomp_len(&"(27x12)(20x12)(13x14)(7x10)(1x12)A".as_bytes().to_vec()),
+        241920
+    )
+}
+
+#[test]
+fn rec_decomp_len_exp_4() {
+    assert_eq!(
+        rec_decomp_len(
+            &"(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"
+                .as_bytes()
+                .to_vec()
+        ),
+        445
+    )
 }
