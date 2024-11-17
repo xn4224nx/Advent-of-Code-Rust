@@ -49,7 +49,7 @@ pub fn read_compressed_data(file_path: &str) -> Vec<u8> {
 /// Determine the positions and values for the markers in a compressed data
 /// file. Each marker is represented by four integers, the marker starter index,
 /// the marker end index, the char range and the char repitition.
-pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
+pub fn find_markers(data: &Vec<u8>) -> Vec<(u64, u64, u64, u64)> {
     let mut markers = Vec::new();
     let mut in_marker = false;
 
@@ -69,7 +69,7 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
                 panic!("Nested markers are not supported!")
             };
 
-            srt_idx = idx as u32;
+            srt_idx = idx as u64;
             in_marker = true;
         }
         /* Detect the end of the marker, ie the ')' */
@@ -81,12 +81,12 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
             /* Parse the second number of the marker. */
             rep_num = String::from_utf8(part_num.clone())
                 .unwrap()
-                .parse::<u32>()
+                .parse::<u64>()
                 .unwrap();
             part_num.clear();
 
             /* Save the completed marker. */
-            markers.push((srt_idx, idx as u32, range_num, rep_num));
+            markers.push((srt_idx, idx as u64, range_num, rep_num));
 
             /* Reset the statistics ready for the next marker. */
             range_num = 0;
@@ -99,7 +99,7 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
         else if *d_char == 120 && in_marker {
             range_num = String::from_utf8(part_num.clone())
                 .unwrap()
-                .parse::<u32>()
+                .parse::<u64>()
                 .unwrap();
             part_num.clear();
         }
@@ -112,8 +112,8 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
 }
 
 /// Measure the character length of the decompressed data file.
-pub fn decompressed_len(data: &Vec<u8>) -> u32 {
-    let mut decom_len: u32 = 0;
+pub fn decompressed_len(data: &Vec<u8>) -> u64 {
+    let mut decom_len: u64 = 0;
     let mut skipped_mkrs = Vec::new();
     let mut valid_mkrs = Vec::new();
 
@@ -122,7 +122,7 @@ pub fn decompressed_len(data: &Vec<u8>) -> u32 {
 
     /* If there are no markers mearly return the data length. */
     if markers.is_empty() {
-        return data.len() as u32;
+        return data.len() as u64;
     }
 
     /* Determine the valid markers. */
@@ -167,19 +167,19 @@ pub fn decompressed_len(data: &Vec<u8>) -> u32 {
 
     /* Add in uncompressed data beyond the final marker. */
     let final_mk_idx = valid_mkrs[valid_mkrs.len() - 1];
-    decom_len += (data.len() - 1) as u32 - (markers[final_mk_idx].1 + markers[final_mk_idx].2);
+    decom_len += (data.len() - 1) as u64 - (markers[final_mk_idx].1 + markers[final_mk_idx].2);
 
     return decom_len;
 }
 
 /// Measure the character length from a recursive decompresion of a data file
-pub fn rec_decomp_len(data: &Vec<u8>) -> u32 {
-    let mut sparse_data: Vec<(usize, u32)> = Vec::new();
+pub fn rec_decomp_len(data: &Vec<u8>) -> u64 {
+    let mut sparse_data: Vec<(usize, u64)> = Vec::new();
     let markers = find_markers(data);
 
     /* If there are no markers mearly return the data length. */
     if markers.is_empty() {
-        return data.len() as u32;
+        return data.len() as u64;
     }
 
     /* Record the distance between markers or the end of the data. */
@@ -188,7 +188,7 @@ pub fn rec_decomp_len(data: &Vec<u8>) -> u32 {
         let end_idx = if mk_idx != markers.len() - 1 {
             markers[mk_idx + 1].0 - 1
         } else {
-            data.len() as u32 - 1
+            data.len() as u64 - 1
         };
 
         /* Only save it if there is data between markers. */
@@ -208,7 +208,7 @@ pub fn rec_decomp_len(data: &Vec<u8>) -> u32 {
 
         /* Determine the non-marker data it covers. */
         for data_idx in 0..sparse_data.len() {
-            let inter_pos = sparse_data[data_idx].0 as u32;
+            let inter_pos = sparse_data[data_idx].0 as u64;
 
             /* Check this data is in reach of the current marker. */
             if inter_pos <= mk_reach && inter_pos > markers[mk_idx].0 {
@@ -216,10 +216,11 @@ pub fn rec_decomp_len(data: &Vec<u8>) -> u32 {
             }
         }
     }
-    return markers[0].0 + sparse_data.iter().map(|x| x.1).sum::<u32>();
+    return markers[0].0 as u64 + sparse_data.iter().map(|x| x.1).sum::<u64>();
 }
 
 fn main() {
     let uncomp_data = read_compressed_data("./data/input.txt");
     println!("Part 1 = {}", decompressed_len(&uncomp_data));
+    println!("Part 2 = {}", rec_decomp_len(&uncomp_data));
 }
