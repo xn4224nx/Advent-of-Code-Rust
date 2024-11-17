@@ -211,3 +211,8 @@ fn rec_decomp_len_exp_4() {
         445
     )
 }
+
+#[test]
+fn rec_decomp_len_exp_5() {
+    assert_eq!(rec_decomp_len(&"(3x3)XYZA".as_bytes().to_vec()), 10)
+}

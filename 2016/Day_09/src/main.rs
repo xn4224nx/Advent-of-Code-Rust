@@ -112,7 +112,7 @@ pub fn find_markers(data: &Vec<u8>) -> Vec<(u32, u32, u32, u32)> {
 }
 
 /// Measure the character length of the decompressed data file.
-pub fn decompressed_len(data: &Vec<u8>) -> usize {
+pub fn decompressed_len(data: &Vec<u8>) -> u32 {
     let mut decom_len: u32 = 0;
     let mut skipped_mkrs = Vec::new();
     let mut valid_mkrs = Vec::new();
@@ -122,7 +122,7 @@ pub fn decompressed_len(data: &Vec<u8>) -> usize {
 
     /* If there are no markers mearly return the data length. */
     if markers.is_empty() {
-        return data.len();
+        return data.len() as u32;
     }
 
     /* Determine the valid markers. */
@@ -169,12 +169,54 @@ pub fn decompressed_len(data: &Vec<u8>) -> usize {
     let final_mk_idx = valid_mkrs[valid_mkrs.len() - 1];
     decom_len += (data.len() - 1) as u32 - (markers[final_mk_idx].1 + markers[final_mk_idx].2);
 
-    return decom_len as usize;
+    return decom_len;
 }
 
 /// Measure the character length from a recursive decompresion of a data file
-pub fn rec_decomp_len(data: &Vec<u8>) -> usize {
-    0
+pub fn rec_decomp_len(data: &Vec<u8>) -> u32 {
+    let mut sparse_data: Vec<(usize, u32)> = Vec::new();
+    let markers = find_markers(data);
+
+    /* If there are no markers mearly return the data length. */
+    if markers.is_empty() {
+        return data.len() as u32;
+    }
+
+    /* Record the distance between markers or the end of the data. */
+    for mk_idx in 0..markers.len() {
+        let start_idx = markers[mk_idx].1 + 1;
+        let end_idx = if mk_idx != markers.len() - 1 {
+            markers[mk_idx + 1].0 - 1
+        } else {
+            data.len() as u32 - 1
+        };
+
+        /* Only save it if there is data between markers. */
+        if start_idx > end_idx {
+            continue;
+        };
+
+        /* Transform the data start and end indexes into a sparse array. */
+        for idx in start_idx..end_idx + 1 {
+            sparse_data.push((idx as usize, 1));
+        }
+    }
+
+    /* Iterate over the markers and determine marker data that gets changed. */
+    for mk_idx in 0..markers.len() {
+        let mk_reach = markers[mk_idx].1 + markers[mk_idx].2;
+
+        /* Determine the non-marker data it covers. */
+        for data_idx in 0..sparse_data.len() {
+            let inter_pos = sparse_data[data_idx].0 as u32;
+
+            /* Check this data is in reach of the current marker. */
+            if inter_pos <= mk_reach && inter_pos > markers[mk_idx].0 {
+                sparse_data[data_idx].1 *= markers[mk_idx].3;
+            }
+        }
+    }
+    return markers[0].0 + sparse_data.iter().map(|x| x.1).sum::<u32>();
 }
 
 fn main() {
