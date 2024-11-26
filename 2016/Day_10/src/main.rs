@@ -195,4 +195,8 @@ impl Factory {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut b_factory = Factory::new("./data/input.txt");
+    b_factory.initialise();
+    println!("Part 1 = {}", b_factory.execute_all(61, 17));
+}
