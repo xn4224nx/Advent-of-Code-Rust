@@ -21,6 +21,9 @@
  * PART 1:  Based on your instructions, what is the number of the bot that is
  *          responsible for comparing value-61 microchips with value-17
  *          microchips?
+ *
+ * PART 2:  What do you get if you multiply together the values of one chip in
+ *          each of outputs 0, 1, and 2?
  */
 
 use regex::Regex;
@@ -193,10 +196,16 @@ impl Factory {
         }
         return comp_bot;
     }
+
+    /// Find the product of the first three output bin's first value.
+    pub fn output_prod(&self) -> u32 {
+        return self.outputs[0][0] * self.outputs[1][0] * self.outputs[2][0];
+    }
 }
 
 fn main() {
     let mut b_factory = Factory::new("./data/input.txt");
     b_factory.initialise();
     println!("Part 1 = {}", b_factory.execute_all(61, 17));
+    println!("Part 2 = {}", b_factory.output_prod());
 }
