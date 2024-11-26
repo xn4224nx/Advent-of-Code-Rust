@@ -121,7 +121,9 @@ impl Factory {
     }
 
     /// Assign a value to a bot.
-    pub fn assign(&mut self, bot: usize, value: u32) {}
+    pub fn assign(&mut self, bot_idx: usize, value: u32) {
+        self.bots[bot_idx].push(value)
+    }
 
     /// Conduct a bot giving action.
     pub fn give(
@@ -132,12 +134,64 @@ impl Factory {
         l_is_bot: bool,
         h_is_bot: bool,
     ) {
+        let min_val = *self.bots[s_bot].iter().min().unwrap();
+        let max_val = *self.bots[s_bot].iter().max().unwrap();
+
+        /* Move the low value. */
+        if l_is_bot {
+            self.bots[l_dest].push(min_val);
+        } else {
+            self.outputs[l_dest].push(min_val);
+        }
+
+        /* Move the high value. */
+        if h_is_bot {
+            self.bots[h_dest].push(max_val);
+        } else {
+            self.outputs[h_dest].push(max_val);
+        }
+
+        /* Empty the source bot. */
+        self.bots[s_bot].clear();
     }
 
     /// Run all instructions and find the index of the bot that compares the
     /// two supplied values.
     pub fn execute_all(&mut self, val_1: u32, val_2: u32) -> usize {
-        0
+        let mut comp_bot = 0;
+
+        /* Execute the instructions in order until all are used up. */
+        while self.used_instrs.contains(&false) {
+            for instr_idx in 0..self.instructions.len() {
+                if self.used_instrs[instr_idx] {
+                    continue;
+                }
+
+                match self.instructions[instr_idx] {
+                    Instruc::Assign(as_idx, as_val) => {
+                        self.assign(as_idx, as_val);
+                    }
+
+                    Instruc::Give(s_idx, l_idx, h_idx, l_bot, h_bot) => {
+                        if self.bots[s_idx].len() != 2 {
+                            continue;
+                        }
+
+                        /* Determine if the value comparison happens  */
+                        if (self.bots[s_idx][0] == val_1 && self.bots[s_idx][1] == val_2)
+                            || (self.bots[s_idx][1] == val_1 && self.bots[s_idx][0] == val_2)
+                        {
+                            comp_bot = s_idx;
+                        }
+                        self.give(s_idx, l_idx, h_idx, l_bot, h_bot);
+                    }
+                }
+
+                /* This instruction should not be run again. */
+                self.used_instrs[instr_idx] = true;
+            }
+        }
+        return comp_bot;
     }
 }
 
