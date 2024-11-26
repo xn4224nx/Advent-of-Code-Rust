@@ -105,7 +105,7 @@ fn give_method_output() {
     test_fac.give(1, 0, 2, false, false);
 
     assert_eq!(test_fac.outputs, vec![vec![8], vec![1], vec![10, 9]]);
-    assert_eq!(test_fac.bots, vec![Vec::new(), Vec::new(), Vec::new()]);
+    assert_eq!(test_fac.bots, vec![Vec::new(), Vec::new()]);
 }
 
 #[test]
