@@ -11,16 +11,32 @@ use std::collections::HashSet;
 #[test]
 fn read_generator_state_exp_1() {
     assert_eq!(
-        read_generator_state("./data/example_01.txt"),
+        read_generator_state("./data/example_01.txt", false),
         vec![0, 1, 2, 0, 0]
+    );
+}
+
+#[test]
+fn read_generator_state_exp_1_extra() {
+    assert_eq!(
+        read_generator_state("./data/example_01.txt", true),
+        vec![0, 1, 2, 0, 0, 0, 0, 0, 0]
     );
 }
 
 #[test]
 fn read_generator_state_input() {
     assert_eq!(
-        read_generator_state("./data/input.txt"),
+        read_generator_state("./data/input.txt", false),
         vec![0, 1, 1, 1, 0, 1, 2, 2, 2, 0, 2]
+    );
+}
+
+#[test]
+fn read_generator_state_input_extra() {
+    assert_eq!(
+        read_generator_state("./data/input.txt", true),
+        vec![0, 1, 1, 1, 0, 1, 0, 0, 2, 2, 2, 0, 2, 0, 0]
     );
 }
 

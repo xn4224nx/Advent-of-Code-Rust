@@ -52,6 +52,23 @@
  *
  * PART 1:  In your situation, what is the minimum number of steps required to
  *          bring all of the objects to the fourth floor?
+ *
+ * You step into the cleanroom separating the lobby from the isolated area and
+ * put on the hazmat suit.
+ *
+ * Upon entering the isolated containment area, however, you notice some extra
+ * parts on the first floor that weren't listed on the record outside:
+ *
+ *  -   An elerium generator.
+ *  -   An elerium-compatible microchip.
+ *  -   A dilithium generator.
+ *  -   A dilithium-compatible microchip.
+ *
+ * These work just like the other generators and microchips. You'll have to get
+ * them up to assembly as well.
+ *
+ * PART 2:  What is the minimum number of steps required to bring all of the
+ *          objects, including these four new ones, to the fourth floor?
  */
 
 use itertools::Itertools;
@@ -62,7 +79,7 @@ use std::fs::read_to_string;
 static MAX_LVL: u8 = 3;
 
 /// Open a file and parse the state of generators and microchips in a building
-pub fn read_generator_state(data_file: &str) -> Vec<u8> {
+pub fn read_generator_state(data_file: &str, extra: bool) -> Vec<u8> {
     let mut gens: BTreeMap<&str, u8> = BTreeMap::new();
     let mut mcrs: BTreeMap<&str, u8> = BTreeMap::new();
 
@@ -92,8 +109,19 @@ pub fn read_generator_state(data_file: &str) -> Vec<u8> {
     for (_, ele_lvl) in &gens {
         state.push(*ele_lvl);
     }
+
+    if extra {
+        state.push(0);
+        state.push(0);
+    }
+
     for (_, ele_lvl) in &mcrs {
         state.push(*ele_lvl);
+    }
+
+    if extra {
+        state.push(0);
+        state.push(0);
     }
 
     return state;
@@ -234,6 +262,12 @@ pub fn find_min_move_to_top(state: &Vec<u8>) -> usize {
 }
 
 fn main() {
-    let facility = read_generator_state("./data/input.txt");
-    println!("Part 1 = {}", find_min_move_to_top(&facility));
+    println!(
+        "Part 1 = {}",
+        find_min_move_to_top(&read_generator_state("./data/input.txt", false))
+    );
+    println!(
+        "Part 2 = {}",
+        find_min_move_to_top(&read_generator_state("./data/input.txt", true))
+    );
 }
