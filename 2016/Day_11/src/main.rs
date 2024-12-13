@@ -233,4 +233,7 @@ pub fn find_min_move_to_top(state: &Vec<u8>) -> usize {
     }
 }
 
-fn main() {}
+fn main() {
+    let facility = read_generator_state("./data/input.txt");
+    println!("Part 1 = {}", find_min_move_to_top(&facility));
+}
