@@ -54,19 +54,83 @@
  *          bring all of the objects to the fourth floor?
  */
 
+use regex::Regex;
+use std::collections::BTreeMap;
+use std::fs::read_to_string;
+
+static MAX_LVL: u8 = 3;
+
 /// Open a file and parse the state of generators and microchips in a building
 pub fn read_generator_state(data_file: &str) -> Vec<u8> {
-    Vec::new()
+    let mut buffer = String::new();
+    let mut line_idx: u8 = 0;
+    let mut gens: BTreeMap<&str, u8> = BTreeMap::new();
+    let mut mcrs: BTreeMap<&str, u8> = BTreeMap::new();
+
+    let pat_mcr = Regex::new(r"([A-Za-z]+)-compatible microchip").unwrap();
+    let pat_gen = Regex::new(r"([A-Za-z]+) generator").unwrap();
+
+    /* Open the file. */
+    let whole_file = read_to_string(data_file).unwrap();
+
+    /* Read the file line by line and find the elements. */
+    for (idx, line) in whole_file.lines().enumerate() {
+        /* Extract the generators. */
+        for (_, [ele]) in pat_gen.captures_iter(line).map(|x| x.extract()) {
+            gens.insert(ele, idx as u8);
+        }
+
+        /* Extract the microchips. */
+        for (_, [ele]) in pat_mcr.captures_iter(line).map(|x| x.extract()) {
+            mcrs.insert(ele, idx as u8);
+        }
+    }
+
+    /* Construct the state vector. */
+    let mut state = vec![0];
+
+    /* Add the elements in alphabetical order. */
+    for (_, ele_lvl) in &gens {
+        state.push(*ele_lvl);
+    }
+    for (_, ele_lvl) in &mcrs {
+        state.push(*ele_lvl);
+    }
+
+    return state;
 }
 
 /// Check if a configuration of generators and microchips would be safe
 pub fn is_state_safe(state: &Vec<u8>) -> bool {
-    true
+    let num_ele: usize = (state.len() - 1) / 2;
+
+    /* Check the validity of each element in turn. */
+    for ele_idx in 0..num_ele {
+        let gen_lvl = state[1 + ele_idx];
+        let mcr_lvl = state[1 + ele_idx + num_ele];
+
+        /* If an microchip is on the same level as its generator its safe. */
+        if gen_lvl == mcr_lvl {
+            continue;
+        };
+
+        /* If a generator is on the level of the microchip it's not safe. */
+        for gen_idx in 0..num_ele {
+            let oth_gen_lvl = state[1 + gen_idx];
+
+            if oth_gen_lvl == mcr_lvl {
+                return false;
+            };
+        }
+    }
+
+    /* Otherwise the state is safe. */
+    return true;
 }
 
 /// Find out if all the elements in a state have reached the top floor
 pub fn is_state_finished(state: &Vec<u8>) -> bool {
-    true
+    return state.iter().all(|&x| x == MAX_LVL);
 }
 
 /// Create a list of the next possible states from one original state

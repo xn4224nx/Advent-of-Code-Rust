@@ -20,7 +20,7 @@ fn read_generator_state_exp_1() {
 fn read_generator_state_input() {
     assert_eq!(
         read_generator_state("./data/input.txt"),
-        vec![0, 1, 1, 0, 1, 1, 2, 2, 0, 2, 2]
+        vec![0, 1, 1, 1, 0, 1, 2, 2, 2, 0, 2]
     );
 }
 
