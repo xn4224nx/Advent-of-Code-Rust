@@ -73,12 +73,12 @@ fn create_next_states_top() {
         .into_iter()
         .collect();
     let truth: HashSet<Vec<u8>> = vec![
-        vec![3, 2, 2, 3, 3],
-        vec![3, 3, 3, 2, 2],
-        vec![3, 2, 3, 2, 3],
-        vec![3, 3, 2, 3, 2],
-        vec![3, 3, 3, 2, 3],
-        vec![3, 3, 3, 3, 2],
+        vec![2, 2, 2, 3, 3],
+        vec![2, 3, 3, 2, 2],
+        vec![2, 2, 3, 2, 3],
+        vec![2, 3, 2, 3, 2],
+        vec![2, 3, 3, 2, 3],
+        vec![2, 3, 3, 3, 2],
     ]
     .into_iter()
     .collect();

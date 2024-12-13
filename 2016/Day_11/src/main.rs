@@ -54,16 +54,15 @@
  *          bring all of the objects to the fourth floor?
  */
 
+use itertools::Itertools;
 use regex::Regex;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fs::read_to_string;
 
 static MAX_LVL: u8 = 3;
 
 /// Open a file and parse the state of generators and microchips in a building
 pub fn read_generator_state(data_file: &str) -> Vec<u8> {
-    let mut buffer = String::new();
-    let mut line_idx: u8 = 0;
     let mut gens: BTreeMap<&str, u8> = BTreeMap::new();
     let mut mcrs: BTreeMap<&str, u8> = BTreeMap::new();
 
@@ -135,12 +134,103 @@ pub fn is_state_finished(state: &Vec<u8>) -> bool {
 
 /// Create a list of the next possible states from one original state
 pub fn create_next_states(state: &Vec<u8>) -> Vec<Vec<u8>> {
-    Vec::new()
+    let mut nxt_states = Vec::new();
+
+    /* Move one element */
+    for ele_idx in 1..state.len() {
+        let lvl = state[ele_idx];
+
+        /* Check that the elevator is on the same level */
+        if lvl != state[0] {
+            continue;
+        };
+
+        /* Move up */
+        if lvl < MAX_LVL {
+            let mut new_state = state.clone();
+            new_state[ele_idx] += 1;
+            new_state[0] += 1;
+            if is_state_safe(&new_state) {
+                nxt_states.push(new_state);
+            }
+        }
+
+        /* Move down */
+        if lvl > 0 {
+            let mut new_state = state.clone();
+            new_state[ele_idx] -= 1;
+            new_state[0] -= 1;
+            if is_state_safe(&new_state) {
+                nxt_states.push(new_state);
+            }
+        }
+    }
+
+    /* Move two elements */
+    for ele_idx_comb in (1..state.len()).combinations(2) {
+        let lvl_0 = state[ele_idx_comb[0]];
+        let lvl_1 = state[ele_idx_comb[1]];
+
+        /* Only move if both elements are on the same level with the elevator. */
+        if lvl_0 != lvl_1 || lvl_1 != state[0] {
+            continue;
+        };
+
+        /* Move up */
+        if lvl_0 < MAX_LVL {
+            let mut new_state = state.clone();
+            new_state[ele_idx_comb[0]] += 1;
+            new_state[ele_idx_comb[1]] += 1;
+            new_state[0] += 1;
+            if is_state_safe(&new_state) {
+                nxt_states.push(new_state);
+            }
+        }
+
+        /* Move down */
+        if lvl_0 > 0 {
+            let mut new_state = state.clone();
+            new_state[ele_idx_comb[0]] -= 1;
+            new_state[ele_idx_comb[1]] -= 1;
+            new_state[0] -= 1;
+            if is_state_safe(&new_state) {
+                nxt_states.push(new_state);
+            }
+        }
+    }
+    return nxt_states;
 }
 
 /// Determine how many moves it takes to move all the objects to the top floor
 pub fn find_min_move_to_top(state: &Vec<u8>) -> usize {
-    0
+    let mut seen_states: HashSet<Vec<u8>> = vec![state.clone()].into_iter().collect();
+    let mut curr_states: HashSet<Vec<u8>> = vec![state.clone()].into_iter().collect();
+    let mut num_moves = 0;
+
+    loop {
+        let mut nxt_states: HashSet<Vec<u8>> = HashSet::new();
+
+        /* Generate all the next possible states. */
+        for c_state in &curr_states {
+            for n_state in create_next_states(c_state).iter() {
+                if seen_states.contains(n_state) {
+                    continue;
+                } else {
+                    seen_states.insert(n_state.clone());
+                };
+
+                /* See if the end has been reached */
+                if is_state_finished(n_state) {
+                    return num_moves + 1;
+                };
+                nxt_states.insert(n_state.clone());
+            }
+        }
+
+        /* Prepare for the next loop iteration. */
+        curr_states = nxt_states;
+        num_moves += 1;
+    }
 }
 
 fn main() {}
