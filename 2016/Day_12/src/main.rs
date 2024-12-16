@@ -5,7 +5,7 @@
  * glass ceiling. Looks like there are no more stars to be had.
  *
  * While sitting on a nearby bench amidst some tiger lilies, you manage to
- * decrypt some of the files you extracted from the servers downstairs.
+ * Decrypt some of the files you extracted from the servers downstairs.
  *
  * According to these documents, Easter Bunny HQ isn't just this building - it's
  * a collection of buildings in the nearby area. They're all connected by a
@@ -25,9 +25,9 @@
  *      -   cpy x y copies x (either an integer or the value of a register) into
  *          register y.
  *
- *      -   inc x increases the value of register x by one.
+ *      -   inc x Increases the value of register x by one.
  *
- *      -   dec x decreases the value of register x by one.
+ *      -   dec x Decreases the value of register x by one.
  *
  *      -   jnz x y jumps to an instruction y away (positive means forward;
  *          negative means backward), but only if x is not zero.
@@ -40,14 +40,18 @@
  *          is left in register a?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(Debug, PartialEq)]
 pub enum Command {
-    copy_val(i32, usize),
-    copy_reg(usize, usize),
-    incr(usize),
-    decr(usize),
-    jump_val(i32, i32),
-    jump_reg(usize, i32),
+    CopyVal(i32, usize),
+    CopyReg(usize, usize),
+    Incr(usize),
+    Decr(usize),
+    JumpVal(i32, i32),
+    JumpReg(usize, i32),
 }
 
 pub struct Computer {
@@ -67,7 +71,56 @@ impl Computer {
         };
     }
 
-    pub fn parse_instructs(&mut self) {}
+    pub fn parse_instructs(&mut self) {
+        let mut buffer = String::new();
+        let idx_offset = 'a' as usize;
+
+        /* Command Regexes */
+        let cv_pat = Regex::new(r"cpy (-?[\d]+) ([a-z])").unwrap();
+        let cr_pat = Regex::new(r"cpy ([a-z]) ([a-z])").unwrap();
+        let in_pat = Regex::new(r"inc ([a-z])").unwrap();
+        let de_pat = Regex::new(r"dec ([a-z])").unwrap();
+        let jv_pat = Regex::new(r"jnz (-?[\d]+) (-?[\d]+)").unwrap();
+        let jr_pat = Regex::new(r"jnz ([a-z]) (-?[\d]+)").unwrap();
+
+        /* Open the file. */
+        let file = File::open(&self.data_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            if let Some(caps) = cv_pat.captures(&buffer) {
+                self.instructs.push(Command::CopyVal(
+                    caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                    caps.get(2).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                ));
+            } else if let Some(caps) = cr_pat.captures(&buffer) {
+                self.instructs.push(Command::CopyReg(
+                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                    caps.get(2).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                ));
+            } else if let Some(caps) = in_pat.captures(&buffer) {
+                self.instructs.push(Command::Incr(
+                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                ));
+            } else if let Some(caps) = de_pat.captures(&buffer) {
+                self.instructs.push(Command::Decr(
+                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                ));
+            } else if let Some(caps) = jv_pat.captures(&buffer) {
+                self.instructs.push(Command::JumpVal(
+                    caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                    caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                ));
+            } else if let Some(caps) = jr_pat.captures(&buffer) {
+                self.instructs.push(Command::JumpReg(
+                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                    caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                ));
+            }
+            buffer.clear()
+        }
+    }
 
     pub fn exe_curr_instr(&mut self) {}
 

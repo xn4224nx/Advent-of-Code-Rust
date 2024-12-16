@@ -6,7 +6,7 @@ use day_12::{Command, Computer};
 
 #[test]
 fn initialise_class() {
-    let mut test = Computer::new("");
+    let test = Computer::new("");
 
     assert_eq!(test.register, vec![0, 0, 0, 0]);
     assert_eq!(test.data_file, String::from(""));
@@ -22,12 +22,12 @@ fn parse_exp_instructions() {
     assert_eq!(
         test.instructs,
         vec![
-            Command::copy_val(41, 0),
-            Command::incr(0),
-            Command::incr(0),
-            Command::decr(0),
-            Command::jump_reg(0, 2),
-            Command::decr(0)
+            Command::CopyVal(41, 0),
+            Command::Incr(0),
+            Command::Incr(0),
+            Command::Decr(0),
+            Command::JumpReg(0, 2),
+            Command::Decr(0)
         ]
     )
 }
@@ -40,41 +40,41 @@ fn parse_input_instructions() {
     assert_eq!(
         test.instructs,
         vec![
-            Command::copy_val(1, 0),
-            Command::copy_val(1, 1),
-            Command::copy_val(26, 3),
-            Command::jump_reg(2, 2),
-            Command::jump_val(1, 2),
-            Command::copy_val(7, 2),
-            Command::incr(3),
-            Command::decr(2),
-            Command::jump_reg(2, -2),
-            Command::copy_reg(0, 2),
-            Command::incr(0),
-            Command::decr(1),
-            Command::jump_reg(1, -2),
-            Command::copy_reg(2, 1),
-            Command::decr(3),
-            Command::jump_reg(3, -6),
-            Command::copy_val(13, 2),
-            Command::copy_val(14, 3),
-            Command::incr(0),
-            Command::decr(3),
-            Command::jump_reg(3, -2),
-            Command::decr(2),
-            Command::jump_reg(2, -5),
+            Command::CopyVal(1, 0),
+            Command::CopyVal(1, 1),
+            Command::CopyVal(26, 3),
+            Command::JumpReg(2, 2),
+            Command::JumpVal(1, 5),
+            Command::CopyVal(7, 2),
+            Command::Incr(3),
+            Command::Decr(2),
+            Command::JumpReg(2, -2),
+            Command::CopyReg(0, 2),
+            Command::Incr(0),
+            Command::Decr(1),
+            Command::JumpReg(1, -2),
+            Command::CopyReg(2, 1),
+            Command::Decr(3),
+            Command::JumpReg(3, -6),
+            Command::CopyVal(13, 2),
+            Command::CopyVal(14, 3),
+            Command::Incr(0),
+            Command::Decr(3),
+            Command::JumpReg(3, -2),
+            Command::Decr(2),
+            Command::JumpReg(2, -5),
         ]
     )
 }
 
 #[test]
-fn command_copy_val() {
+fn command_copyval() {
     let mut test = Computer::new("");
     test.instructs = vec![
-        Command::copy_val(1, 0),
-        Command::copy_val(1, 1),
-        Command::copy_val(1, 2),
-        Command::copy_val(1, 3),
+        Command::CopyVal(1, 0),
+        Command::CopyVal(1, 1),
+        Command::CopyVal(1, 2),
+        Command::CopyVal(1, 3),
     ];
     assert_eq!(test.register, vec![0, 0, 0, 0]);
 
@@ -88,13 +88,13 @@ fn command_copy_val() {
 }
 
 #[test]
-fn command_copy_reg() {
+fn command_copyreg() {
     let mut test = Computer::new("");
     test.register = vec![10, 0, 0, 0];
     test.instructs = vec![
-        Command::copy_reg(0, 1),
-        Command::copy_reg(1, 2),
-        Command::copy_reg(2, 3),
+        Command::CopyReg(0, 1),
+        Command::CopyReg(1, 2),
+        Command::CopyReg(2, 3),
     ];
 
     test.exe_curr_instr();
@@ -109,10 +109,10 @@ fn command_copy_reg() {
 fn command_incr() {
     let mut test = Computer::new("");
     test.instructs = vec![
-        Command::incr(0),
-        Command::incr(1),
-        Command::incr(2),
-        Command::incr(3),
+        Command::Incr(0),
+        Command::Incr(1),
+        Command::Incr(2),
+        Command::Incr(3),
     ];
     assert_eq!(test.register, vec![0, 0, 0, 0]);
 
@@ -129,10 +129,10 @@ fn command_incr() {
 fn command_decr() {
     let mut test = Computer::new("");
     test.instructs = vec![
-        Command::decr(0),
-        Command::decr(1),
-        Command::decr(2),
-        Command::decr(3),
+        Command::Decr(0),
+        Command::Decr(1),
+        Command::Decr(2),
+        Command::Decr(3),
     ];
     assert_eq!(test.register, vec![0, 0, 0, 0]);
 
@@ -146,47 +146,47 @@ fn command_decr() {
 }
 
 #[test]
-fn command_jump_val() {
+fn command_jumpval() {
     let mut test = Computer::new("");
-    test.instructs = vec![Command::jump_val(0, 1)];
+    test.instructs = vec![Command::JumpVal(0, 1)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 0);
 
     test.instruct_idx = 0;
-    test.instructs = vec![Command::jump_val(1, 1)];
+    test.instructs = vec![Command::JumpVal(1, 1)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 1);
 
     test.instruct_idx = 0;
-    test.instructs = vec![Command::jump_val(4, 6)];
+    test.instructs = vec![Command::JumpVal(4, 6)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 6);
 
-    test.instructs = vec![Command::jump_val(-1, -1)];
+    test.instructs = vec![Command::JumpVal(-1, -1)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 5);
 }
 
 #[test]
-fn command_jump_reg() {
+fn command_jumpreg() {
     let mut test = Computer::new("");
-    test.instructs = vec![Command::jump_reg(0, 1)];
+    test.instructs = vec![Command::JumpReg(0, 1)];
     assert_eq!(test.instruct_idx, 0);
     test.register = vec![10, 0, 0, 0];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 1);
 
     test.instruct_idx = 0;
-    test.instructs = vec![Command::jump_reg(1, 1)];
+    test.instructs = vec![Command::JumpReg(1, 1)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 0);
 
     test.instruct_idx = 0;
-    test.instructs = vec![Command::jump_reg(0, 9)];
+    test.instructs = vec![Command::JumpReg(0, 9)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 9);
 
-    test.instructs = vec![Command::jump_reg(0, -4)];
+    test.instructs = vec![Command::JumpReg(0, -4)];
     test.exe_curr_instr();
     assert_eq!(test.instruct_idx, 5);
 }
@@ -195,12 +195,12 @@ fn command_jump_reg() {
 fn execute_exp1() {
     let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
-        Command::copy_val(41, 0),
-        Command::incr(0),
-        Command::incr(0),
-        Command::decr(0),
-        Command::jump_reg(0, 2),
-        Command::decr(0),
+        Command::CopyVal(41, 0),
+        Command::Incr(0),
+        Command::Incr(0),
+        Command::Decr(0),
+        Command::JumpReg(0, 2),
+        Command::Decr(0),
     ];
     test.execute_all();
     assert_eq!(test.register[0], 42);
