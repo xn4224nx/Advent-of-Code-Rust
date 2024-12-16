@@ -87,26 +87,24 @@ impl Computer {
         let file = File::open(&self.data_file).unwrap();
         let mut fp = BufReader::new(file);
 
-        /* Iterate over the file line by line. */
+        /* Iterate over the file line by line and extract commands. */
         while fp.read_line(&mut buffer).unwrap() > 0 {
             if let Some(caps) = cv_pat.captures(&buffer) {
                 self.instructs.push(Command::CopyVal(
                     caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
-                    caps.get(2).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                    ord_char(caps.get(2).unwrap().as_str()),
                 ));
             } else if let Some(caps) = cr_pat.captures(&buffer) {
                 self.instructs.push(Command::CopyReg(
-                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
-                    caps.get(2).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                    ord_char(caps.get(1).unwrap().as_str()),
+                    ord_char(caps.get(2).unwrap().as_str()),
                 ));
             } else if let Some(caps) = in_pat.captures(&buffer) {
-                self.instructs.push(Command::Incr(
-                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
-                ));
+                self.instructs
+                    .push(Command::Incr(ord_char(caps.get(1).unwrap().as_str())));
             } else if let Some(caps) = de_pat.captures(&buffer) {
-                self.instructs.push(Command::Decr(
-                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
-                ));
+                self.instructs
+                    .push(Command::Decr(ord_char(caps.get(1).unwrap().as_str())));
             } else if let Some(caps) = jv_pat.captures(&buffer) {
                 self.instructs.push(Command::JumpVal(
                     caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
@@ -114,7 +112,7 @@ impl Computer {
                 ));
             } else if let Some(caps) = jr_pat.captures(&buffer) {
                 self.instructs.push(Command::JumpReg(
-                    caps.get(1).unwrap().as_str().chars().next().unwrap() as usize - idx_offset,
+                    ord_char(caps.get(1).unwrap().as_str()),
                     caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
                 ));
             }
@@ -125,6 +123,10 @@ impl Computer {
     pub fn exe_curr_instr(&mut self) {}
 
     pub fn execute_all(&mut self) {}
+}
+
+fn ord_char(number: &str) -> usize {
+    return number.chars().next().unwrap() as usize - 'a' as usize;
 }
 
 fn main() {}
