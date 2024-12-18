@@ -73,7 +73,6 @@ impl Computer {
 
     pub fn parse_instructs(&mut self) {
         let mut buffer = String::new();
-        let idx_offset = 'a' as usize;
 
         /* Command Regexes */
         let cv_pat = Regex::new(r"cpy (-?[\d]+) ([a-z])").unwrap();
@@ -168,4 +167,9 @@ fn ord_char(number: &str) -> usize {
     return number.chars().next().unwrap() as usize - 'a' as usize;
 }
 
-fn main() {}
+fn main() {
+    let mut monorail = Computer::new("./data/input.txt");
+    monorail.parse_instructs();
+    monorail.execute_all();
+    println!("Part 1 = {}", monorail.register[0]);
+}
