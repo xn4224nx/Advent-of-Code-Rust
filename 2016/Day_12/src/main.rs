@@ -38,6 +38,12 @@
  *
  * PART 1:  After executing the assembunny code in your puzzle input, what value
  *          is left in register a?
+ *
+ * As you head down the fire escape to the monorail, you notice it didn't start;
+ * register c needs to be initialized to the position of the ignition key.
+ *
+ * PART 2:  If you instead initialize register c to be 1, what value is now left
+ *          in register a?
  */
 
 use regex::Regex;
@@ -161,6 +167,12 @@ impl Computer {
             self.exe_curr_instr()
         }
     }
+
+    /// Reset the computer to the start state
+    pub fn reset(&mut self) {
+        self.register = vec![0; 4];
+        self.idx = 0;
+    }
 }
 
 fn ord_char(number: &str) -> usize {
@@ -172,4 +184,9 @@ fn main() {
     monorail.parse_instructs();
     monorail.execute_all();
     println!("Part 1 = {}", monorail.register[0]);
+
+    monorail.reset();
+    monorail.register[2] = 1;
+    monorail.execute_all();
+    println!("Part 2 = {}", monorail.register[0]);
 }
