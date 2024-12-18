@@ -11,7 +11,7 @@ fn initialise_class() {
     assert_eq!(test.register, vec![0, 0, 0, 0]);
     assert_eq!(test.data_file, String::from(""));
     assert_eq!(test.instructs, Vec::new());
-    assert_eq!(test.instruct_idx, 0);
+    assert_eq!(test.idx, 0);
 }
 
 #[test]
@@ -84,7 +84,7 @@ fn command_copyval() {
     test.exe_curr_instr();
 
     assert_eq!(test.register, vec![1, 1, 1, 1]);
-    assert_eq!(test.instruct_idx, 4);
+    assert_eq!(test.idx, 4);
 }
 
 #[test]
@@ -102,7 +102,7 @@ fn command_copyreg() {
     test.exe_curr_instr();
 
     assert_eq!(test.register, vec![10, 10, 10, 10]);
-    assert_eq!(test.instruct_idx, 3);
+    assert_eq!(test.idx, 3);
 }
 
 #[test]
@@ -122,7 +122,7 @@ fn command_incr() {
     test.exe_curr_instr();
 
     assert_eq!(test.register, vec![1, 1, 1, 1]);
-    assert_eq!(test.instruct_idx, 4);
+    assert_eq!(test.idx, 4);
 }
 
 #[test]
@@ -142,7 +142,7 @@ fn command_decr() {
     test.exe_curr_instr();
 
     assert_eq!(test.register, vec![-1, -1, -1, -1]);
-    assert_eq!(test.instruct_idx, 4);
+    assert_eq!(test.idx, 4);
 }
 
 #[test]
@@ -150,45 +150,47 @@ fn command_jumpval() {
     let mut test = Computer::new("");
     test.instructs = vec![Command::JumpVal(0, 1)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 0);
+    assert_eq!(test.idx, 1);
 
-    test.instruct_idx = 0;
+    test.idx = 0;
     test.instructs = vec![Command::JumpVal(1, 1)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 1);
+    assert_eq!(test.idx, 1);
 
-    test.instruct_idx = 0;
+    test.idx = 0;
     test.instructs = vec![Command::JumpVal(4, 6)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 6);
+    assert_eq!(test.idx, 6);
 
-    test.instructs = vec![Command::JumpVal(-1, -1)];
+    test.idx = 0;
+    test.instructs = vec![Command::JumpVal(-1, 10)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 5);
+    assert_eq!(test.idx, 10);
 }
 
 #[test]
 fn command_jumpreg() {
     let mut test = Computer::new("");
     test.instructs = vec![Command::JumpReg(0, 1)];
-    assert_eq!(test.instruct_idx, 0);
+    assert_eq!(test.idx, 0);
     test.register = vec![10, 0, 0, 0];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 1);
+    assert_eq!(test.idx, 1);
 
-    test.instruct_idx = 0;
+    test.idx = 0;
     test.instructs = vec![Command::JumpReg(1, 1)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 0);
+    assert_eq!(test.idx, 1);
 
-    test.instruct_idx = 0;
+    test.idx = 0;
     test.instructs = vec![Command::JumpReg(0, 9)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 9);
+    assert_eq!(test.idx, 9);
 
-    test.instructs = vec![Command::JumpReg(0, -4)];
+    test.idx = 0;
+    test.instructs = vec![Command::JumpReg(0, 5)];
     test.exe_curr_instr();
-    assert_eq!(test.instruct_idx, 5);
+    assert_eq!(test.idx, 5);
 }
 
 #[test]

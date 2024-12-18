@@ -58,7 +58,7 @@ pub struct Computer {
     pub register: Vec<i32>,
     pub data_file: String,
     pub instructs: Vec<Command>,
-    pub instruct_idx: usize,
+    pub idx: usize,
 }
 
 impl Computer {
@@ -67,7 +67,7 @@ impl Computer {
             register: vec![0; 4],
             data_file: datafile.to_string(),
             instructs: Vec::new(),
-            instruct_idx: 0,
+            idx: 0,
         };
     }
 
@@ -120,9 +120,48 @@ impl Computer {
         }
     }
 
-    pub fn exe_curr_instr(&mut self) {}
+    /// Run the instruction pointed to by the instruction index
+    pub fn exe_curr_instr(&mut self) {
+        match self.instructs[self.idx] {
+            Command::CopyVal(val, idx) => {
+                self.register[idx] = val;
+                self.idx += 1;
+            }
+            Command::CopyReg(idx0, idx1) => {
+                self.register[idx1] = self.register[idx0];
+                self.idx += 1;
+            }
+            Command::Incr(idx) => {
+                self.register[idx] += 1;
+                self.idx += 1;
+            }
+            Command::Decr(idx) => {
+                self.register[idx] -= 1;
+                self.idx += 1;
+            }
+            Command::JumpVal(val0, val1) => {
+                if val0 != 0 {
+                    self.idx = self.idx.wrapping_add(val1 as usize);
+                } else {
+                    self.idx += 1;
+                }
+            }
+            Command::JumpReg(idx, val) => {
+                if self.register[idx] != 0 {
+                    self.idx = self.idx.wrapping_add(val as usize);
+                } else {
+                    self.idx += 1;
+                }
+            }
+        }
+    }
 
-    pub fn execute_all(&mut self) {}
+    /// Do all the instructions until the index goes outside the instrucions
+    pub fn execute_all(&mut self) {
+        while self.idx < self.instructs.len() {
+            self.exe_curr_instr()
+        }
+    }
 }
 
 fn ord_char(number: &str) -> usize {
