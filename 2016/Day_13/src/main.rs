@@ -27,6 +27,9 @@
  *      -   If the number of bits that are 1 is odd, it's a wall.
  *
  * PART 1:  What is the fewest number of steps required for you to reach 31,39?
+ *
+ * PART 2:  How many locations (distinct x,y coordinates, including your
+ *          starting location) can you reach in at most 50 steps?
  */
 
 use std::collections::HashSet;
@@ -109,9 +112,32 @@ impl Maze {
         }
         return move_cnt;
     }
+
+    /// Find the number of unique locations that will be reached in so many steps
+    pub fn location_coverage(&self, num_steps: usize) -> usize {
+        let mut seen_pnts = HashSet::new();
+        let mut curr_pnts = HashSet::from([self.start]);
+
+        for _ in 0..num_steps {
+            let mut next_pnts = HashSet::new();
+
+            /* Work out all the next possible moves */
+            for c_pnt in curr_pnts.iter() {
+                for n_pnt in self.next_viable_moves(*c_pnt).iter() {
+                    if !seen_pnts.contains(n_pnt) {
+                        next_pnts.insert(*n_pnt);
+                        seen_pnts.insert(*n_pnt);
+                    }
+                }
+            }
+            curr_pnts = next_pnts;
+        }
+        return seen_pnts.len();
+    }
 }
 
 fn main() {
     let cubicles = Maze::new(1358);
     println!("Part 1 = {}", cubicles.shortest_route_to_point((31, 39)));
+    println!("Part 2 = {}", cubicles.location_coverage(50));
 }
