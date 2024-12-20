@@ -111,4 +111,7 @@ impl Maze {
     }
 }
 
-fn main() {}
+fn main() {
+    let cubicles = Maze::new(1358);
+    println!("Part 1 = {}", cubicles.shortest_route_to_point((31, 39)));
+}
