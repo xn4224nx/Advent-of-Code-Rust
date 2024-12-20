@@ -29,6 +29,8 @@
  * PART 1:  What is the fewest number of steps required for you to reach 31,39?
  */
 
+use std::collections::HashSet;
+
 pub struct Maze {
     pub seed: u32,
     pub start: (u32, u32),
@@ -44,17 +46,68 @@ impl Maze {
 
     /// Is a point in the maze open for travel
     pub fn is_open_space(&self, point: (u32, u32)) -> bool {
-        false
+        let x = point.0;
+        let y = point.1;
+        let number = x * x + 3 * x + 2 * x * y + y + y * y + self.seed;
+
+        /* Count the number of bits in the number. */
+        let bin_num_bits = number.count_ones();
+
+        /* An open area has an even number of bits. */
+        return bin_num_bits % 2 == 0;
     }
 
     /// From a particular point in the maze work out the viable next moves
     pub fn next_viable_moves(&self, point: (u32, u32)) -> Vec<(u32, u32)> {
-        Vec::new()
+        let x = point.0;
+        let y = point.1;
+        let mut moves = Vec::new();
+
+        /* The square above. */
+        if y > 0 && self.is_open_space((x, y - 1)) {
+            moves.push((x, y - 1));
+        }
+
+        /* The square below. */
+        if self.is_open_space((x, y + 1)) {
+            moves.push((x, y + 1));
+        }
+
+        /* The square to the left. */
+        if x > 0 && self.is_open_space((x - 1, y)) {
+            moves.push((x - 1, y));
+        }
+
+        /* The square to the right. */
+        if self.is_open_space((x + 1, y)) {
+            moves.push((x + 1, y));
+        }
+
+        return moves;
     }
 
     /// Find the length of the shortest route to a point in the maze
     pub fn shortest_route_to_point(&self, end_point: (u32, u32)) -> u32 {
-        0
+        let mut seen_pnts = HashSet::new();
+        let mut curr_pnts = HashSet::from([self.start]);
+        let mut move_cnt = 0;
+
+        while !curr_pnts.contains(&end_point) {
+            let mut next_pnts = HashSet::new();
+
+            /* Work out all the next possible moves */
+            for c_pnt in curr_pnts.iter() {
+                for n_pnt in self.next_viable_moves(*c_pnt).iter() {
+                    if !seen_pnts.contains(n_pnt) {
+                        next_pnts.insert(*n_pnt);
+                        seen_pnts.insert(*n_pnt);
+                    }
+                }
+            }
+            curr_pnts = next_pnts;
+            move_cnt += 1;
+        }
+        return move_cnt;
     }
 }
 
