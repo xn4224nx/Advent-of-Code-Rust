@@ -26,6 +26,21 @@
  *
  * PART 1:  Given the actual salt in your puzzle input, what index produces
  *          your 64th one-time pad key?
+ *
+ * Of course, in order to make this process even more secure, you've also
+ * implemented key stretching.
+ *
+ * Key stretching forces attackers to spend more time generating hashes.
+ * Unfortunately, it forces everyone else to spend more time, too.
+ *
+ * To implement key stretching, whenever you generate a hash, before you use it,
+ * you first find the MD5 hash of that hash, then the MD5 hash of that hash, and
+ * so on, a total of 2016 additional hashings. Always use lowercase hexadecimal
+ * representations of hashes.
+ *
+ * PART 2:  Given the actual salt in your puzzle input and using 2016 extra MD5
+ *          calls of key stretching, what index now produces your 64th one-time
+ *          pad key?
  */
 
 use md5;
@@ -51,6 +66,20 @@ impl KeyGen {
 
         /* Convert to a vector of characters. */
         return digest.chars().collect();
+    }
+
+    /// Strenghten the key by multiple hashings
+    pub fn stretch(&self, data: &Vec<char>, iters: usize) -> Vec<char> {
+        /* Convert the data to a string */
+        let mut msg = data.iter().collect::<String>();
+
+        /* Hash it multiple times. */
+        for _ in 0..iters {
+            msg = format!("{:x}", md5::compute(msg.as_bytes()));
+        }
+
+        /* Convert back to a vector of chars. */
+        return msg.chars().collect();
     }
 
     /// Extract the chars of the triples and quintets in the string
@@ -81,7 +110,7 @@ impl KeyGen {
     }
 
     /// Find a set number of valid keys and return their indexs
-    pub fn generate(&self, num_keys: usize) -> Vec<usize> {
+    pub fn generate(&self, num_keys: usize, stretch: bool) -> Vec<usize> {
         let mut key_idxs: HashSet<usize> = HashSet::new();
         let mut possible_keys: HashMap<char, HashSet<usize>> = HashMap::new();
         let mut curr_idx = 0;
@@ -91,7 +120,11 @@ impl KeyGen {
         /* Iterate until all the keys are found and then continue on for another
          * thousand hashes to ensure no more keys are found. */
         while post_num_key_cnt < window {
-            let digest = self.stream(curr_idx);
+            let mut digest = self.stream(curr_idx);
+
+            if stretch {
+                digest = self.stretch(&digest, 2016);
+            }
 
             /* Check the next 1000 hashes after the all the expected keys. */
             if key_idxs.len() >= num_keys {
@@ -131,4 +164,8 @@ impl KeyGen {
     }
 }
 
-fn main() {}
+fn main() {
+    let otp = KeyGen::new("qzyelonm");
+    println!("Part 1 = {}", otp.generate(64, false)[63]);
+    println!("Part 2 = {}", otp.generate(64, true)[63]);
+}

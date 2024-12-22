@@ -46,9 +46,7 @@ fn extacting_multiples() {
 #[test]
 fn key_generation_exp1() {
     let test = KeyGen::new("abc");
-    let results = test.generate(64);
-
-    println!("{:?}", results);
+    let results = test.generate(64, false);
 
     assert_eq!(results[0], 39);
     assert_eq!(results[63], 22728);
@@ -58,7 +56,53 @@ fn key_generation_exp1() {
 #[test]
 fn key_generation_exp2() {
     let test = KeyGen::new("zpqevtbw");
-    let results = test.generate(64);
-
+    let results = test.generate(64, false);
     assert_eq!(results[63], 16106);
+}
+
+#[test]
+fn key_generation_exp1_stretch() {
+    let test = KeyGen::new("abc");
+    let results = test.generate(64, true);
+    assert_eq!(results[63], 22551);
+}
+
+#[test]
+fn key_generation_exp2_stretch() {
+    let test = KeyGen::new("zpqevtbw");
+    let results = test.generate(64, true);
+    assert_eq!(results[63], 22423);
+}
+
+#[test]
+fn key_stretching() {
+    let test = KeyGen::new("abc");
+    /*assert_eq!(
+        test.stretch(&vec!['a', 'b', 'c', '0'], 1),
+        vec![
+            '5', '7', '7', '5', '7', '1', 'b', 'e', '4', 'd', 'e', '9', 'd', 'c', 'c', 'e', '8',
+            '5', 'a', '0', '4', '1', 'b', 'a', '0', '4', '1', '0', 'f', '2', '9', 'f'
+        ]
+    );*/
+    assert_eq!(
+        test.stretch(&vec!['a', 'b', 'c', '0'], 2),
+        vec![
+            'e', 'e', 'c', '8', '0', 'a', '0', 'c', '9', '2', 'd', 'c', '8', 'a', '0', '7', '7',
+            '7', 'c', '6', '1', '9', 'd', '9', 'b', 'b', '5', '1', 'e', '9', '1', '0'
+        ]
+    );
+    assert_eq!(
+        test.stretch(&vec!['a', 'b', 'c', '0'], 3),
+        vec![
+            '1', '6', '0', '6', '2', 'c', 'e', '7', '6', '8', '7', '8', '7', '3', '8', '4', 'c',
+            '8', '1', 'f', 'e', '1', '7', 'a', '7', 'a', '6', '0', 'c', '7', 'e', '3'
+        ]
+    );
+    assert_eq!(
+        test.stretch(&vec!['a', 'b', 'c', '0'], 2017),
+        vec![
+            'a', '1', '0', '7', 'f', 'f', '6', '3', '4', '8', '5', '6', 'b', 'b', '3', '0', '0',
+            '1', '3', '8', 'c', 'a', 'c', '6', '5', '6', '8', 'c', '0', 'f', '2', '4'
+        ]
+    );
 }
