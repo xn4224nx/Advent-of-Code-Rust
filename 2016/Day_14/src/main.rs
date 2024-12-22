@@ -28,30 +28,106 @@
  *          your 64th one-time pad key?
  */
 
+use md5;
+use std::collections::{HashMap, HashSet};
+
 pub struct KeyGen {
-    pub salt: Vec<u8>,
+    pub salt: String,
 }
 
 impl KeyGen {
     pub fn new(inti_salt: &str) -> Self {
         return KeyGen {
-            salt: inti_salt.as_bytes().to_vec(),
+            salt: inti_salt.to_string(),
         };
     }
 
     /// Create a random data using the salt and an index
-    pub fn stream(&self, index: usize) -> Vec<u8> {
-        Vec::new()
+    pub fn stream(&self, index: usize) -> Vec<char> {
+        let msg = format!("{}{}", self.salt, index.to_string());
+
+        /* Calculate the hash digest. */
+        let digest = format!("{:x}", md5::compute(msg.as_bytes()));
+
+        /* Convert to a vector of characters. */
+        return digest.chars().collect();
     }
 
     /// Extract the chars of the triples and quintets in the string
-    pub fn find_multiples(&self, data: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
-        (Vec::new(), Vec::new())
+    pub fn find_multiples(&self, data: Vec<char>) -> (Vec<char>, Vec<char>) {
+        let mut triples = Vec::new();
+        let mut quintets = Vec::new();
+
+        for idx in 0..data.len() {
+            if idx >= 2
+                && triples.len() < 1
+                && data[idx] == data[idx - 1]
+                && data[idx] == data[idx - 2]
+            {
+                triples.push(data[idx]);
+            }
+
+            if idx >= 4
+                && !quintets.contains(&data[idx])
+                && data[idx] == data[idx - 1]
+                && data[idx] == data[idx - 2]
+                && data[idx] == data[idx - 3]
+                && data[idx] == data[idx - 4]
+            {
+                quintets.push(data[idx]);
+            }
+        }
+        return (triples, quintets);
     }
 
     /// Find a set number of valid keys and return their indexs
-    pub fn generate(&self, num_keys: u8) -> Vec<u32> {
-        Vec::new()
+    pub fn generate(&self, num_keys: usize) -> Vec<usize> {
+        let mut key_idxs: HashSet<usize> = HashSet::new();
+        let mut possible_keys: HashMap<char, HashSet<usize>> = HashMap::new();
+        let mut curr_idx = 0;
+        let mut post_num_key_cnt = 0;
+        let window = 1000;
+
+        /* Iterate until all the keys are found and then continue on for another
+         * thousand hashes to ensure no more keys are found. */
+        while post_num_key_cnt < window {
+            let digest = self.stream(curr_idx);
+
+            /* Check the next 1000 hashes after the all the expected keys. */
+            if key_idxs.len() >= num_keys {
+                post_num_key_cnt += 1;
+            }
+
+            /* Determine the multiples. */
+            let (triples, quintets) = self.find_multiples(digest);
+
+            /* If the hash contains a quintet it may confirm a key. */
+            for conf_k in quintets.iter() {
+                if possible_keys.contains_key(&conf_k) {
+                    for pk_idx in &possible_keys[conf_k] {
+                        if curr_idx - pk_idx <= window {
+                            key_idxs.insert(*pk_idx);
+                        }
+                    }
+                }
+            }
+
+            /* If the hash contains a triple it could be a key. */
+            for pos_k in triples.iter() {
+                possible_keys
+                    .entry(*pos_k)
+                    .and_modify(|x: &mut HashSet<usize>| {
+                        x.insert(curr_idx);
+                    })
+                    .or_insert(HashSet::from([curr_idx]));
+            }
+            curr_idx += 1;
+        }
+
+        /* Return the top `num_keys` number of key indexes. */
+        let mut keys = key_idxs.into_iter().collect::<Vec<usize>>();
+        keys.sort();
+        return (&keys[..num_keys]).to_vec();
     }
 }
 

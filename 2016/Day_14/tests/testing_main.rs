@@ -7,24 +7,18 @@ use day_14::KeyGen;
 #[test]
 fn class_initi() {
     let test = KeyGen::new("abc");
-    assert_eq!(test.salt, vec![97, 98, 99])
+    assert_eq!(test.salt, String::from("abc"))
 }
 
 #[test]
 fn hashing_with_salt() {
     let test = KeyGen::new("abc");
 
-    assert!(String::from_utf8(test.stream(18))
-        .unwrap()
-        .contains("cc38887a5"));
-    assert!(String::from_utf8(test.stream(39)).unwrap().contains("eee"));
-    assert!(String::from_utf8(test.stream(816))
-        .unwrap()
-        .contains("eeeee"));
-    assert!(String::from_utf8(test.stream(92)).unwrap().contains("999"));
-    assert!(String::from_utf8(test.stream(200))
-        .unwrap()
-        .contains("99999"));
+    assert!(String::from_iter(test.stream(18)).contains("cc38887a5"));
+    assert!(String::from_iter(test.stream(39)).contains("eee"));
+    assert!(String::from_iter(test.stream(816)).contains("eeeee"));
+    assert!(String::from_iter(test.stream(92)).contains("999"));
+    assert!(String::from_iter(test.stream(200)).contains("99999"));
 }
 
 #[test]
@@ -32,15 +26,19 @@ fn extacting_multiples() {
     let test = KeyGen::new("abc");
 
     assert_eq!(
-        test.find_multiples(vec![0, 0, 0, 2, 5, 45, 2, 2, 4]),
-        (vec![0], Vec::new())
+        test.find_multiples(vec!['a', 'a', 'a', 'f', 'g']),
+        (vec!['a'], Vec::new())
     );
     assert_eq!(
-        test.find_multiples(vec![9, 4, 2, 7, 8, 8, 8, 8, 8, 8, 4, 67, 24, 65]),
-        (vec![8], vec![8])
+        test.find_multiples(vec![
+            '4', '3', 'f', '8', '8', '8', '8', '8', '8', '4', '7', '2', '4', '6', '5'
+        ]),
+        (vec!['8'], vec!['8'])
     );
     assert_eq!(
-        test.find_multiples(vec![5, 32, 65, 34, 5, 68, 0, 9, 9, 8, 9, 9]),
+        test.find_multiples(vec![
+            '5', '3', '2', '6', '5', '3', '4', '5', '6', '8', '0', '9', '9', '8', '9', '9'
+        ]),
         (Vec::new(), Vec::new())
     );
 }
@@ -49,6 +47,8 @@ fn extacting_multiples() {
 fn key_generation_exp1() {
     let test = KeyGen::new("abc");
     let results = test.generate(64);
+
+    println!("{:?}", results);
 
     assert_eq!(results[0], 39);
     assert_eq!(results[63], 22728);
