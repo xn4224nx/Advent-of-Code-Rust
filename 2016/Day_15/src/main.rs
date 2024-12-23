@@ -30,6 +30,17 @@
  * PART 1:  However, your situation has more than two discs; you've noted their
  *          positions in your puzzle input. What is the first time you can press
  *          the button to get a capsule?
+ *
+ * After getting the first capsule (it contained a star! what great fortune!),
+ * the machine detects your success and begins to rearrange itself.
+ *
+ * When it's done, the discs are back in their original configuration as if it
+ * were time=0 again, but a new disc with 11 positions and starting at position
+ * 0 has appeared exactly one second below the previously-bottom disc.
+ *
+ * PART 2:  With this new disc, and counting again starting from time=0 with the
+ *          configuration in your puzzle input, what is the first time you can
+ *          press the button to get another capsule?
  */
 
 use regex::Regex;
@@ -42,7 +53,7 @@ pub struct Sculpture {
 }
 
 impl Sculpture {
-    pub fn new(file_path: &str) -> Self {
+    pub fn new(file_path: &str, extra_disk: bool) -> Self {
         let mut buffer = String::new();
         let mut dks_total: Vec<usize> = Vec::new();
         let mut dsk_start: Vec<usize> = Vec::new();
@@ -67,6 +78,12 @@ impl Sculpture {
 
             /* Prepare to read the next line. */
             buffer.clear();
+        }
+
+        /* Account for an extra disk being added at the end. */
+        if extra_disk {
+            dks_total.push(11);
+            dsk_start.push(0);
         }
 
         return Sculpture {
@@ -99,6 +116,12 @@ impl Sculpture {
 }
 
 fn main() {
-    let plaza = Sculpture::new("./data/input.txt");
-    println!("Part 1 = {}", plaza.find_first_drop_time());
+    println!(
+        "Part 1 = {}",
+        Sculpture::new("./data/input.txt", false).find_first_drop_time()
+    );
+    println!(
+        "Part 2 = {}",
+        Sculpture::new("./data/input.txt", true).find_first_drop_time()
+    );
 }
