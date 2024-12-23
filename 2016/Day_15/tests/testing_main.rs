@@ -7,12 +7,12 @@ use day_15::Sculpture;
 #[test]
 fn reading_data() {
     let test = Sculpture::new("./data/example_01.txt");
-    assert_eq!(test.disk_total_positions, vec![5, 2]);
-    assert_eq!(test.disk_start_positions, vec![4, 1]);
+    assert_eq!(test.dsk_total_pos, vec![5, 2]);
+    assert_eq!(test.dsk_start_pos, vec![4, 1]);
 
     let test = Sculpture::new("./data/input.txt");
-    assert_eq!(test.disk_total_positions, vec![5, 13, 17, 3, 19, 7]);
-    assert_eq!(test.disk_start_positions, vec![2, 7, 10, 2, 9, 0]);
+    assert_eq!(test.dsk_total_pos, vec![5, 13, 17, 3, 19, 7]);
+    assert_eq!(test.dsk_start_pos, vec![2, 7, 10, 2, 9, 0]);
 }
 
 #[test]

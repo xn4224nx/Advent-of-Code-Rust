@@ -32,25 +32,70 @@
  *          the button to get a capsule?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct Sculpture {
-    pub disk_total_positions: Vec<usize>,
-    pub disk_start_positions: Vec<usize>,
+    pub dsk_total_pos: Vec<usize>,
+    pub dsk_start_pos: Vec<usize>,
 }
 
 impl Sculpture {
     pub fn new(file_path: &str) -> Self {
+        let mut buffer = String::new();
+        let mut dks_total: Vec<usize> = Vec::new();
+        let mut dsk_start: Vec<usize> = Vec::new();
+
+        let re_nums = Regex::new(r"\d+").unwrap();
+
+        /* Open the datafile. */
+        let file = File::open(file_path).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            /* Extract the numbers from the line. */
+            let nums: Vec<usize> = re_nums
+                .find_iter(&buffer)
+                .map(|x| x.as_str().parse::<usize>().unwrap())
+                .collect();
+
+            /* Save only the ones we require. */
+            dks_total.push(nums[1]);
+            dsk_start.push(nums[3]);
+
+            /* Prepare to read the next line. */
+            buffer.clear();
+        }
+
         return Sculpture {
-            disk_total_positions: Vec::new(),
-            disk_start_positions: Vec::new(),
+            dsk_total_pos: dks_total,
+            dsk_start_pos: dsk_start,
         };
     }
 
+    /// Determine if a coin was dropped at a particular time if it would fall
+    /// through all the sculptures.
     pub fn can_drop_happen(&self, time: usize) -> bool {
-        false
+        for idx in 0..self.dsk_total_pos.len() {
+            if (self.dsk_start_pos[idx] + time + idx + 1) % self.dsk_total_pos[idx] != 0 {
+                return false;
+            }
+        }
+        return true;
     }
 
     pub fn find_first_drop_time(&self) -> usize {
-        0
+        let mut time = 0;
+
+        loop {
+            if self.can_drop_happen(time) {
+                return time;
+            }
+
+            time += 1;
+        }
     }
 }
 
