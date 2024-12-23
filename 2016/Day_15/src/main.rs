@@ -93,10 +93,12 @@ impl Sculpture {
             if self.can_drop_happen(time) {
                 return time;
             }
-
             time += 1;
         }
     }
 }
 
-fn main() {}
+fn main() {
+    let plaza = Sculpture::new("./data/input.txt");
+    println!("Part 1 = {}", plaza.find_first_drop_time());
+}
