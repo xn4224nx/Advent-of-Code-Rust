@@ -126,4 +126,13 @@ impl BinaryBlob {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        BinaryBlob::new("10111011111001111").expanded_check(272)
+    );
+    println!(
+        "Part 2 = {}",
+        BinaryBlob::new("10111011111001111").expanded_check(35651584)
+    );
+}
