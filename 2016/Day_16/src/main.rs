@@ -40,42 +40,89 @@
 
 pub struct BinaryBlob {
     pub data: Vec<u8>,
-    pub bit_cnt: usize,
 }
 
 impl BinaryBlob {
     pub fn new(seed: &str) -> Self {
         return BinaryBlob {
-            data: Vec::new(),
-            bit_cnt: 0,
+            data: seed.chars().map(|x| x as u8 - 0x30).collect(),
         };
     }
 
     /// Reverse the order of the bits in the binary data
-    pub fn reverse(&mut self) {}
+    pub fn reverse(&mut self) {
+        self.data = self.data.iter().map(|x| *x).rev().collect();
+    }
 
     /// Change all ones to zeros and vice versa in the data
-    pub fn invert(&mut self) {}
+    pub fn invert(&mut self) {
+        for idx in 0..self.data.len() {
+            self.data[idx] = if self.data[idx] == 0 { 1 } else { 0 };
+        }
+    }
 
     /// Expand the data according to the dragon curve algorithm
-    pub fn dragon_curve(&mut self) {}
+    pub fn dragon_curve(&mut self) {
+        let a = self.data.clone();
+        self.reverse();
+        self.invert();
+        self.data = [a, vec![0], self.data.clone()].concat();
+    }
 
     /// Expand the blob of data to a given size of bits
-    pub fn expand(&mut self, size_of_bits: usize) {}
+    pub fn expand(&mut self, size_of_bits: usize) {
+        while self.data.len() < size_of_bits {
+            self.dragon_curve()
+        }
+
+        /* Cut the data down to the required length. */
+        self.data = self.data[..size_of_bits].to_vec();
+    }
 
     /// Calculate the checksum for the data in its current state
-    pub fn checksum(&self) -> &str {
-        ""
+    pub fn checksum(&self) -> String {
+        let mut chsm = self.data.clone();
+
+        /* This only works with even lengths of data. */
+        assert_eq!(self.data.len() % 2, 0);
+
+        loop {
+            let mut new_chsm = Vec::new();
+
+            /* Examine each pair of bits in the data. */
+            for idx in 0..chsm.len() {
+                if idx % 2 == 0 {
+                    new_chsm.push((chsm[idx] == chsm[idx + 1]) as u8)
+                }
+            }
+
+            /* Overwrite the old with the new. */
+            chsm = new_chsm;
+
+            /* Iterrate until the checksum has an odd length. */
+            if chsm.len() % 2 != 0 {
+                break;
+            }
+        }
+        return self.show(&chsm);
     }
 
     /// Return a human readable form of the binary blob.
-    pub fn show(&self) -> &str {
-        ""
+    pub fn show(&self, sh_data: &Vec<u8>) -> String {
+        sh_data
+            .iter()
+            .map(|x| match *x {
+                0 => '0',
+                1 => '1',
+                _ => panic!("Character Not Recognised!"),
+            })
+            .collect::<String>()
     }
 
     /// Expand the data and then determine its checksum
-    pub fn expanded_check(&mut self, size_of_bits: usize) -> &str {
-        ""
+    pub fn expanded_check(&mut self, size_of_bits: usize) -> String {
+        self.expand(size_of_bits);
+        return self.checksum();
     }
 }
 
