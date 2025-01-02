@@ -33,6 +33,13 @@
  *
  * PART 1:  Given your vault's passcode, what is the shortest path (the actual
  *          path, not just the length) to reach the vault?
+ *
+ * You're curious how robust this security solution really is, and so you decide
+ * to find longer and longer paths which still provide access to the vault. You
+ * remember that paths always end the first time they reach the bottom-right
+ * room (that is, they can never pass through it, only end in it).
+ *
+ * PART 2:  What is the length of the longest path that reaches the vault?
  */
 
 use md5;
@@ -109,9 +116,10 @@ impl Maze {
         return new_direcs;
     }
 
-    /// Find the shortest path through the maze
-    pub fn find_shortest_path(&self) -> String {
+    /// Find the size of the longest path through the maze
+    pub fn find_path(&self, shortest: bool) -> String {
         let mut possible_valid_paths = HashSet::from([Vec::new()]);
+        let mut curr_max: Vec<char> = Vec::new();
 
         loop {
             let mut all_new_paths = HashSet::new();
@@ -127,7 +135,12 @@ impl Maze {
 
                     /* Check for a solution. */
                     if self.directs_2_coords(&new_path) == self.end_pnt {
-                        return new_path.iter().collect();
+                        if shortest {
+                            return new_path.iter().collect();
+                        } else {
+                            curr_max = new_path.clone();
+                            continue;
+                        }
                     }
 
                     /* Otherwise save it for the next iteration. */
@@ -135,9 +148,16 @@ impl Maze {
                 }
             }
 
-            /* Overwrite the old paths with the new. */
             if all_new_paths.is_empty() {
-                panic!("No viable next steps found!");
+                if shortest {
+                    panic!("No viable next steps found!");
+
+                /* Return the last found solution  */
+                } else {
+                    return curr_max.iter().collect();
+                }
+
+            /* Overwrite the old paths with the new. */
             } else {
                 possible_valid_paths = all_new_paths;
             }
@@ -146,5 +166,7 @@ impl Maze {
 }
 
 fn main() {
-    println!("Part 1 = {}", Maze::new("vkjiggvb").find_shortest_path());
+    let sec_vault = Maze::new("vkjiggvb");
+    println!("Part 1 = {}", sec_vault.find_path(true));
+    println!("Part 2 = {}", sec_vault.find_path(false).chars().count());
 }

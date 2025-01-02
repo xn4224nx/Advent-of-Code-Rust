@@ -41,10 +41,17 @@ fn converting_direction_to_final_coord() {
 
 #[test]
 fn find_the_shortest_path() {
-    assert_eq!(Maze::new("ihgpwlah").find_shortest_path(), "DDRRRD");
-    assert_eq!(Maze::new("kglvqrro").find_shortest_path(), "DDUDRLRRUDRD");
+    assert_eq!(Maze::new("ihgpwlah").find_path(true), "DDRRRD");
+    assert_eq!(Maze::new("kglvqrro").find_path(true), "DDUDRLRRUDRD");
     assert_eq!(
-        Maze::new("ulqzkmiv").find_shortest_path(),
+        Maze::new("ulqzkmiv").find_path(true),
         "DRURDRUDDLLDLUURRDULRLDUUDDDRR"
     );
+}
+
+#[test]
+fn find_longest_path_len() {
+    assert_eq!(Maze::new("ihgpwlah").find_path(false).chars().count(), 370);
+    assert_eq!(Maze::new("kglvqrro").find_path(false).chars().count(), 492);
+    assert_eq!(Maze::new("ulqzkmiv").find_path(false).chars().count(), 830);
 }
