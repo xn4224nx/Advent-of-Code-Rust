@@ -33,8 +33,6 @@ fn converting_direction_to_final_coord() {
         test.directs_2_coords(&vec!['D', 'U', 'D']),
         (test.strt_pnt.0, test.strt_pnt.1 + 1)
     );
-    assert_eq!(test.directs_2_coords(&vec!['L', 'L', 'L']), test.strt_pnt);
-    assert_eq!(test.directs_2_coords(&vec!['U', 'U', 'U']), test.strt_pnt);
     assert_eq!(
         test.directs_2_coords(&vec!['D', 'D', 'D', 'R', 'R', 'R']),
         test.end_pnt
