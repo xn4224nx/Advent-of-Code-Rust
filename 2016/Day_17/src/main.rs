@@ -145,4 +145,6 @@ impl Maze {
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", Maze::new("vkjiggvb").find_shortest_path());
+}
