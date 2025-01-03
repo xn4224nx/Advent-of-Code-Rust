@@ -22,11 +22,11 @@ fn read_data_file() {
 fn show_rows() {
     assert_eq!(
         TrapRoom::new("./data/example_01.txt").show(),
-        String::from("..^^.")
+        String::from("..^^.\n")
     );
     assert_eq!(
         TrapRoom::new("./data/example_02.txt").show(),
-        String::from(".^^.^.^^^^")
+        String::from(".^^.^.^^^^\n")
     );
 }
 
@@ -50,7 +50,12 @@ fn predict_further_rows_exp1() {
 #[test]
 fn predict_further_rows_exp2() {
     let mut test = TrapRoom::new("./data/example_02.txt");
-    assert_eq!(test.rows, vec![vec![true, true, false, false, true,]]);
+    assert_eq!(
+        test.rows,
+        vec![vec![
+            true, false, false, true, false, true, false, false, false, false,
+        ]]
+    );
 
     test.predict_rows(10);
 
