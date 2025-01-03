@@ -148,4 +148,8 @@ impl TrapRoom {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut rogue = TrapRoom::new("./data/input.txt");
+    rogue.predict_rows(40);
+    println!("Part 1 = {}", rogue.num_safe_tiles());
+}
