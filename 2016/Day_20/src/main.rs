@@ -24,6 +24,8 @@
  *
  * PART 1:  Given the list of blocked IPs you retrieved from the firewall (your
  *          puzzle input), what is the lowest-valued IP that is not blocked?
+ *
+ * PART 2:  How many IPs are allowed by the blacklist?
  */
 
 use regex::Regex;
@@ -54,75 +56,44 @@ impl BlackList {
             }
             buffer.clear();
         }
-        return BlackList { ranges: tmp_ranges };
-    }
-
-    /// Sort the ranges and combine the overlapping ones
-    pub fn compress_ranges(&mut self) {
-        let mut changes_made = true;
-
         /* Order the ranges smallest to largest, elementwise. */
-        self.ranges.sort();
+        tmp_ranges.sort();
 
-        while changes_made {
-            changes_made = false;
-            let mut new_ranges = Vec::new();
-
-            /* Assess the blacklist ranges in pairs */
-            for idx in (1..self.ranges.len()).step_by(2) {
-                let rng_0 = self.ranges[idx - 1];
-                let rng_1 = self.ranges[idx];
-
-                /* If there is some overlap in the ranges, combine them. */
-                if rng_0.1 >= rng_1.0 {
-                    new_ranges.push((rng_0.0, rng_1.1));
-                    changes_made = true;
-
-                /* Otherwise return both ranges */
-                } else {
-                    new_ranges.push(rng_0);
-                    new_ranges.push(rng_1);
-                }
-            }
-
-            /* If the total ranges were odd save the remaining one. */
-            if self.ranges.len() % 2 != 0 {
-                let f_idx = new_ranges.len() - 1;
-
-                /* Then check if a combine could be made using the odd range. */
-                if new_ranges[f_idx].1 >= self.ranges[self.ranges.len() - 1].0 {
-                    new_ranges[f_idx].1 = self.ranges[self.ranges.len() - 1].1;
-                    changes_made = true;
-
-                /* Or add it to the end of the of this batch */
-                } else {
-                    new_ranges.push(self.ranges[self.ranges.len() - 1]);
-                }
-            }
-
-            /* Overwrite the old with the new. */
-            self.ranges = new_ranges;
-        }
+        return BlackList { ranges: tmp_ranges };
     }
 
     /// Find the lowest allowed IP address by the set of blacklist range
     pub fn lowest_allowed_ip(&mut self) -> u32 {
-        let mut lowest_ip = 0;
-        self.compress_ranges();
+        let mut min_ip = 0;
 
+        /* Find the first rule to allow the current min_ip */
         for idx in 0..self.ranges.len() {
-            /* If the current lowest ip is in this blacklist range increase it. */
-            if lowest_ip >= self.ranges[idx].0 && lowest_ip <= self.ranges[idx].1 {
-                lowest_ip = self.ranges[idx].1 + 1;
-
-            /* If not we have a solution! */
-            } else {
-                return lowest_ip;
+            if self.ranges[idx].0 <= min_ip && min_ip <= self.ranges[idx].1 {
+                min_ip = self.ranges[idx].1 + 1
             }
         }
+        return min_ip;
+    }
 
-        /* We assume here that the lowest IP is one above the final blacklist. */
-        return lowest_ip;
+    /// Count the number of allowed IP addresses
+    pub fn num_allowed_ips(&self) -> u32 {
+        let mut total = 0;
+        let mut curr_ip = 0;
+        let mut idx = 0;
+
+        while curr_ip < u32::MAX {
+            if curr_ip >= self.ranges[idx].0 {
+                if curr_ip <= self.ranges[idx].1 {
+                    curr_ip = self.ranges[idx].1.saturating_add(1);
+                    continue;
+                }
+                idx += 1;
+            } else {
+                total += self.ranges[idx].0 - curr_ip;
+                curr_ip = self.ranges[idx].0;
+            }
+        }
+        return total;
     }
 }
 
@@ -130,5 +101,9 @@ fn main() {
     println!(
         "Part 1 = {}",
         BlackList::new("./data/input.txt").lowest_allowed_ip()
+    );
+    println!(
+        "Part 2 = {}",
+        BlackList::new("./data/input.txt").num_allowed_ips()
     );
 }

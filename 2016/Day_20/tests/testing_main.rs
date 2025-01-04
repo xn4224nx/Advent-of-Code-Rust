@@ -8,16 +8,8 @@ use day_20::BlackList;
 fn reading_data() {
     assert_eq!(
         BlackList::new("./data/example_01.txt").ranges,
-        vec![(5, 8), (0, 2), (4, 7),]
+        vec![(0, 2), (4, 7), (5, 8),]
     );
-}
-
-#[test]
-fn range_compression() {
-    let mut test = BlackList::new("./data/example_01.txt");
-    test.ranges = vec![(5, 8), (0, 2), (4, 7)];
-    test.compress_ranges();
-    assert_eq!(test.ranges, vec![(0, 2), (4, 8)]);
 }
 
 #[test]
