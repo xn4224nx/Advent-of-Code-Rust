@@ -70,8 +70,6 @@ impl BlackList {
 
             /* Assess the blacklist ranges in pairs */
             for idx in (1..self.ranges.len()).step_by(2) {
-                println!("{}", idx);
-
                 let rng_0 = self.ranges[idx - 1];
                 let rng_1 = self.ranges[idx];
 
@@ -128,4 +126,9 @@ impl BlackList {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        BlackList::new("./data/input.txt").lowest_allowed_ip()
+    );
+}
