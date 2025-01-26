@@ -38,8 +38,15 @@
  *  PART 1: Now, you just need to generate a new scrambled password and you can
  *          access the system. Given the list of scrambling operations in your
  *          puzzle input, what is the result of scrambling abcdefgh?
+ *
+ * You scrambled the password correctly, but you discover that you can't
+ * actually modify the password file on the system. You'll need to un-scramble
+ * one of the existing passwords by reversing the scrambling process.
+ *
+ * PART 2:  What is the un-scrambled version of the scrambled password fbgdceah?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::collections::VecDeque;
 use std::fs::File;
@@ -210,11 +217,28 @@ impl SecretHasher {
         }
         return self.show();
     }
+
+    /// Find the initial state that produced a hashed result
+    pub fn find_inital_state(&mut self, end_state: &str) -> String {
+        let state_to_find = String::from(end_state);
+
+        /* Check to see if this inital string makes the final state. */
+        for perm in state_to_find
+            .chars()
+            .permutations(self.initial_letters.len())
+        {
+            self.curr_letters = perm.iter().map(|x| *x).collect::<VecDeque<char>>();
+
+            if self.final_state() == state_to_find {
+                return perm.into_iter().collect();
+            }
+        }
+        panic!("Inital state not found!");
+    }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        SecretHasher::new("abcdefgh", "./data/input.txt").final_state()
-    );
+    let mut scramble = SecretHasher::new("abcdefgh", "./data/input.txt");
+    println!("Part 1 = {}", scramble.final_state());
+    println!("Part 2 = {}", scramble.find_inital_state("fbgdceah"));
 }
