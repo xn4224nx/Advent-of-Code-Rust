@@ -74,6 +74,14 @@ fn reverse_positions() {
 }
 
 #[test]
+fn reverse_positions_2() {
+    let mut test = SecretHasher::new("abcdefghi", "./data/example_01.txt");
+    test.instructs = vec![Command::Reverse(0, 1)];
+    test.impl_command(0);
+    assert_eq!(test.show(), String::from("bacdefghi"));
+}
+
+#[test]
 fn move_position_indexes() {
     let mut test = SecretHasher::new("abcde", "./data/example_01.txt");
     test.curr_letters = VecDeque::from(['b', 'c', 'd', 'e', 'a']);

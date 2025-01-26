@@ -184,7 +184,7 @@ impl SecretHasher {
                 self.curr_letters.rotate_right(idx_chr0);
             }
             Command::Reverse(idx0, idx1) => {
-                let loop_size = (idx1 - idx0) / 2;
+                let loop_size = (idx1 - idx0 + 1) / 2;
 
                 /* Swap pairs, moving outer to inner.  */
                 for offset in 0..loop_size {
@@ -212,4 +212,9 @@ impl SecretHasher {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        SecretHasher::new("abcdefgh", "./data/input.txt").final_state()
+    );
+}
