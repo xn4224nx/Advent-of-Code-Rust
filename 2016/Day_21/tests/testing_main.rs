@@ -16,7 +16,7 @@ fn reading_data() {
             Command::SwapIndex(4, 0),
             Command::SwapLetter('d', 'b'),
             Command::Reverse(0, 4),
-            Command::Rotate(1),
+            Command::Rotate(-1),
             Command::Move(1, 4),
             Command::Move(3, 0),
             Command::RotateLetter('b'),

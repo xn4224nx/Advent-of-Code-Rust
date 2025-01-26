@@ -40,6 +40,11 @@
  *          puzzle input, what is the result of scrambling abcdefgh?
  */
 
+use regex::Regex;
+use std::collections::VecDeque;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(PartialEq, Debug)]
 pub enum Command {
     SwapIndex(usize, usize),
@@ -58,10 +63,77 @@ pub struct SecretHasher {
 
 impl SecretHasher {
     pub fn new(starting_letters: &str, instruc_file: &str) -> Self {
+        let initial_letters: Vec<char> = starting_letters.chars().collect();
+        let curr_letters: Vec<char> = starting_letters.chars().collect();
+        let mut instructs = Vec::new();
+
+        let re_pats = vec![
+            Regex::new(r"swap position (\d+) with position (\d+)").unwrap(),
+            Regex::new(r"swap letter ([a-z]) with letter ([a-z])").unwrap(),
+            Regex::new(r"rotate right (\d+) steps?").unwrap(),
+            Regex::new(r"rotate left (\d+) steps?").unwrap(),
+            Regex::new(r"rotate based on position of letter ([a-z])").unwrap(),
+            Regex::new(r"reverse positions (\d+) through (\d+)").unwrap(),
+            Regex::new(r"move position (\d+) to position (\d+)").unwrap(),
+        ];
+
+        /* Open the file */
+        let file = File::open(instruc_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        let mut buffer = String::new();
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let prev_num_comms = instructs.len();
+
+            /* Test each regex pattern and extract the values. */
+            for (idx, comm_re) in re_pats.iter().enumerate() {
+                if let Some(caps) = comm_re.captures(&buffer) {
+                    instructs.push(match idx {
+                        0 => Command::SwapIndex(
+                            caps.get(1).unwrap().as_str().parse::<usize>().unwrap(),
+                            caps.get(2).unwrap().as_str().parse::<usize>().unwrap(),
+                        ),
+                        1 => Command::SwapLetter(
+                            caps.get(1).unwrap().as_str().chars().nth(0).unwrap(),
+                            caps.get(2).unwrap().as_str().chars().nth(0).unwrap(),
+                        ),
+                        2 => Command::Rotate(caps.get(1).unwrap().as_str().parse::<i32>().unwrap()),
+                        3 => Command::Rotate(
+                            -1 * caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                        ),
+                        4 => Command::RotateLetter(
+                            caps.get(1).unwrap().as_str().chars().nth(0).unwrap(),
+                        ),
+                        5 => Command::Reverse(
+                            caps.get(1).unwrap().as_str().parse::<usize>().unwrap(),
+                            caps.get(2).unwrap().as_str().parse::<usize>().unwrap(),
+                        ),
+                        6 => Command::Move(
+                            caps.get(1).unwrap().as_str().parse::<usize>().unwrap(),
+                            caps.get(2).unwrap().as_str().parse::<usize>().unwrap(),
+                        ),
+                        _ => panic!("Unknown pattern encountered!"),
+                    });
+
+                    /* Once a match is found attempt no more matching. */
+                    break;
+                }
+            }
+
+            /* Check for a line matching no patterns at all */
+            if instructs.len() == prev_num_comms {
+                buffer.truncate(buffer.len() - 1);
+                println!("WARNING: '{}' not a recognised command!", buffer);
+            }
+
+            buffer.clear();
+        }
+
         SecretHasher {
-            initial_letters: Vec::new(),
-            curr_letters: Vec::new(),
-            instructs: Vec::new(),
+            initial_letters,
+            curr_letters,
+            instructs,
         }
     }
 
