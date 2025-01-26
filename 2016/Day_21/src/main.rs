@@ -57,14 +57,14 @@ pub enum Command {
 
 pub struct SecretHasher {
     pub initial_letters: Vec<char>,
-    pub curr_letters: Vec<char>,
+    pub curr_letters: VecDeque<char>,
     pub instructs: Vec<Command>,
 }
 
 impl SecretHasher {
     pub fn new(starting_letters: &str, instruc_file: &str) -> Self {
         let initial_letters: Vec<char> = starting_letters.chars().collect();
-        let curr_letters: Vec<char> = starting_letters.chars().collect();
+        let curr_letters = starting_letters.chars().collect::<VecDeque<char>>();
         let mut instructs = Vec::new();
 
         let re_pats = vec![
@@ -126,28 +126,89 @@ impl SecretHasher {
                 buffer.truncate(buffer.len() - 1);
                 println!("WARNING: '{}' not a recognised command!", buffer);
             }
-
             buffer.clear();
         }
 
-        SecretHasher {
+        return SecretHasher {
             initial_letters,
             curr_letters,
             instructs,
-        }
+        };
     }
 
     /// Take a command and mutate the current letters according to the command
-    pub fn impl_command(&mut self, comm: &Command) {}
+    pub fn impl_command(&mut self, comm_idx: usize) {
+        match self.instructs[comm_idx] {
+            Command::SwapIndex(idx0, idx1) => {
+                self.curr_letters.swap(idx0, idx1);
+            }
+            Command::SwapLetter(chr0, chr1) => {
+                let mut idx_chr0 = 0;
+                let mut idx_chr1 = 0;
+
+                /* Find the index of each of the letters. */
+                for (idx, val) in self.curr_letters.iter().enumerate() {
+                    if *val == chr0 {
+                        idx_chr0 = idx;
+                    } else if *val == chr1 {
+                        idx_chr1 = idx;
+                    };
+
+                    /* If both letters have been found stop looking. */
+                    if idx_chr0 != 0 && idx_chr1 != 0 {
+                        break;
+                    };
+                }
+                self.curr_letters.swap(idx_chr0, idx_chr1);
+            }
+            Command::Rotate(shf) => {
+                if shf >= 0 {
+                    self.curr_letters.rotate_right(shf as usize)
+                } else {
+                    self.curr_letters.rotate_left(shf.abs() as usize)
+                };
+            }
+            Command::RotateLetter(chr0) => {
+                let mut idx_chr0 = self.curr_letters.iter().position(|x| *x == chr0).unwrap();
+
+                /* Enlarge the rotation if its four or over. */
+                if idx_chr0 >= 4 {
+                    idx_chr0 += 2;
+                } else {
+                    idx_chr0 += 1;
+                };
+
+                /* Handle the case of multiple cycles of rotation. */
+                idx_chr0 %= self.curr_letters.len();
+
+                self.curr_letters.rotate_right(idx_chr0);
+            }
+            Command::Reverse(idx0, idx1) => {
+                let loop_size = (idx1 - idx0) / 2;
+
+                /* Swap pairs, moving outer to inner.  */
+                for offset in 0..loop_size {
+                    self.curr_letters.swap(idx0 + offset, idx1 - offset)
+                }
+            }
+            Command::Move(idx0, idx1) => {
+                let chr0 = self.curr_letters.remove(idx0).unwrap();
+                self.curr_letters.insert(idx1, chr0);
+            }
+        }
+    }
 
     /// Show the letters in there current state
     pub fn show(&self) -> String {
-        "".to_string()
+        return self.curr_letters.iter().collect();
     }
 
     /// Find the final form of the letters after all commands
     pub fn final_state(&mut self) -> String {
-        "".to_string()
+        for cmd_idx in 0..self.instructs.len() {
+            self.impl_command(cmd_idx);
+        }
+        return self.show();
     }
 }
 
