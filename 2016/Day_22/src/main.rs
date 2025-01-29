@@ -37,6 +37,7 @@
  *  PART 1: How many viable pairs of nodes are there?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -112,9 +113,19 @@ impl ComputingGrid {
         };
     }
 
+    /// Count the number of swaps that could happen in the grid
     pub fn len_viable_swaps(&self, state: &Vec<Status>) -> usize {
-        0
+        return (0..state.len())
+            .permutations(2)
+            .filter(|x| state[x[0]] == Status::Full && state[x[1]] == Status::Empty)
+            .count();
     }
 }
 
-fn main() {}
+fn main() {
+    let storage = ComputingGrid::new("./data/input.txt");
+    println!(
+        "Part 1 = {}",
+        storage.len_viable_swaps(&storage.start_node_status)
+    );
+}
