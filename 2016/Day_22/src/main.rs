@@ -37,6 +37,10 @@
  *  PART 1: How many viable pairs of nodes are there?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(PartialEq, Debug)]
 pub enum Status {
     Blocked,
@@ -51,10 +55,61 @@ pub struct ComputingGrid {
 
 impl ComputingGrid {
     pub fn new(usage_readout: &str) -> Self {
-        ComputingGrid {
-            node_locs: Vec::new(),
-            start_node_status: Vec::new(),
+        let mut buffer = String::new();
+        let mut node_locs = Vec::new();
+        let mut usages = Vec::new();
+        let mut capacities = Vec::new();
+        let re = Regex::new(r"(\d+)-y(\d+)\s+(\d+)T\s+(\d+)T\s+(\d+)T\s+(\d+)%").unwrap();
+
+        /* Open the file. */
+        let file = File::open(usage_readout).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            if let Some(caps) = re.captures(&buffer) {
+                node_locs.push((
+                    caps.get(1).unwrap().as_str().parse::<u32>().unwrap(),
+                    caps.get(2).unwrap().as_str().parse::<u32>().unwrap(),
+                ));
+                capacities.push(caps.get(3).unwrap().as_str().parse::<u32>().unwrap());
+                usages.push(caps.get(4).unwrap().as_str().parse::<u32>().unwrap());
+            }
+            buffer.clear();
         }
+
+        /* Find the empty node */
+        let mut empt_node_idx: Option<usize> = None;
+        let mut empt_node_cap: Option<u32> = None;
+
+        for node_idx in 0..node_locs.len() {
+            if usages[node_idx] == 0 {
+                empt_node_idx = Some(node_idx);
+                empt_node_cap = Some(capacities[node_idx]);
+            }
+        }
+
+        if empt_node_cap.is_none() || empt_node_cap.is_none() {
+            panic!("No empty node was found in the data!")
+        }
+        let empt_node_idx = empt_node_idx.unwrap();
+        let empt_node_cap = empt_node_cap.unwrap();
+
+        /* Label the nodes. */
+        let start_node_status = usages
+            .iter()
+            .map(|x| match x {
+                0 => Status::Empty,
+                d if *d <= empt_node_cap => Status::Full,
+                d if *d > empt_node_cap => Status::Blocked,
+                _ => panic!("{x} is not covered!"),
+            })
+            .collect();
+
+        return ComputingGrid {
+            node_locs,
+            start_node_status,
+        };
     }
 
     pub fn len_viable_swaps(&self, state: &Vec<Status>) -> usize {

@@ -38,6 +38,12 @@ fn reading_data() {
 }
 
 #[test]
+#[should_panic]
+fn no_empty_node() {
+    let test = ComputingGrid::new("./data/example_03.txt");
+}
+
+#[test]
 fn viable_swaps() {
     let test = ComputingGrid::new("./data/example_01.txt");
     assert_eq!(test.len_viable_swaps(&test.start_node_status), 7);
