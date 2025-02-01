@@ -4,7 +4,6 @@
 mod day_22;
 use day_22::{ComputingGrid, Status};
 
-#[test]
 fn reading_data() {
     let test = ComputingGrid::new("./data/example_01.txt");
     assert_eq!(
@@ -22,7 +21,7 @@ fn reading_data() {
         ]
     );
     assert_eq!(
-        test.start_node_status,
+        test.node_status,
         vec![
             Status::Full,
             Status::Full,
@@ -30,21 +29,59 @@ fn reading_data() {
             Status::Full,
             Status::Empty,
             Status::Full,
-            Status::Full,
+            Status::Goal,
             Status::Full,
             Status::Full
         ]
     );
+    assert_eq!(test.goal_node_idx, 6);
+    assert_eq!(test.dest_node_idx, 3);
+    assert_eq!(test.empt_node_idx, 4);
 }
 
 #[test]
 #[should_panic]
 fn no_empty_node() {
-    let test = ComputingGrid::new("./data/example_03.txt");
+    ComputingGrid::new("./data/example_03.txt");
 }
 
 #[test]
 fn viable_swaps() {
+    assert_eq!(
+        ComputingGrid::new("./data/example_01.txt").len_viable_swaps(),
+        7
+    );
+}
+
+#[test]
+fn viable_moves() {
     let test = ComputingGrid::new("./data/example_01.txt");
-    assert_eq!(test.len_viable_swaps(&test.start_node_status), 7);
+    assert_eq!(test.viable_moves(4), vec![1, 3, 5, 7]);
+    assert_eq!(test.viable_moves(0), vec![1, 3]);
+    assert_eq!(test.viable_moves(1), vec![0, 2, 4]);
+    assert_eq!(test.viable_moves(8), vec![5, 7]);
+}
+
+#[test]
+fn fewest_steps_to_dest() {
+    assert_eq!(
+        ComputingGrid::new("./data/example_01.txt").fewest_steps_to_dest(),
+        1
+    );
+}
+
+#[test]
+fn fewest_steps_to_data_exp_1() {
+    assert_eq!(
+        ComputingGrid::new("./data/example_01.txt").fewest_steps_to_data(),
+        7
+    );
+}
+
+#[test]
+fn fewest_steps_to_data_exp_2() {
+    assert_eq!(
+        ComputingGrid::new("./data/example_02.txt").fewest_steps_to_data(),
+        225
+    );
 }

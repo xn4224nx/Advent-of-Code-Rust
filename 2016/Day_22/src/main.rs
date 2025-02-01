@@ -35,10 +35,20 @@
  *      -   The data on node A (its Used) would fit on node B (its Avail).
  *
  *  PART 1: How many viable pairs of nodes are there?
+ *
+ * Now that you have a better understanding of the grid, it's time to get to
+ * work.
+ *
+ * Your goal is to gain access to the data which begins in the node with y=0 and
+ * the highest x (that is, the node in the top-right corner).
+ *
+ * PART 2:  What is the fewest number of steps required to move your goal data
+ *          to node-x0-y0?
  */
 
 use itertools::Itertools;
 use regex::Regex;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -47,11 +57,15 @@ pub enum Status {
     Blocked,
     Empty,
     Full,
+    Goal,
 }
 
 pub struct ComputingGrid {
     pub node_locs: Vec<(u32, u32)>,
-    pub start_node_status: Vec<Status>,
+    pub node_status: Vec<Status>,
+    pub goal_node_idx: usize,
+    pub dest_node_idx: usize,
+    pub empt_node_idx: usize,
 }
 
 impl ComputingGrid {
@@ -80,24 +94,22 @@ impl ComputingGrid {
         }
 
         /* Find the empty node */
-        let mut empt_node_idx: Option<usize> = None;
         let mut empt_node_cap: Option<u32> = None;
-
+        let mut empt_node_idx: Option<usize> = None;
         for node_idx in 0..node_locs.len() {
             if usages[node_idx] == 0 {
-                empt_node_idx = Some(node_idx);
                 empt_node_cap = Some(capacities[node_idx]);
+                empt_node_idx = Some(node_idx);
             }
         }
-
         if empt_node_cap.is_none() || empt_node_cap.is_none() {
             panic!("No empty node was found in the data!")
         }
-        let empt_node_idx = empt_node_idx.unwrap();
         let empt_node_cap = empt_node_cap.unwrap();
+        let empt_node_idx = empt_node_idx.unwrap();
 
         /* Label the nodes. */
-        let start_node_status = usages
+        let mut node_status: Vec<Status> = usages
             .iter()
             .map(|x| match x {
                 0 => Status::Empty,
@@ -107,25 +119,131 @@ impl ComputingGrid {
             })
             .collect();
 
+        /* Label the goal node as the node with the top right corner. */
+        let mut goal_node_idx = 0;
+        let mut highest_x = 0;
+        for n_idx in 0..node_locs.len() {
+            let x_coord = node_locs[n_idx].0;
+            let y_coord = node_locs[n_idx].1;
+
+            if y_coord == 0 && x_coord > highest_x {
+                goal_node_idx = n_idx;
+                highest_x = x_coord;
+            }
+        }
+        node_status[goal_node_idx] = Status::Goal;
+
+        /* Label the node to the left of the goal node. */
+        let mut dest_node_idx = 0;
+        let mut sec_highest_x = 0;
+        for n_idx in 0..node_locs.len() {
+            let x_coord = node_locs[n_idx].0;
+            let y_coord = node_locs[n_idx].1;
+
+            if y_coord == 0 && x_coord > sec_highest_x && n_idx != goal_node_idx {
+                dest_node_idx = n_idx;
+                sec_highest_x = x_coord;
+            }
+        }
         return ComputingGrid {
             node_locs,
-            start_node_status,
+            node_status,
+            goal_node_idx,
+            dest_node_idx,
+            empt_node_idx,
         };
     }
 
     /// Count the number of swaps that could happen in the grid
-    pub fn len_viable_swaps(&self, state: &Vec<Status>) -> usize {
-        return (0..state.len())
+    pub fn len_viable_swaps(&self) -> usize {
+        return (0..self.node_status.len())
             .permutations(2)
-            .filter(|x| state[x[0]] == Status::Full && state[x[1]] == Status::Empty)
+            .filter(|x| {
+                self.node_status[x[0]] != Status::Blocked && self.node_status[x[1]] == Status::Empty
+            })
             .count();
+    }
+
+    /// Determine the moves that the specific node can make in this config and
+    /// return the indexes of the nodes that the
+    pub fn viable_moves(&self, s_node_idx: usize) -> Vec<usize> {
+        let mut moves = Vec::new();
+        let curr_x = self.node_locs[s_node_idx].0;
+        let curr_y = self.node_locs[s_node_idx].1;
+
+        for n_idx in 0..self.node_locs.len() {
+            let node_x = self.node_locs[n_idx].0;
+            let node_y = self.node_locs[n_idx].1;
+
+            /* A node cannot move to its own location. */
+            if n_idx == s_node_idx {
+                continue;
+            };
+
+            /* Is the node above, below, left or right the current one. */
+            if (node_x == curr_x && (node_y == curr_y + 1 || node_y + 1 == curr_y))
+                || (node_y == curr_y && (node_x == curr_x + 1 || node_x + 1 == curr_x))
+            {
+                moves.push(n_idx)
+            }
+        }
+        return moves;
+    }
+
+    /// Determine the number of moves to get the empty node to the destination
+    /// node. The node to the left of the goal node. Attempt to brute force it
+    /// with Dijkstra's algorithm.
+    pub fn fewest_steps_to_dest(&self) -> u32 {
+        let mut unvisted_nodes: HashSet<usize> = (0..self.node_locs.len()).collect();
+        let mut node_dist: HashMap<usize, u32> =
+            (0..self.node_locs.len()).map(|x| (x, u32::MAX)).collect();
+
+        /* Start at the empty node. */
+        node_dist.insert(self.empt_node_idx, 0);
+
+        loop {
+            let mut curr_idx = 0;
+            let mut curr_dist = u32::MAX;
+
+            /* Find the unvisited node with the smallest distance. */
+            for uv_nd_idx in unvisted_nodes.iter() {
+                if node_dist[uv_nd_idx] < curr_dist {
+                    curr_idx = *uv_nd_idx;
+                    curr_dist = node_dist[uv_nd_idx];
+                }
+            }
+            let next_curr_dist = node_dist[&curr_idx] + 1;
+
+            /* If this node is the target node terminate the loop. */
+            if curr_idx == self.dest_node_idx {
+                return curr_dist;
+            }
+
+            /* For that node find all its possible neighbours. */
+            for n_node in self.viable_moves(curr_idx) {
+                /* Ignore the Blocked nodes */
+                if self.node_status[n_node] == Status::Blocked {
+                    continue;
+                }
+
+                /* Update the distances of the neighbours. */
+                if next_curr_dist < node_dist[&n_node] {
+                    node_dist.insert(n_node, next_curr_dist);
+                };
+            }
+            unvisted_nodes.remove(&curr_idx);
+        }
+    }
+
+    /// Calculate the fewest number of steps required to move the goal data to
+    /// the node-x0-y0.
+    pub fn fewest_steps_to_data(&self) -> u32 {
+        return 1 + self.fewest_steps_to_dest() + 5 * self.node_locs[self.dest_node_idx].0;
     }
 }
 
 fn main() {
     let storage = ComputingGrid::new("./data/input.txt");
-    println!(
-        "Part 1 = {}",
-        storage.len_viable_swaps(&storage.start_node_status)
-    );
+    println!("Part 1 = {}", storage.len_viable_swaps());
+    println!("Part 2 = {}", storage.fewest_steps_to_data());
 }
