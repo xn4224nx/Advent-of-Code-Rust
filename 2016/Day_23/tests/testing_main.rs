@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_23;
-use day_23::{Command, Computer};
+use day_23::{convert_char_to_idx, Command, Computer};
 
 #[test]
 fn reading_data_exp1() {
@@ -38,7 +38,7 @@ fn reading_data_exp2() {
             Command::Inc(0),
             Command::Inc(0),
             Command::Dec(0),
-            Command::JumpReg(0, 2),
+            Command::JumpVal(0, 2),
             Command::Dec(0),
         ]
     );
@@ -104,14 +104,15 @@ fn deincrement() {
 }
 
 #[test]
-fn jump_value() {
+fn jump_register() {
     let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
-        Command::JumpVal(1, 2),
-        Command::JumpVal(0, -2),
-        Command::JumpVal(-1, 7),
-        Command::JumpVal(7, -9),
+        Command::JumpReg(1, 0),
+        Command::JumpReg(0, 1),
+        Command::JumpReg(-1, 2),
+        Command::JumpReg(7, 3),
     ];
+    test.register = vec![2, -2, 7, -9];
 
     test.execute_instruct(0);
     assert_eq!(test.curr_instruc, 2);
@@ -127,13 +128,13 @@ fn jump_value() {
 }
 
 #[test]
-fn jump_register() {
+fn jump_value() {
     let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
-        Command::JumpReg(1, 2),
-        Command::JumpReg(0, -2),
-        Command::JumpReg(2, 7),
-        Command::JumpReg(3, -9),
+        Command::JumpVal(1, 2),
+        Command::JumpVal(0, -2),
+        Command::JumpVal(2, 7),
+        Command::JumpVal(3, -9),
     ];
     test.register = vec![0, 1, -2, 0];
 
@@ -151,16 +152,16 @@ fn jump_register() {
 }
 
 #[test]
-fn test_command_inversion() {
+fn command_inversion() {
     let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
         Command::Inc(0),
         Command::Dec(1),
         Command::Toggle(2),
         Command::CopyVal(1, 2),
-        Command::CopyReg(2, 8),
+        Command::CopyReg(2, 3),
         Command::JumpVal(1, 2),
-        Command::JumpReg(3, -9),
+        Command::JumpReg(-9, 3),
         Command::JumpReg(3, 0),
     ];
     test.toggled = vec![true, true, true, true, true, true, true, true];
@@ -181,23 +182,23 @@ fn test_command_inversion() {
     /* Two Argument Instructions */
     test.execute_instruct(3);
     assert_eq!(test.register, vec![-1, 1, 1, 0]);
-    assert_eq!(test.curr_instruc, 5);
+    assert_eq!(test.curr_instruc, 4);
 
     test.execute_instruct(4);
     assert_eq!(test.register, vec![-1, 1, 1, 0]);
-    assert_eq!(test.curr_instruc, 13);
+    assert_eq!(test.curr_instruc, 4);
 
     test.execute_instruct(5);
     assert_eq!(test.register, vec![-1, 1, 1, 0]);
-    assert_eq!(test.curr_instruc, 14);
+    assert_eq!(test.curr_instruc, 5);
 
     test.execute_instruct(6);
-    assert_eq!(test.register, vec![-1, 1, 1, 0]);
-    assert_eq!(test.curr_instruc, 15);
+    assert_eq!(test.register, vec![-1, 1, 1, -9]);
+    assert_eq!(test.curr_instruc, 6);
 
     test.execute_instruct(7);
-    assert_eq!(test.register, vec![0, 1, 1, 0]);
-    assert_eq!(test.curr_instruc, 16);
+    assert_eq!(test.register, vec![3, 1, 1, -9]);
+    assert_eq!(test.curr_instruc, 7);
 }
 
 #[test]
@@ -205,18 +206,55 @@ fn toggle() {
     let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
         Command::Toggle(0),
+        Command::Toggle(1),
+        Command::Toggle(2),
         Command::Toggle(3),
-        Command::Toggle(6),
-        Command::Toggle(5),
     ];
+    test.register = vec![1, 2, -2, 0];
+
     test.execute_instruct(0);
+    assert_eq!(test.curr_instruc, 1);
+    assert_eq!(test.toggled[1], true);
+    test.toggled[1] = false;
+
     test.execute_instruct(1);
+    assert_eq!(test.curr_instruc, 2);
+    assert_eq!(test.toggled[3], true,);
+    test.toggled[3] = false;
+
     test.execute_instruct(2);
+    assert_eq!(test.curr_instruc, 3);
+    assert_eq!(test.toggled[0], true);
+    test.toggled[0] = false;
+
     test.execute_instruct(3);
-    assert_eq!(
-        test.toggled,
-        vec![true, false, false, true, false, true, true]
-    );
+    assert_eq!(test.curr_instruc, 4);
+    assert_eq!(test.toggled[3], true);
+}
+
+#[test]
+fn modify_instruc_idx() {
+    let mut test = Computer::new("./data/example_01.txt");
+
+    test.modify_instruc_idx(4);
+    assert_eq!(test.curr_instruc, 4);
+
+    test.modify_instruc_idx(4);
+    assert_eq!(test.curr_instruc, 8);
+
+    test.modify_instruc_idx(-8);
+    assert_eq!(test.curr_instruc, 0);
+
+    test.modify_instruc_idx(-1);
+    assert_eq!(test.curr_instruc, usize::MAX);
+}
+
+#[test]
+fn convert_char_to_number() {
+    assert_eq!(convert_char_to_idx("a"), 0);
+    assert_eq!(convert_char_to_idx("b"), 1);
+    assert_eq!(convert_char_to_idx("c"), 2);
+    assert_eq!(convert_char_to_idx("d"), 3);
 }
 
 #[test]
@@ -226,5 +264,5 @@ fn crack_safe_exp1() {
 
 #[test]
 fn crack_safe_exp2() {
-    assert_eq!(Computer::new("./data/example_02.txt").crack_safe(0), 3)
+    assert_eq!(Computer::new("./data/example_02.txt").crack_safe(0), 42)
 }

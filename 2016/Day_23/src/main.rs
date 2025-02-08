@@ -63,8 +63,8 @@ pub enum Command {
     CopyReg(usize, usize),
     Inc(usize),
     Dec(usize),
-    JumpVal(i32, i32),
-    JumpReg(usize, i32),
+    JumpVal(usize, i32),
+    JumpReg(i32, usize),
     Toggle(usize),
 }
 
@@ -76,8 +76,8 @@ pub struct Computer {
 }
 
 /// Convert a char to the index it has in the alphabet
-fn convert_char_to_idx(letter: &str) -> usize {
-    return 'a' as usize - letter.chars().next().unwrap() as usize;
+pub fn convert_char_to_idx(letter: &str) -> usize {
+    return letter.chars().next().unwrap() as usize - 'a' as usize;
 }
 
 impl Computer {
@@ -94,8 +94,8 @@ impl Computer {
             Regex::new(r"cpy ([a-d]) ([a-d])").unwrap(),
             Regex::new(r"inc ([a-d])").unwrap(),
             Regex::new(r"dec ([a-d])").unwrap(),
-            Regex::new(r"jnz (\-?\d+) (\-?\d+)").unwrap(),
             Regex::new(r"jnz ([a-d]) (\-?\d+)").unwrap(),
+            Regex::new(r"jnz (\-?\d+) ([a-d])").unwrap(),
             Regex::new(r"tgl ([a-d])").unwrap(),
         ];
 
@@ -115,12 +115,12 @@ impl Computer {
                         2 => Command::Inc(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         3 => Command::Dec(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         4 => Command::JumpVal(
-                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
                             caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
                         ),
                         5 => Command::JumpReg(
-                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
-                            caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                            convert_char_to_idx(caps.get(2).unwrap().as_str()),
                         ),
                         6 => Command::Toggle(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         _ => panic!("Unknown command index encountered!"),
@@ -142,13 +142,115 @@ impl Computer {
         };
     }
 
+    /// Change the instruction index
+    pub fn modify_instruc_idx(&mut self, modifying_val: i32) {
+        let mag_val = modifying_val.abs() as usize;
+
+        if modifying_val >= 0 {
+            self.curr_instruc += mag_val;
+        } else if mag_val <= self.curr_instruc {
+            self.curr_instruc -= mag_val;
+
+        /* If the instruction would be invalid set as a particular value. */
+        } else {
+            self.curr_instruc = usize::MAX;
+        }
+    }
+
     /// Fully execute the command at the specified index
-    pub fn execute_instruct(&mut self, instruc_idx: usize) {}
+    pub fn execute_instruct(&mut self, instruc_idx: usize) {
+        match self.instructs[instruc_idx] {
+            Command::CopyVal(val, reg_idx) => {
+                if self.toggled[instruc_idx] {
+                    if val != 0 {
+                        self.modify_instruc_idx(self.register[reg_idx]);
+                    } else {
+                        self.curr_instruc += 1;
+                    }
+                } else {
+                    self.register[reg_idx] = val;
+                    self.curr_instruc += 1;
+                }
+            }
+            Command::CopyReg(reg_idx_scr, reg_idx_dest) => {
+                if self.toggled[instruc_idx] {
+                    if self.register[reg_idx_scr] != 0 {
+                        self.modify_instruc_idx(self.register[reg_idx_dest]);
+                    } else {
+                        self.curr_instruc += 1;
+                    }
+                } else {
+                    self.register[reg_idx_dest] = self.register[reg_idx_scr];
+                    self.curr_instruc += 1;
+                }
+            }
+            Command::Inc(reg_idx) => {
+                if self.toggled[instruc_idx] {
+                    self.register[reg_idx] -= 1;
+                } else {
+                    self.register[reg_idx] += 1;
+                };
+                self.curr_instruc += 1;
+            }
+            Command::Dec(reg_idx) => {
+                if self.toggled[instruc_idx] {
+                    self.register[reg_idx] += 1;
+                } else {
+                    self.register[reg_idx] -= 1;
+                };
+                self.curr_instruc += 1;
+            }
+            Command::JumpVal(reg_idx, mov_val) => {
+                if self.toggled[instruc_idx] {
+                    /* This inverted instruction is meaningless. */
+                    self.curr_instruc += 1;
+                } else {
+                    if self.register[reg_idx] != 0 {
+                        self.modify_instruc_idx(mov_val);
+                    } else {
+                        self.curr_instruc += 1;
+                    }
+                };
+            }
+            Command::JumpReg(test_val, reg_idx) => {
+                if self.toggled[instruc_idx] {
+                    self.register[reg_idx] = test_val;
+                    self.curr_instruc += 1;
+                } else {
+                    if test_val != 0 {
+                        self.modify_instruc_idx(self.register[reg_idx]);
+                    } else {
+                        self.curr_instruc += 1;
+                    }
+                };
+            }
+            Command::Toggle(reg_idx) => {
+                if self.toggled[instruc_idx] {
+                    self.register[reg_idx] += 1;
+                } else {
+                    let flip_idx = self.curr_instruc as i32 + self.register[reg_idx];
+
+                    /* Check the flip is valid. */
+                    if flip_idx >= 0 && flip_idx < self.toggled.len() as i32 {
+                        let f_idx = flip_idx as usize;
+                        self.toggled[f_idx] = !self.toggled[f_idx];
+                    }
+                };
+                self.curr_instruc += 1;
+            }
+        }
+    }
 
     /// Find the final value of the a register after all instructions
     /// have completed.
     pub fn crack_safe(&mut self, init_a_reg: i32) -> i32 {
-        0
+        self.register[0] = init_a_reg;
+
+        /* Execute instructions until the index goes out of bounds. */
+        while self.curr_instruc < self.instructs.len() {
+            self.execute_instruct(self.curr_instruc);
+        }
+        return self.register[0];
     }
 }
 
