@@ -254,4 +254,6 @@ impl Computer {
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", Computer::new("./data/input.txt").crack_safe(7));
+}
