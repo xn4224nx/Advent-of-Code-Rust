@@ -53,6 +53,10 @@
  * PART 1:  What value should be sent to the safe?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(Debug, PartialEq)]
 pub enum Command {
     CopyVal(i32, usize),
@@ -71,14 +75,71 @@ pub struct Computer {
     pub curr_instruc: usize,
 }
 
+/// Convert a char to the index it has in the alphabet
+fn convert_char_to_idx(letter: &str) -> usize {
+    return 'a' as usize - letter.chars().next().unwrap() as usize;
+}
+
 impl Computer {
     pub fn new(instruc_file: &str) -> Self {
-        Computer {
-            register: Vec::new(),
-            instructs: Vec::new(),
-            toggled: Vec::new(),
-            curr_instruc: 0,
+        let mut buffer = String::new();
+        let mut instructs = Vec::new();
+
+        /* Open the file */
+        let file = File::open(instruc_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        let re_pats = vec![
+            Regex::new(r"cpy (\-?\d+) ([a-d])").unwrap(),
+            Regex::new(r"cpy ([a-d]) ([a-d])").unwrap(),
+            Regex::new(r"inc ([a-d])").unwrap(),
+            Regex::new(r"dec ([a-d])").unwrap(),
+            Regex::new(r"jnz (\-?\d+) (\-?\d+)").unwrap(),
+            Regex::new(r"jnz ([a-d]) (\-?\d+)").unwrap(),
+            Regex::new(r"tgl ([a-d])").unwrap(),
+        ];
+
+        /* Iterate over it line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            for (idx, pattern) in re_pats.iter().enumerate() {
+                if let Some(caps) = pattern.captures(&buffer) {
+                    instructs.push(match idx {
+                        0 => Command::CopyVal(
+                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                            convert_char_to_idx(caps.get(2).unwrap().as_str()),
+                        ),
+                        1 => Command::CopyReg(
+                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
+                            convert_char_to_idx(caps.get(2).unwrap().as_str()),
+                        ),
+                        2 => Command::Inc(convert_char_to_idx(caps.get(1).unwrap().as_str())),
+                        3 => Command::Dec(convert_char_to_idx(caps.get(1).unwrap().as_str())),
+                        4 => Command::JumpVal(
+                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
+                            caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                        ),
+                        5 => Command::JumpReg(
+                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
+                            caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
+                        ),
+                        6 => Command::Toggle(convert_char_to_idx(caps.get(1).unwrap().as_str())),
+                        _ => panic!("Unknown command index encountered!"),
+                    });
+
+                    /* After the first regex pattern that matches stop looking. */
+                    break;
+                }
+            }
+            buffer.clear();
         }
+
+        let num_instructs: usize = instructs.len();
+        return Computer {
+            register: vec![0; 4],
+            instructs,
+            toggled: vec![false; num_instructs],
+            curr_instruc: 0,
+        };
     }
 
     /// Fully execute the command at the specified index
