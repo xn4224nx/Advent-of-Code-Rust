@@ -179,4 +179,9 @@ impl AirDucts {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        AirDucts::new("./data/input.txt").min_traversal()
+    );
+}
