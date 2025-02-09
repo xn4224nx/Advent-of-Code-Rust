@@ -4,6 +4,7 @@
 mod day_25;
 use day_25::{convert_char_to_idx, Command, Computer};
 
+
 #[test]
 fn reading_data_exp1() {
     let test = Computer::new("./data/example_01.txt");
@@ -128,9 +129,10 @@ fn jump_register() {
     assert_eq!(test.curr_instruc, 11);
 }
 
+
 #[test]
 fn out() {
-    let mut test = Computer::new("./data/example_01.txt");
+   let mut test = Computer::new("./data/example_01.txt");
     test.instructs = vec![
         Command::Out(1),
         Command::Out(0),
@@ -146,6 +148,7 @@ fn out() {
 
     assert_eq!(test.display, vec![1, 0, -2, 0]);
 }
+
 
 #[test]
 fn modify_instruc_idx() {
@@ -170,4 +173,9 @@ fn convert_char_to_number() {
     assert_eq!(convert_char_to_idx("b"), 1);
     assert_eq!(convert_char_to_idx("c"), 2);
     assert_eq!(convert_char_to_idx("d"), 3);
+}
+
+#[test]
+fn verify_iter_signal_exp1() {
+    assert_eq!(Computer::new("./data/example_01.txt").verify_iter_signal(0), false)
 }
