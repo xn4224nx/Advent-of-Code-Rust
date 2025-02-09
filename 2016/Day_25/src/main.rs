@@ -58,8 +58,8 @@ pub enum Command {
     CopyReg(usize, usize),
     Inc(usize),
     Dec(usize),
-    JumpVal(usize, i32),
-    JumpReg(i32, usize),
+    JumpVal(i32, i32),
+    JumpReg(usize, i32),
     Out(usize),
 }
 
@@ -89,8 +89,8 @@ impl Computer {
             Regex::new(r"cpy ([a-d]) ([a-d])").unwrap(),
             Regex::new(r"inc ([a-d])").unwrap(),
             Regex::new(r"dec ([a-d])").unwrap(),
+            Regex::new(r"jnz (\-?\d+) (\-?\d+)").unwrap(),
             Regex::new(r"jnz ([a-d]) (\-?\d+)").unwrap(),
-            Regex::new(r"jnz (\-?\d+) ([a-d])").unwrap(),
             Regex::new(r"out ([a-d])").unwrap(),
         ];
 
@@ -110,12 +110,12 @@ impl Computer {
                         2 => Command::Inc(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         3 => Command::Dec(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         4 => Command::JumpVal(
-                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
+                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
                             caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
                         ),
                         5 => Command::JumpReg(
-                            caps.get(1).unwrap().as_str().parse::<i32>().unwrap(),
-                            convert_char_to_idx(caps.get(2).unwrap().as_str()),
+                            convert_char_to_idx(caps.get(1).unwrap().as_str()),
+                            caps.get(2).unwrap().as_str().parse::<i32>().unwrap(),
                         ),
                         6 => Command::Out(convert_char_to_idx(caps.get(1).unwrap().as_str())),
                         _ => panic!("Unknown command index encountered!"),
@@ -136,7 +136,6 @@ impl Computer {
             display: Vec::new(),
         };
     }
-
 
     /// Change the instruction index
     pub fn modify_instruc_idx(&mut self, modifying_val: i32) {
@@ -169,15 +168,15 @@ impl Computer {
             Command::Dec(reg_idx) => {
                 self.register[reg_idx] -= 1;
             }
-            Command::JumpVal(reg_idx, mov_val) => {
-                if self.register[reg_idx] != 0 {
+            Command::JumpVal(test_val, mov_val) => {
+                if test_val != 0 {
                     self.modify_instruc_idx(mov_val);
                     jmp_occured = true;
                 }
             }
-            Command::JumpReg(test_val, reg_idx) => {
-                if test_val != 0 {
-                    self.modify_instruc_idx(self.register[reg_idx]);
+            Command::JumpReg(reg_idx, mov_val) => {
+                if self.register[reg_idx] != 0 {
+                    self.modify_instruc_idx(mov_val);
                     jmp_occured = true;
                 }
             }
@@ -190,18 +189,52 @@ impl Computer {
         };
     }
 
-
     /// Determine if the specified number of outputs match the target output
     pub fn verify_iter_signal(&mut self, inital_a: i32) -> bool {
-        false
-    }
+        self.register = vec![inital_a, 0, 0, 0];
+        self.curr_instruc = 0;
+        self.display = Vec::new();
 
+        /* Generate values until a discrepency is found or the max ammount is created. */
+        while self.display.len() < 100 {
+            let curr_display_len = self.display.len();
+            self.execute_instruct(self.curr_instruc);
+
+            /* Check if a new digit has been generated. */
+            if self.display.len() > curr_display_len {
+                let new_digit = self.display[self.display.len() - 1] as usize;
+
+                /* Ensure only valid digits are created. */
+                if new_digit != 0 && new_digit != 1 {
+                    return false;
+                }
+
+                /* Check its the right one for the position. */
+                if self.display.len() % 2 == new_digit {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /// Find the lowest initial value of the a register that causes an
     /// alternating pattern of ones and zeros.
     pub fn find_low_pattern_starter(&mut self) -> i32 {
-        0
+        let mut a_init_val = 0;
+
+        loop {
+            if self.verify_iter_signal(a_init_val) {
+                return a_init_val;
+            };
+            a_init_val += 1;
+        }
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Computer::new("./data/input.txt").find_low_pattern_starter()
+    );
+}
