@@ -26,6 +26,13 @@
  * PART 1:  Given your actual map, and starting from location 0, what is the
  *          fewest number of steps required to visit every non-0 number marked
  *          on the map at least once?
+ *
+ * Of course, if you leave the cleaning robot somewhere weird, someone is bound
+ * to notice.
+ *
+ * PART 2:  What is the fewest number of steps required to start at 0, visit
+ *          every non-0 number marked on the map at least once, and then return
+ *          to 0?
  */
 
 use itertools::Itertools;
@@ -150,8 +157,8 @@ impl AirDucts {
     }
 
     /// Calculate the minmum number of steps to vist all numbers starting at
-    /// zero.
-    pub fn min_traversal(&self) -> usize {
+    /// zero. Optionally returning to zero as well
+    pub fn min_traversal(&self, ret_zero: bool) -> usize {
         let mut path_combs = HashMap::new();
 
         /* Find the smallest path between each pair of numbers. */
@@ -164,7 +171,12 @@ impl AirDucts {
         /* For each route through the numbers calculate the total length. */
         let mut all_path_lens = HashSet::new();
         for path_comb in (1..self.numbr_tiles.len()).permutations(self.numbr_tiles.len() - 1) {
-            let fpath_comb = [vec![0], path_comb].concat();
+            /* Does the robot need to return to the origin? */
+            let fpath_comb = if ret_zero {
+                [vec![0], path_comb, vec![0]].concat()
+            } else {
+                [vec![0], path_comb].concat()
+            };
 
             /* Calculate the total length of this route */
             all_path_lens.insert(
@@ -180,8 +192,11 @@ impl AirDucts {
 }
 
 fn main() {
+    let roof_hvac = AirDucts::new("./data/input.txt");
+
     println!(
-        "Part 1 = {}",
-        AirDucts::new("./data/input.txt").min_traversal()
+        "Part 1 = {}\nPart 2 = {}",
+        roof_hvac.min_traversal(false),
+        roof_hvac.min_traversal(true),
     );
 }

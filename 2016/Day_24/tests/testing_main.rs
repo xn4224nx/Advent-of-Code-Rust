@@ -65,5 +65,8 @@ fn min_numbr_dist() {
 
 #[test]
 fn min_traversal() {
-    assert_eq!(AirDucts::new("./data/example_01.txt").min_traversal(), 14);
+    assert_eq!(
+        AirDucts::new("./data/example_01.txt").min_traversal(false),
+        14
+    );
 }
