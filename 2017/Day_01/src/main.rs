@@ -44,6 +44,31 @@
  *          is the last digit, 9.
  *
  * PART 1:  What is the solution to your captcha?
+ *
+ * You notice a progress bar that jumps to 50% completion. Apparently, the door
+ * isn't yet satisfied, but it did emit a star as encouragement. The
+ * instructions change:
+ *
+ * Now, instead of considering the next digit, it wants you to consider the
+ * digit halfway around the circular list. That is, if your list contains 10
+ * items, only include a digit in your sum if the digit 10/2 = 5 steps forward
+ * matches it. Fortunately, your list has an even number of elements.
+ *
+ * For example:
+ *
+ *      -   1212 produces 6: the list contains 4 items, and all four digits
+ *          match the digit 2 items ahead.
+ *
+ *      -   1221 produces 0, because every comparison is between a 1 and a 2.
+ *
+ *      -   123425 produces 4, because both 2s match each other, but no other
+ *          digit has a match.
+ *
+ *      -   123123 produces 12.
+ *
+ *      -   12131415 produces 4.
+ *
+ * PART 2:  What is the solution to your new captcha?
  */
 
 use std::fs::read_to_string;
@@ -65,12 +90,14 @@ impl AntiHumanCaptcha {
     }
 
     /// Calculate the sum of numbers in the ring that match a certain pattern
-    pub fn ring_sum(&self) -> u32 {
+    pub fn ring_sum(&self, adjacent: bool) -> u32 {
         let mut total = 0;
 
         /* Check if each number matches the check number. */
         for idx in 0..self.vals.len() {
-            let check_idx = if idx == 0 {
+            let check_idx = if !adjacent {
+                (idx + self.vals.len() / 2) % self.vals.len()
+            } else if idx == 0 {
                 self.vals.len() - 1
             } else {
                 idx - 1
@@ -86,8 +113,11 @@ impl AntiHumanCaptcha {
 }
 
 fn main() {
+    let digit_quar = AntiHumanCaptcha::new("./data/input.txt");
+
     println!(
-        "Part 1 = {}",
-        AntiHumanCaptcha::new("./data/input.txt").ring_sum()
+        "Part 1 = {}\nPart 2 = {}",
+        digit_quar.ring_sum(true),
+        digit_quar.ring_sum(false)
     );
 }

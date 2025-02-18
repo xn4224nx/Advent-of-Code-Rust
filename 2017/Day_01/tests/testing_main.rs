@@ -78,20 +78,72 @@ fn reading_data_exp9() {
 
 #[test]
 fn ring_sum_exp1() {
-    assert_eq!(AntiHumanCaptcha::new("./data/example_01.txt").ring_sum(), 3);
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_01.txt").ring_sum(true),
+        3
+    );
 }
 
 #[test]
 fn ring_sum_exp2() {
-    assert_eq!(AntiHumanCaptcha::new("./data/example_02.txt").ring_sum(), 4);
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_02.txt").ring_sum(true),
+        4
+    );
 }
 
 #[test]
 fn ring_sum_exp3() {
-    assert_eq!(AntiHumanCaptcha::new("./data/example_03.txt").ring_sum(), 0);
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_03.txt").ring_sum(true),
+        0
+    );
 }
 
 #[test]
 fn ring_sum_exp4() {
-    assert_eq!(AntiHumanCaptcha::new("./data/example_04.txt").ring_sum(), 9);
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_04.txt").ring_sum(true),
+        9
+    );
+}
+
+#[test]
+fn ring_sum_exp5() {
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_05.txt").ring_sum(false),
+        6
+    );
+}
+
+#[test]
+fn ring_sum_exp6() {
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_06.txt").ring_sum(false),
+        0
+    );
+}
+
+#[test]
+fn ring_sum_exp7() {
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_07.txt").ring_sum(false),
+        4
+    );
+}
+
+#[test]
+fn ring_sum_exp8() {
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_08.txt").ring_sum(false),
+        12
+    );
+}
+
+#[test]
+fn ring_sum_exp9() {
+    assert_eq!(
+        AntiHumanCaptcha::new("./data/example_09.txt").ring_sum(false),
+        4
+    );
 }
