@@ -55,3 +55,9 @@ fn row_range_06() {
     let test = SpreadSheet::new("./data/example_02.txt");
     assert_eq!(test.row_range(2), 5);
 }
+
+#[test]
+fn checksum_exp1() {
+    let test = SpreadSheet::new("./data/example_01.txt");
+    assert_eq!(test.checksum(), 18);
+}

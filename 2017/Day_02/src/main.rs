@@ -31,24 +31,61 @@
  * PART 1:  What is the checksum for the spreadsheet in your puzzle input?
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct SpreadSheet {
     pub data: Vec<Vec<u32>>,
 }
 
 impl SpreadSheet {
     pub fn new(data_file: &str) -> Self {
-        SpreadSheet { data: Vec::new() }
+        let mut data: Vec<Vec<u32>> = Vec::new();
+        let mut buffer = String::new();
+
+        /* Open the file */
+        let file = File::open(data_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line and convert the string into a Vec<u32>. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            data.push(
+                buffer
+                    .as_str()
+                    .split_ascii_whitespace()
+                    .filter_map(|x| x.parse::<u32>().ok())
+                    .collect(),
+            );
+            buffer.clear();
+        }
+        return SpreadSheet { data };
     }
 
     /// Calculate the difference between the max and min in the row
     pub fn row_range(&self, row_idx: usize) -> u32 {
-        0
+        let mut max_num = 0;
+        let mut min_num = u32::MAX;
+
+        /* Check each number to find the max and min. */
+        for col_idx in 0..self.data[row_idx].len() {
+            if self.data[row_idx][col_idx] > max_num {
+                max_num = self.data[row_idx][col_idx]
+            };
+
+            if self.data[row_idx][col_idx] < min_num {
+                min_num = self.data[row_idx][col_idx]
+            };
+        }
+        return max_num - min_num;
     }
 
     /// The sum of the ranges of each row in the spreadsheet
     pub fn checksum(&self) -> u32 {
-        0
+        return (0..self.data.len()).map(|x| self.row_range(x)).sum::<u32>();
     }
 }
 
-fn main() {}
+fn main() {
+    let corrupt = SpreadSheet::new("./data/input.txt");
+    println!("Part 1 = {}", corrupt.checksum());
+}
