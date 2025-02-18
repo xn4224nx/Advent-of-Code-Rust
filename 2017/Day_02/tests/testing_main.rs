@@ -57,7 +57,31 @@ fn row_range_06() {
 }
 
 #[test]
+fn row_divide_01() {
+    let test = SpreadSheet::new("./data/example_02.txt");
+    assert_eq!(test.row_divide(0), 4);
+}
+
+#[test]
+fn row_divide_02() {
+    let test = SpreadSheet::new("./data/example_02.txt");
+    assert_eq!(test.row_divide(1), 3);
+}
+
+#[test]
+fn row_divide_03() {
+    let test = SpreadSheet::new("./data/example_02.txt");
+    assert_eq!(test.row_divide(2), 2);
+}
+
+#[test]
 fn checksum_exp1() {
     let test = SpreadSheet::new("./data/example_01.txt");
-    assert_eq!(test.checksum(), 18);
+    assert_eq!(test.checksum(true), 18);
+}
+
+#[test]
+fn checksum_exp2() {
+    let test = SpreadSheet::new("./data/example_02.txt");
+    assert_eq!(test.checksum(false), 9);
 }
