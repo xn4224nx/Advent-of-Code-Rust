@@ -46,19 +46,48 @@
  * PART 1:  What is the solution to your captcha?
  */
 
+use std::fs::read_to_string;
+
 pub struct AntiHumanCaptcha {
-    pub vals: Vec<u8>,
+    pub vals: Vec<u32>,
 }
 
 impl AntiHumanCaptcha {
     pub fn new(data_file: &str) -> Self {
-        AntiHumanCaptcha { vals: Vec::new() }
+        AntiHumanCaptcha {
+            vals: read_to_string(data_file)
+                .unwrap()
+                .chars()
+                .filter(|x| x.is_numeric())
+                .map(|x| x.to_digit(10).unwrap())
+                .collect(),
+        }
     }
 
     /// Calculate the sum of numbers in the ring that match a certain pattern
     pub fn ring_sum(&self) -> u32 {
-        0
+        let mut total = 0;
+
+        /* Check if each number matches the check number. */
+        for idx in 0..self.vals.len() {
+            let check_idx = if idx == 0 {
+                self.vals.len() - 1
+            } else {
+                idx - 1
+            };
+
+            /* If the current number is the same as the check value, sum it. */
+            if self.vals[idx] == self.vals[check_idx] {
+                total += self.vals[idx];
+            };
+        }
+        return total;
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        AntiHumanCaptcha::new("./data/input.txt").ring_sum()
+    );
+}
