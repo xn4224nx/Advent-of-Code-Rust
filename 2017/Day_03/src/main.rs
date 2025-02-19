@@ -36,13 +36,53 @@
  */
 
 /// Calculate the coordinates of step in the spiral
-pub fn coords_in_spiral(step: usize) -> (i32, i32) {
-    (0, 0)
+pub fn coords_in_spiral(step: i32) -> (i32, i32) {
+    /* Calculate the ring characteristics. */
+    let ring = (step as f64).sqrt().ceil() as i32 / 2;
+    let ring_side_len = 2 * ring + 1;
+    let ring_final_val = ring_side_len.pow(2);
+
+    /* Calculate the value at each of the corners of the ring */
+    let bot_left = ring_final_val - (ring_side_len - 1);
+    let top_left = ring_final_val - 2 * (ring_side_len - 1);
+    let top_rght = ring_final_val - 3 * (ring_side_len - 1);
+
+    /* Test to see if this step is on a corner */
+    return if step == ring_final_val {
+        (ring, -ring)
+    } else if step == bot_left {
+        (-ring, -ring)
+    } else if step == top_left {
+        (-ring, ring)
+    } else if step == top_rght {
+        (ring, ring)
+
+    /* Bottow row points */
+    } else if ring_final_val > step && step > bot_left {
+        (step - bot_left - ring_side_len / 2, -ring)
+
+    /* Top row points */
+    } else if top_left > step && step > top_rght {
+        ((top_rght + ring_side_len / 2) - step, ring)
+
+    /* Left column points */
+    } else if bot_left > step && step > top_left {
+        (-ring, (top_left + ring_side_len / 2) - step)
+
+    /* Right column points */
+    } else if top_rght > step {
+        (ring, step - top_rght + ring_side_len / 2)
+    } else {
+        panic!("Step {} could not be placed at a point.", step);
+    };
 }
 
 /// Count the manhattan distance from this step to the centre
-pub fn moves_to_exit(step: usize) -> u32 {
-    0
+pub fn moves_to_exit(step: i32) -> i32 {
+    let (x_coord, y_coord) = coords_in_spiral(step);
+    return x_coord.abs() + y_coord.abs();
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", moves_to_exit(325489));
+}
