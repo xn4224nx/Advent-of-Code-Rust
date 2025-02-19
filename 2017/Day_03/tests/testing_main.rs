@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_3;
-use day_3::{coords_in_spiral, moves_to_exit};
+use day_3::{coords_in_spiral, find_first_gt_max_val, moves_to_exit};
 
 #[test]
 fn coordinates_of_steps_exp01() {
@@ -94,4 +94,39 @@ fn exit_moves_exp4() {
 #[test]
 fn exit_moves_exp5() {
     assert_eq!(moves_to_exit(1), 0)
+}
+
+#[test]
+fn find_first_gt_max_val_exp1() {
+    assert_eq!(find_first_gt_max_val(800), 806);
+}
+
+#[test]
+fn find_first_gt_max_val_exp2() {
+    assert_eq!(find_first_gt_max_val(700), 747);
+}
+
+#[test]
+fn find_first_gt_max_val_exp3() {
+    assert_eq!(find_first_gt_max_val(300), 304);
+}
+
+#[test]
+fn find_first_gt_max_val_exp4() {
+    assert_eq!(find_first_gt_max_val(20), 23);
+}
+
+#[test]
+fn find_first_gt_max_val_exp5() {
+    assert_eq!(find_first_gt_max_val(55), 57);
+}
+
+#[test]
+fn find_first_gt_max_val_exp6() {
+    assert_eq!(find_first_gt_max_val(133), 142);
+}
+
+#[test]
+fn find_first_gt_max_val_exp7() {
+    assert_eq!(find_first_gt_max_val(5), 10);
 }
