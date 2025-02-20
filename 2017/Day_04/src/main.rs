@@ -21,12 +21,14 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq)]
 pub struct Password {
     pub word_counts: Vec<HashMap<char, u8>>,
+    pub words: Vec<String>,
 }
 
 impl Password {
     pub fn new(raw_password: &str) -> Self {
         Password {
             word_counts: Vec::new(),
+            words: Vec::new(),
         }
     }
 
