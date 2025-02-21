@@ -16,7 +16,10 @@
  *          How many passphrases are valid?
  */
 
+use itertools::Itertools;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, PartialEq)]
 pub struct Password {
@@ -26,23 +29,54 @@ pub struct Password {
 
 impl Password {
     pub fn new(raw_password: &str) -> Self {
-        Password {
-            word_counts: Vec::new(),
-            words: Vec::new(),
+        let mut words = Vec::new();
+        let mut word_counts = Vec::new();
+
+        /* Analyse each word in the password sequentially. */
+        for word in raw_password.split_ascii_whitespace() {
+            let mut tmp_wrd_cnt = HashMap::new();
+
+            /* Count the occurance of each character in the word. */
+            for wrd_chr in word.chars() {
+                *tmp_wrd_cnt.entry(wrd_chr).or_insert(0) += 1
+            }
+            word_counts.push(tmp_wrd_cnt);
+            words.push(String::from(word));
         }
+
+        return Password { word_counts, words };
     }
 
     pub fn duplicate_words(&self) -> bool {
-        false
+        let deduped_wrds: usize = self.words.iter().unique().count();
+        let orig_wrds: usize = self.words.len();
+
+        /* If dedup len is the same as the original, there are no duplicates. */
+        return deduped_wrds != orig_wrds;
     }
 }
 
 pub fn parse_passwords(data_file: &str) -> Vec<Password> {
-    Vec::new()
+    let mut data = Vec::new();
+    let mut buffer = String::new();
+
+    /* Open the file. */
+    let file = File::open(data_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Read the file line by line. */
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        data.push(Password::new(&buffer));
+        buffer.clear();
+    }
+    return data;
 }
 
-pub fn count_valid_passwords(all_paswrds: &Vec<Password>) -> u32 {
-    0
+pub fn count_valid_passwords(all_paswrds: &Vec<Password>) -> usize {
+    return all_paswrds.iter().filter(|x| !x.duplicate_words()).count();
 }
 
-fn main() {}
+fn main() {
+    let sys_pass = parse_passwords("./data/input.txt");
+    println!("Part 1 = {}", count_valid_passwords(&sys_pass));
+}

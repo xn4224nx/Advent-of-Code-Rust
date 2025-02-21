@@ -8,7 +8,7 @@ use std::collections::HashMap;
 #[test]
 fn read_passwords_exp01() {
     assert_eq!(
-        parse_passwords("./data/example_01/txt"),
+        parse_passwords("./data/example_01.txt"),
         vec![
             Password {
                 word_counts: vec![
@@ -65,7 +65,7 @@ fn read_passwords_exp01() {
 #[test]
 fn read_passwords_exp02() {
     assert_eq!(
-        parse_passwords("./data/example_02/txt"),
+        parse_passwords("./data/example_02.txt"),
         vec![
             Password {
                 word_counts: vec![
@@ -139,8 +139,11 @@ fn parse_password_chars_exp1() {
     assert_eq!(
         Password::new("aa bb cc dd ee").word_counts,
         vec![
-            HashMap::from([('a', 1), ('b', 1), ('c', 1), ('d', 1), ('e', 1)]),
-            HashMap::from([('f', 1), ('g', 1), ('h', 1), ('i', 1), ('j', 1)]),
+            HashMap::from([('a', 2)]),
+            HashMap::from([('b', 2)]),
+            HashMap::from([('c', 2)]),
+            HashMap::from([('d', 2)]),
+            HashMap::from([('e', 2)]),
         ]
     );
 }
