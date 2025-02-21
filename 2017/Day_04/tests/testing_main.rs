@@ -357,58 +357,170 @@ fn detect_duplicates_exp3() {
 }
 
 #[test]
+fn detect_anagrams_exp1() {
+    assert_eq!(Password::new("abcde fghij").anagrams_present(), false);
+}
+
+#[test]
+fn detect_anagrams_exp2() {
+    assert_eq!(Password::new("abcde xyz ecdab").anagrams_present(), true);
+}
+
+#[test]
+fn detect_anagrams_exp3() {
+    assert_eq!(
+        Password::new("a ab abc abd abf abj").anagrams_present(),
+        false
+    );
+}
+
+#[test]
+fn detect_anagrams_exp4() {
+    assert_eq!(
+        Password::new("iiii oiii ooii oooi oooo").anagrams_present(),
+        false
+    );
+}
+
+#[test]
+fn detect_anagrams_exp5() {
+    assert_eq!(
+        Password::new("oiii ioii iioi iiio").anagrams_present(),
+        true
+    );
+}
+
+#[test]
 fn count_the_non_duplicate_pwds_exp1() {
     assert_eq!(
-        count_valid_passwords(&vec![
-            Password {
-                word_counts: vec![
-                    HashMap::from([('a', 2)]),
-                    HashMap::from([('b', 2)]),
-                    HashMap::from([('c', 2)]),
-                    HashMap::from([('d', 2)]),
-                    HashMap::from([('e', 2)]),
-                ],
-                words: vec![
-                    "aa".to_string(),
-                    "bb".to_string(),
-                    "cc".to_string(),
-                    "dd".to_string(),
-                    "ee".to_string()
-                ]
-            },
-            Password {
-                word_counts: vec![
-                    HashMap::from([('a', 2)]),
-                    HashMap::from([('b', 2)]),
-                    HashMap::from([('c', 2)]),
-                    HashMap::from([('d', 2)]),
-                    HashMap::from([('a', 2)]),
-                ],
-                words: vec![
-                    "aa".to_string(),
-                    "bb".to_string(),
-                    "cc".to_string(),
-                    "dd".to_string(),
-                    "aa".to_string()
-                ]
-            },
-            Password {
-                word_counts: vec![
-                    HashMap::from([('a', 2)]),
-                    HashMap::from([('b', 2)]),
-                    HashMap::from([('c', 2)]),
-                    HashMap::from([('d', 2)]),
-                    HashMap::from([('a', 3)]),
-                ],
-                words: vec![
-                    "aa".to_string(),
-                    "bb".to_string(),
-                    "cc".to_string(),
-                    "dd".to_string(),
-                    "aaa".to_string()
-                ]
-            },
-        ]),
+        count_valid_passwords(
+            &vec![
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 2)]),
+                        HashMap::from([('b', 2)]),
+                        HashMap::from([('c', 2)]),
+                        HashMap::from([('d', 2)]),
+                        HashMap::from([('e', 2)]),
+                    ],
+                    words: vec![
+                        "aa".to_string(),
+                        "bb".to_string(),
+                        "cc".to_string(),
+                        "dd".to_string(),
+                        "ee".to_string()
+                    ]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 2)]),
+                        HashMap::from([('b', 2)]),
+                        HashMap::from([('c', 2)]),
+                        HashMap::from([('d', 2)]),
+                        HashMap::from([('a', 2)]),
+                    ],
+                    words: vec![
+                        "aa".to_string(),
+                        "bb".to_string(),
+                        "cc".to_string(),
+                        "dd".to_string(),
+                        "aa".to_string()
+                    ]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 2)]),
+                        HashMap::from([('b', 2)]),
+                        HashMap::from([('c', 2)]),
+                        HashMap::from([('d', 2)]),
+                        HashMap::from([('a', 3)]),
+                    ],
+                    words: vec![
+                        "aa".to_string(),
+                        "bb".to_string(),
+                        "cc".to_string(),
+                        "dd".to_string(),
+                        "aaa".to_string()
+                    ]
+                },
+            ],
+            false
+        ),
         2
+    );
+}
+
+#[test]
+fn count_the_non_duplicate_pwds_exp2() {
+    assert_eq!(
+        count_valid_passwords(
+            &vec![
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 1), ('b', 1), ('c', 1), ('d', 1), ('e', 1)]),
+                        HashMap::from([('f', 1), ('g', 1), ('h', 1), ('i', 1), ('j', 1)]),
+                    ],
+                    words: vec!["abcde".to_string(), "fghij".to_string(),]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 1), ('b', 1), ('c', 1), ('d', 1), ('e', 1)]),
+                        HashMap::from([('x', 1), ('y', 1), ('z', 1)]),
+                        HashMap::from([('a', 1), ('b', 1), ('c', 1), ('d', 1), ('e', 1)]),
+                    ],
+                    words: vec!["abcde".to_string(), "xyz".to_string(), "ecdab".to_string()]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('a', 1)]),
+                        HashMap::from([('a', 1), ('b', 1)]),
+                        HashMap::from([('a', 1), ('b', 1), ('c', 1)]),
+                        HashMap::from([('a', 1), ('b', 1), ('d', 1)]),
+                        HashMap::from([('a', 1), ('b', 1), ('f', 1)]),
+                        HashMap::from([('a', 1), ('b', 1), ('j', 1)]),
+                    ],
+                    words: vec![
+                        "a".to_string(),
+                        "ab".to_string(),
+                        "abc".to_string(),
+                        "abd".to_string(),
+                        "abf".to_string(),
+                        "abj".to_string(),
+                    ]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('i', 4)]),
+                        HashMap::from([('i', 3), ('o', 1)]),
+                        HashMap::from([('i', 2), ('o', 2)]),
+                        HashMap::from([('i', 1), ('o', 3)]),
+                        HashMap::from([('o', 4)]),
+                    ],
+                    words: vec![
+                        "iiii".to_string(),
+                        "oiii".to_string(),
+                        "ooii".to_string(),
+                        "oooi".to_string(),
+                        "oooo".to_string(),
+                    ]
+                },
+                Password {
+                    word_counts: vec![
+                        HashMap::from([('i', 3), ('o', 1)]),
+                        HashMap::from([('i', 3), ('o', 1)]),
+                        HashMap::from([('i', 3), ('o', 1)]),
+                        HashMap::from([('i', 3), ('o', 1)]),
+                    ],
+                    words: vec![
+                        "oiii".to_string(),
+                        "ioii".to_string(),
+                        "iioi".to_string(),
+                        "iiio".to_string()
+                    ]
+                },
+            ],
+            true
+        ),
+        3
     );
 }
