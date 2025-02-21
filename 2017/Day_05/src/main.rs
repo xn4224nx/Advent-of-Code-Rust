@@ -46,6 +46,14 @@
  * In this example, the exit is reached in 5 steps.
  *
  * PART 1:  How many steps does it take to reach the exit?
+ *
+ * Now, the jumps are even stranger: after each jump, if the offset was three or
+ * more, instead decrease it by 1. Otherwise, increase it by 1 as before.
+ *
+ * Using this rule with the above example, the process now takes 10 steps, and
+ * the offset values after finding the exit are left as 2 3 2 3 -1.
+ *
+ * PART 1:  How many steps does it now take to reach the exit?
  */
 
 use std::fs::read_to_string;
@@ -54,29 +62,38 @@ use std::fs::read_to_string;
 pub struct Instructions {
     pub jumps: Vec<i32>,
     pub jmp_idx: usize,
+    pub strange: bool,
 }
 
 impl Instructions {
-    pub fn new(datafile: &str) -> Self {
+    pub fn new(datafile: &str, strange: bool) -> Self {
         let jumps = read_to_string(datafile)
             .unwrap()
             .split_ascii_whitespace()
             .filter_map(|x| x.parse::<i32>().ok())
             .collect();
 
-        return Instructions { jumps, jmp_idx: 0 };
+        return Instructions {
+            jumps,
+            jmp_idx: 0,
+            strange,
+        };
     }
 
     /// Change the jumps based on the current jump index
     pub fn execute_curr(&mut self) {
         let pre_move_idx = self.jmp_idx;
-        let move_mag = self.jumps[pre_move_idx] as usize;
+        let offset = self.jumps[pre_move_idx] as usize;
 
         /* Change the jump index based on the jump value. */
-        self.jmp_idx = self.jmp_idx.overflowing_add(move_mag).0;
+        self.jmp_idx = self.jmp_idx.overflowing_add(offset).0;
 
         /* Change the previous value pointed to by the index. */
-        self.jumps[pre_move_idx] += 1;
+        if self.strange && self.jumps[pre_move_idx] > 2 {
+            self.jumps[pre_move_idx] -= 1;
+        } else {
+            self.jumps[pre_move_idx] += 1;
+        };
     }
 
     /// Count the number of steps to exit the jumps
@@ -93,7 +110,8 @@ impl Instructions {
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Instructions::new("./data/input.txt").steps_to_exit()
+        "Part 1 = {}\nPart 2 = {}",
+        Instructions::new("./data/input.txt", false).steps_to_exit(),
+        Instructions::new("./data/input.txt", true).steps_to_exit(),
     );
 }
