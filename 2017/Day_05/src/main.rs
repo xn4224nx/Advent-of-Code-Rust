@@ -48,6 +48,8 @@
  * PART 1:  How many steps does it take to reach the exit?
  */
 
+use std::fs::read_to_string;
+
 #[derive(Debug, PartialEq)]
 pub struct Instructions {
     pub jumps: Vec<i32>,
@@ -56,19 +58,42 @@ pub struct Instructions {
 
 impl Instructions {
     pub fn new(datafile: &str) -> Self {
-        Instructions {
-            jumps: Vec::new(),
-            jmp_idx: 0,
-        }
+        let jumps = read_to_string(datafile)
+            .unwrap()
+            .split_ascii_whitespace()
+            .filter_map(|x| x.parse::<i32>().ok())
+            .collect();
+
+        return Instructions { jumps, jmp_idx: 0 };
     }
 
     /// Change the jumps based on the current jump index
-    pub fn execute_curr(&mut self) {}
+    pub fn execute_curr(&mut self) {
+        let pre_move_idx = self.jmp_idx;
+        let move_mag = self.jumps[pre_move_idx] as usize;
+
+        /* Change the jump index based on the jump value. */
+        self.jmp_idx = self.jmp_idx.overflowing_add(move_mag).0;
+
+        /* Change the previous value pointed to by the index. */
+        self.jumps[pre_move_idx] += 1;
+    }
 
     /// Count the number of steps to exit the jumps
     pub fn steps_to_exit(&mut self) -> u32 {
-        0
+        let mut step_cnt = 0;
+
+        while self.jmp_idx < self.jumps.len() {
+            self.execute_curr();
+            step_cnt += 1;
+        }
+        return step_cnt;
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Instructions::new("./data/input.txt").steps_to_exit()
+    );
+}
