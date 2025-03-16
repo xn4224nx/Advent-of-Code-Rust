@@ -99,6 +99,6 @@ fn idx_of_max_bank_exp05() {
 fn cycles_to_duplicate_exp01() {
     assert_eq!(
         MemBank::new("./data/example_01.txt").cycles_to_duplicate(),
-        5
+        (5, 4)
     );
 }

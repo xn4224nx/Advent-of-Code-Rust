@@ -53,7 +53,7 @@
  *          produced that has been seen before?
  */
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fs;
 
 pub struct MemBank {
@@ -100,23 +100,21 @@ impl MemBank {
         }
     }
 
-    pub fn cycles_to_duplicate(&mut self) -> usize {
+    pub fn cycles_to_duplicate(&mut self) -> (usize, usize) {
         let mut cycles: usize = 0;
-        let mut seen_states: HashSet<Vec<u32>> = HashSet::new();
+        let mut seen_states: HashMap<Vec<u32>, usize> = HashMap::new();
 
         /* Loop until a previously seen state is seen. */
-        while !seen_states.contains(&self.blocks) {
-            seen_states.insert(self.blocks.clone());
+        while !seen_states.contains_key(&self.blocks) {
+            seen_states.insert(self.blocks.clone(), cycles);
             self.realocate();
             cycles += 1;
         }
-        return cycles;
+        return (cycles, cycles - seen_states.get(&self.blocks).unwrap());
     }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        MemBank::new("./data/input.txt").cycles_to_duplicate()
-    )
+    let (redist_cycles, cycle_size) = MemBank::new("./data/input.txt").cycles_to_duplicate();
+    println!("Part 1 = {}\nPart 2 = {}", redist_cycles, cycle_size);
 }
