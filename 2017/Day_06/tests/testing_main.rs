@@ -61,6 +61,41 @@ fn reallocate_exp05() {
 }
 
 #[test]
+fn idx_of_max_bank_exp01() {
+    let mut test_bank = MemBank::new("./data/example_01.txt");
+    test_bank.blocks = vec![0, 2, 7, 0];
+    assert_eq!(test_bank.idx_of_max_bank(), 2)
+}
+
+#[test]
+fn idx_of_max_bank_exp02() {
+    let mut test_bank = MemBank::new("./data/example_01.txt");
+    test_bank.blocks = vec![2, 4, 1, 2];
+    assert_eq!(test_bank.idx_of_max_bank(), 1)
+}
+
+#[test]
+fn idx_of_max_bank_exp03() {
+    let mut test_bank = MemBank::new("./data/example_01.txt");
+    test_bank.blocks = vec![3, 1, 2, 3];
+    assert_eq!(test_bank.idx_of_max_bank(), 0)
+}
+
+#[test]
+fn idx_of_max_bank_exp04() {
+    let mut test_bank = MemBank::new("./data/example_01.txt");
+    test_bank.blocks = vec![0, 2, 3, 4];
+    assert_eq!(test_bank.idx_of_max_bank(), 3)
+}
+
+#[test]
+fn idx_of_max_bank_exp05() {
+    let mut test_bank = MemBank::new("./data/example_01.txt");
+    test_bank.blocks = vec![1, 3, 4, 1];
+    assert_eq!(test_bank.idx_of_max_bank(), 2)
+}
+
+#[test]
 fn cycles_to_duplicate_exp01() {
     assert_eq!(
         MemBank::new("./data/example_01.txt").cycles_to_duplicate(),

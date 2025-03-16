@@ -53,13 +53,36 @@
  *          produced that has been seen before?
  */
 
+use std::fs;
+
 pub struct MemBank {
     pub blocks: Vec<u32>,
 }
 
 impl MemBank {
     pub fn new(input_stats: &str) -> Self {
-        MemBank { blocks: Vec::new() }
+        MemBank {
+            blocks: fs::read_to_string(input_stats)
+                .unwrap()
+                .split_whitespace()
+                .filter_map(|x| x.trim().parse::<u32>().ok())
+                .collect(),
+        }
+    }
+
+    /// Find the index of the largest bank in the memory bank
+    pub fn idx_of_max_bank(&self) -> usize {
+        let mut max_block = 0;
+        let mut max_block_idx = 0;
+
+        /* Find the first maximum in the blocks. */
+        for idx in 0..self.blocks.len() {
+            if self.blocks[idx] > max_block {
+                max_block = self.blocks[idx];
+                max_block_idx = idx
+            }
+        }
+        return max_block_idx;
     }
 
     pub fn realocate(&mut self) {}
