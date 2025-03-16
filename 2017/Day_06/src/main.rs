@@ -53,6 +53,7 @@
  *          produced that has been seen before?
  */
 
+use std::collections::HashSet;
 use std::fs;
 
 pub struct MemBank {
@@ -85,10 +86,31 @@ impl MemBank {
         return max_block_idx;
     }
 
-    pub fn realocate(&mut self) {}
+    pub fn realocate(&mut self) {
+        let max_idx = self.idx_of_max_bank();
+
+        /* Set the max bank to zero and capture its value. */
+        let max_value = self.blocks[max_idx];
+        self.blocks[max_idx] = 0;
+
+        /* Distribute the memory. */
+        for idx_offset in 1..=max_value {
+            let idx: usize = (max_idx + idx_offset as usize) % self.blocks.len();
+            self.blocks[idx] += 1;
+        }
+    }
 
     pub fn cycles_to_duplicate(&mut self) -> usize {
-        0
+        let mut cycles: usize = 0;
+        let mut seen_states: HashSet<Vec<u32>> = HashSet::new();
+
+        /* Loop until a previously seen state is seen. */
+        while !seen_states.contains(&self.blocks) {
+            seen_states.insert(self.blocks.clone());
+            self.realocate();
+            cycles += 1;
+        }
+        return cycles;
     }
 }
 
