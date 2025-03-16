@@ -114,4 +114,9 @@ impl MemBank {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        MemBank::new("./data/input.txt").cycles_to_duplicate()
+    )
+}
