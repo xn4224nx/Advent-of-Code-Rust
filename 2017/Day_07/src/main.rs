@@ -67,7 +67,10 @@
  *          information is correct. What is the name of the bottom program?
  */
 
+use regex::Regex;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, PartialEq)]
 pub struct Program {
@@ -79,12 +82,32 @@ pub struct Program {
 
 impl Program {
     pub fn new(raw_program_info: &str) -> Self {
-        Program {
-            name: String::from(""),
-            weight: 0,
-            above: Vec::new(),
+        let re_prog = Regex::new(r"([a-z]{4}) \(([0-9]+)\)").unwrap();
+
+        /* Parse a program with otehrs directly above it. */
+        let (above, prog_info) = if raw_program_info.contains("->") {
+            let parts = raw_program_info.split_once("->").unwrap();
+            (
+                parts.1.split(",").map(|x| x.trim().to_string()).collect(),
+                parts.0,
+            )
+
+        /* Parse a program with nothing above it. */
+        } else {
+            (Vec::new(), raw_program_info)
+        };
+
+        /* Attempt to extract the name and weight of the program. */
+        let cap = re_prog.captures(prog_info).unwrap();
+        let name = cap[1].to_string();
+        let weight = cap[2].parse::<u32>().unwrap();
+
+        return Program {
+            name,
+            weight,
+            above,
             above_weight: 0,
-        }
+        };
     }
 }
 
@@ -95,8 +118,23 @@ pub struct ProgramStack {
 
 impl ProgramStack {
     pub fn new(data_file: &str) -> Self {
+        let mut buffer = String::new();
+        let mut all = HashMap::new();
+
+        /* Load the file. */
+        let file = File::open(data_file).unwrap();
+        let mut f_ptr = BufReader::new(file);
+
+        /* Iterate over the file line by line and parse. */
+        while f_ptr.read_line(&mut buffer).unwrap() > 0 {
+            let tmp_prog = Program::new(&buffer);
+            let name = tmp_prog.name.clone();
+            all.insert(name, tmp_prog);
+            buffer.clear();
+        }
+
         ProgramStack {
-            all: HashMap::new(),
+            all,
             bottom: String::new(),
         }
     }
