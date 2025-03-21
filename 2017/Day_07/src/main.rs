@@ -82,7 +82,7 @@ pub struct Program {
 
 impl Program {
     pub fn new(raw_program_info: &str) -> Self {
-        let re_prog = Regex::new(r"([a-z]{4}) \(([0-9]+)\)").unwrap();
+        let re_prog = Regex::new(r"([a-z]+) \(([0-9]+)\)").unwrap();
 
         /* Parse a program with otehrs directly above it. */
         let (above, prog_info) = if raw_program_info.contains("->") {
@@ -165,4 +165,8 @@ impl ProgramStack {
     }
 }
 
-fn main() {}
+fn main() {
+    let mut rec_circus = ProgramStack::new("./data/input.txt");
+    rec_circus.find_bottom();
+    println!("Part 1 = {}", rec_circus.bottom);
+}
