@@ -133,13 +133,36 @@ impl ProgramStack {
             buffer.clear();
         }
 
-        ProgramStack {
+        return ProgramStack {
             all,
             bottom: String::new(),
-        }
+        };
     }
 
-    pub fn find_bottom(&mut self) {}
+    pub fn find_bottom(&mut self) {
+        let mut bottom_cand: Vec<&String> = self
+            .all
+            .keys()
+            .filter(|&x| self.all.get(x).unwrap().above.len() > 0)
+            .collect();
+
+        /* The bottom program will be the one that isn't above any of them. */
+        'cands: for prog_0 in bottom_cand.iter() {
+            'checks: for prog_1 in bottom_cand.iter() {
+                if prog_0 == prog_1 {
+                    continue 'checks;
+                };
+
+                if self.all.get(*prog_1).unwrap().above.contains(*prog_0) {
+                    continue 'cands;
+                }
+            }
+
+            /* If all checks pass this must be at the bottom. */
+            self.bottom = prog_0.to_string();
+            return;
+        }
+    }
 }
 
 fn main() {}

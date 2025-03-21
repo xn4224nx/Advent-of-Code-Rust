@@ -258,5 +258,6 @@ fn parse_program_stack() {
 #[test]
 fn find_bottom() {
     let mut test = ProgramStack::new("./data/example_01.txt");
+    test.find_bottom();
     assert_eq!(test.bottom, String::from("tknk"));
 }
