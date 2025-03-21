@@ -261,3 +261,29 @@ fn find_bottom() {
     test.find_bottom();
     assert_eq!(test.bottom, String::from("tknk"));
 }
+
+#[test]
+fn calculate_the_above_weights() {
+    let mut test = ProgramStack::new("./data/example_01.txt");
+    test.calc_above_weights();
+
+    assert_eq!(test.all.get("gyxo").unwrap().above_weight, 0);
+    assert_eq!(test.all.get("havc").unwrap().above_weight, 0);
+    assert_eq!(test.all.get("xhth").unwrap().above_weight, 0);
+    assert_eq!(test.all.get("ugml").unwrap().above_weight, 183);
+    assert_eq!(test.all.get("padx").unwrap().above_weight, 198);
+    assert_eq!(test.all.get("fwft").unwrap().above_weight, 171);
+    assert_eq!(test.all.get("tknk").unwrap().above_weight, 737);
+}
+
+#[test]
+fn find_unbalanced_prog() {
+    let mut test = ProgramStack::new("./data/example_01.txt");
+    test.calc_above_weights();
+    assert_eq!(test.find_unbalanced_prog(), String::from("ugml"));
+}
+
+#[test]
+fn balance_stack() {
+    assert_eq!(ProgramStack::new("./data/example_01.txt"), 60);
+}
