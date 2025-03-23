@@ -97,7 +97,7 @@
  */
 
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -113,7 +113,7 @@ impl Program {
     pub fn new(raw_program_info: &str) -> Self {
         let re_prog = Regex::new(r"([a-z]+) \(([0-9]+)\)").unwrap();
 
-        /* Parse a program with otehrs directly above it. */
+        /* Parse a program with others directly above it. */
         let (above, prog_info) = if raw_program_info.contains("->") {
             let parts = raw_program_info.split_once("->").unwrap();
             (
@@ -140,9 +140,11 @@ impl Program {
     }
 }
 
+#[derive(Debug)]
 pub struct ProgramStack {
     pub all: HashMap<String, Program>,
     pub bottom: String,
+    pub unbalanced: String,
 }
 
 impl ProgramStack {
@@ -165,6 +167,7 @@ impl ProgramStack {
         return ProgramStack {
             all,
             bottom: String::new(),
+            unbalanced: String::new(),
         };
     }
 
@@ -193,19 +196,94 @@ impl ProgramStack {
         }
     }
 
-    pub fn calc_above_weights(&mut self) {}
+    pub fn calc_above_weights(&mut self) {
+        let mut uncalc_progs: HashSet<String> = self
+            .all
+            .keys()
+            .filter(|&x| self.all.get(x).unwrap().above.len() > 0)
+            .map(|x| x.clone())
+            .collect();
 
-    pub fn find_unbalanced_prog(&self) -> String {
-        String::new()
+        while uncalc_progs.len() > 0 {
+            let mut rm_progs = Vec::new();
+
+            /* Find programs that have everything above them calculated. */
+            'prog_calc: for prog_name in uncalc_progs.iter() {
+                let mut abv_sum = 0;
+
+                /* Determine if all the programs above this one are calculated. */
+                for abv_prog in self.all.get(prog_name).unwrap().above.iter() {
+                    abv_sum += self.all.get(abv_prog).unwrap().weight;
+                    abv_sum += self.all.get(abv_prog).unwrap().above_weight;
+
+                    if uncalc_progs.contains(abv_prog) {
+                        continue 'prog_calc;
+                    }
+                }
+
+                /* Set the above value for this program. */
+                self.all
+                    .entry(prog_name.to_string())
+                    .and_modify(|x| x.above_weight = abv_sum);
+
+                /* Ensure the program is not calculated again. */
+                rm_progs.push(prog_name.clone());
+            }
+
+            /* Remove the programs that were calculated. */
+            for prog_name in rm_progs.iter() {
+                uncalc_progs.remove(prog_name);
+            }
+        }
     }
 
     pub fn balance_stack(&mut self) -> u32 {
-        0
+        let mut record_of_weights: Vec<u32> = Vec::new();
+        let mut curr_prog = self.bottom.clone();
+
+        /* Starting at the bottom move upwards. */
+        loop {
+            /* Calculate the weights of the programs above this one. */
+            let mut abv_weights: HashMap<u32, Vec<&String>> = HashMap::new();
+
+            /* Group the above programs by weight. */
+            for prog_name in self.all.get(&curr_prog).unwrap().above.iter() {
+                let tmp_prog = self.all.get(prog_name).unwrap();
+                let prog_weight = tmp_prog.weight + tmp_prog.above_weight;
+                abv_weights
+                    .entry(prog_weight)
+                    .and_modify(|x| x.push(prog_name))
+                    .or_insert(vec![prog_name]);
+            }
+
+            /* If all values are equal this is the effected node. */
+            if abv_weights.len() == 1 {
+                return record_of_weights.last().unwrap()
+                    - self.all.get(&curr_prog).unwrap().above_weight;
+            }
+
+            /* Otherwise select the unbalanced program above. */
+            curr_prog = abv_weights
+                .values()
+                .min_by_key(|x| x.len())
+                .unwrap()
+                .first()
+                .unwrap()
+                .to_string();
+
+            /* Save the weight of the above nodes */
+            record_of_weights.push(*abv_weights.iter().max_by_key(|x| x.1.len()).unwrap().0)
+        }
     }
 }
 
 fn main() {
     let mut rec_circus = ProgramStack::new("./data/input.txt");
     rec_circus.find_bottom();
-    println!("Part 1 = {}", rec_circus.bottom);
+    rec_circus.calc_above_weights();
+    let new_program_weight = rec_circus.balance_stack();
+    println!(
+        "Part 1 = {}\nPart 2 = {}\n",
+        rec_circus.bottom, new_program_weight
+    );
 }

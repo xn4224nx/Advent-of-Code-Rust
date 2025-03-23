@@ -240,6 +240,7 @@ fn parse_program_stack() {
     ]);
     let test = ProgramStack::new("./data/example_01.txt");
     assert_eq!(test.bottom, String::new());
+    assert_eq!(test.unbalanced, String::new());
     assert_eq!(test.all.len(), true_parse.len());
 
     /* Ensure that every key is in the testing HashMap and share the same val */
@@ -277,13 +278,9 @@ fn calculate_the_above_weights() {
 }
 
 #[test]
-fn find_unbalanced_prog() {
-    let mut test = ProgramStack::new("./data/example_01.txt");
-    test.calc_above_weights();
-    assert_eq!(test.find_unbalanced_prog(), String::from("ugml"));
-}
-
-#[test]
 fn balance_stack() {
-    assert_eq!(ProgramStack::new("./data/example_01.txt"), 60);
+    let mut test = ProgramStack::new("./data/example_01.txt");
+    test.find_bottom();
+    test.calc_above_weights();
+    assert_eq!(test.balance_stack(), 60);
 }
