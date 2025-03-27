@@ -36,6 +36,12 @@
  *
  * PART 1:  What is the largest value in any register after completing the
  *          instructions in your puzzle input?
+ *
+ * PART 2:  To be safe, the CPU also needs to know the highest value held in any
+ *          register during this process so that it can decide how much memory
+ *          to allocate to these operations. For example, in the above
+ *          instructions, the highest value ever held was 10 (in register c
+ *          after the third instruction was evaluated).
  */
 
 use regex::Regex;
@@ -133,80 +139,44 @@ impl Computer {
 
     /// Execute all the instructions and return the largest value in the final
     /// register.
-    pub fn largest_value(&mut self) -> i32 {
+    pub fn largest_value(&mut self) -> (i32, i32) {
+        let mut max_val = i32::MIN;
+
         /* Sequentially execute the instructions. */
         for idx in 0..self.instrucs.len() {
-            match self.instrucs[idx].comp_opp {
-                Comp::Equal => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        == self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-                Comp::NotEqual => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        != self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-                Comp::LessThan => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        < self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-                Comp::LessThanOrEqual => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        <= self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-                Comp::MoreThan => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        > self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-                Comp::MoreThanOrEqual => {
-                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
-                        >= self.instrucs[idx].test_val
-                    {
-                        *self
-                            .register
-                            .get_mut(&self.instrucs[idx].change_reg)
-                            .unwrap() += self.instrucs[idx].change_val;
-                    };
-                }
-            }
+            let comp_reg = *self.register.get(&self.instrucs[idx].test_reg).unwrap();
+            let comp_val = self.instrucs[idx].test_val;
+
+            /* Get the comparison result. */
+            let comp_result = match self.instrucs[idx].comp_opp {
+                Comp::Equal => comp_reg == comp_val,
+                Comp::NotEqual => comp_reg != comp_val,
+                Comp::LessThan => comp_reg < comp_val,
+                Comp::LessThanOrEqual => comp_reg <= comp_val,
+                Comp::MoreThan => comp_reg > comp_val,
+                Comp::MoreThanOrEqual => comp_reg >= comp_val,
+            };
+
+            /* Perform the operation. */
+            if comp_result {
+                *self
+                    .register
+                    .get_mut(&self.instrucs[idx].change_reg)
+                    .unwrap() += self.instrucs[idx].change_val;
+            };
+
+            /* Check for a new maximum. */
+            let curr_max = *self.register.values().max().unwrap();
+            if curr_max > max_val {
+                max_val = curr_max;
+            };
         }
         /* Return the largest value in the registers. */
-        return *self.register.values().max().unwrap();
+        return (max_val, *self.register.values().max().unwrap());
     }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        Computer::new("./data/input.txt").largest_value()
-    )
+    let (over_max, final_max) = Computer::new("./data/input.txt").largest_value();
+    println!("Part 1 = {}\nPart 2 = {}", final_max, over_max,)
 }

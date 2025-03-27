@@ -58,5 +58,8 @@ fn start_computer_register() {
 
 #[test]
 fn find_largest_register_values() {
-    assert_eq!(Computer::new("./data/example_01.txt").largest_value(), 1);
+    assert_eq!(
+        Computer::new("./data/example_01.txt").largest_value(),
+        (10, 1)
+    );
 }
