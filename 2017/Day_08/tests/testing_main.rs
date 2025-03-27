@@ -6,9 +6,46 @@ use day_8::{Command, Comp, Computer};
 use std::collections::HashMap;
 
 #[test]
-fn start_computer() {
+fn start_computer_instructions() {
     let test = Computer::new("./data/example_01.txt");
+    assert_eq!(
+        test.instrucs,
+        vec![
+            Command {
+                change_reg: String::from("b"),
+                change_val: 5,
+                test_reg: String::from("a"),
+                comp_opp: Comp::MoreThan,
+                test_val: 1,
+            },
+            Command {
+                change_reg: String::from("a"),
+                change_val: 1,
+                test_reg: String::from("b"),
+                comp_opp: Comp::LessThan,
+                test_val: 5,
+            },
+            Command {
+                change_reg: String::from("c"),
+                change_val: 10,
+                test_reg: String::from("a"),
+                comp_opp: Comp::MoreThanOrEqual,
+                test_val: 1,
+            },
+            Command {
+                change_reg: String::from("c"),
+                change_val: -20,
+                test_reg: String::from("c"),
+                comp_opp: Comp::Equal,
+                test_val: 10,
+            },
+        ]
+    );
+}
 
+#[test]
+fn start_computer_register() {
+    let test = Computer::new("./data/example_01.txt");
     assert_eq!(
         test.register,
         HashMap::from([
@@ -16,22 +53,6 @@ fn start_computer() {
             (String::from("b"), 0),
             (String::from("c"), 0),
         ])
-    );
-
-    assert_eq!(
-        test.instrucs,
-        vec![
-            Command::Inc(String::from("b"), 5, String::from("a"), Comp::MoreThan, 1),
-            Command::Inc(String::from("a"), 1, String::from("b"), Comp::LessThan, 5),
-            Command::Dec(
-                String::from("c"),
-                -10,
-                String::from("a"),
-                Comp::MoreThanOrEqual,
-                1
-            ),
-            Command::Inc(String::from("c"), -20, String::from("c"), Comp::Equal, 10),
-        ]
     );
 }
 

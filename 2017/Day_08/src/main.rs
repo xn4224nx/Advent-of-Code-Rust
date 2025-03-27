@@ -38,7 +38,10 @@
  *          instructions in your puzzle input?
  */
 
+use regex::Regex;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(PartialEq, Debug)]
 pub enum Comp {
@@ -51,9 +54,12 @@ pub enum Comp {
 }
 
 #[derive(PartialEq, Debug)]
-pub enum Command {
-    Inc(String, i32, String, Comp, i32),
-    Dec(String, i32, String, Comp, i32),
+pub struct Command {
+    pub change_reg: String,
+    pub change_val: i32,
+    pub test_reg: String,
+    pub comp_opp: Comp,
+    pub test_val: i32,
 }
 
 pub struct Computer {
@@ -63,15 +69,144 @@ pub struct Computer {
 
 impl Computer {
     pub fn new(data_file: &str) -> Self {
-        Computer {
-            register: HashMap::new(),
-            instrucs: Vec::new(),
+        let mut buffer = String::new();
+        let mut instrucs = Vec::new();
+        let mut register = HashMap::new();
+        let re_instruc =
+            Regex::new(r"([a-z]+) (inc|dec) (-?[0-9]+) if ([a-z]+) ([=<>!]+) (-?[0-9]+)").unwrap();
+
+        /* Open the file. */
+        let file = File::open(data_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            /* Try and extract the data from the line. */
+            let Some(caps) = re_instruc.captures(&buffer) else {
+                println!("Line could not be parsed: '{}'", buffer);
+                continue;
+            };
+
+            /* Parse the individual fields. */
+            let change_reg = String::from(&caps[1]);
+            let mut change_val = caps[3].parse::<i32>().unwrap();
+            let test_reg = String::from(&caps[4]);
+            let test_val = caps[6].parse::<i32>().unwrap();
+
+            /* Change the change value based on the command. */
+            if &caps[2] == "dec" {
+                change_val *= -1;
+            };
+
+            /* Fill the register. */
+            register.insert(change_reg.clone(), 0);
+            register.insert(test_reg.clone(), 0);
+
+            /* Determine the comparison operator. */
+            let comp_opp = if &caps[5] == "==" {
+                Comp::Equal
+            } else if &caps[5] == "!=" {
+                Comp::NotEqual
+            } else if &caps[5] == "<" {
+                Comp::LessThan
+            } else if &caps[5] == "<=" {
+                Comp::LessThanOrEqual
+            } else if &caps[5] == ">" {
+                Comp::MoreThan
+            } else if &caps[5] == ">=" {
+                Comp::MoreThanOrEqual
+            } else {
+                panic!("Unknown comparison operator: '{}'", &caps[5])
+            };
+
+            instrucs.push(Command {
+                change_reg,
+                change_val,
+                test_reg,
+                comp_opp,
+                test_val,
+            });
+            buffer.clear();
         }
+        return Computer { register, instrucs };
     }
 
-    pub fn largest_value(&self) -> i32 {
-        0
+    /// Execute all the instructions and return the largest value in the final
+    /// register.
+    pub fn largest_value(&mut self) -> i32 {
+        /* Sequentially execute the instructions. */
+        for idx in 0..self.instrucs.len() {
+            match self.instrucs[idx].comp_opp {
+                Comp::Equal => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        == self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+                Comp::NotEqual => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        != self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+                Comp::LessThan => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        < self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+                Comp::LessThanOrEqual => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        <= self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+                Comp::MoreThan => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        > self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+                Comp::MoreThanOrEqual => {
+                    if *self.register.get(&self.instrucs[idx].test_reg).unwrap()
+                        >= self.instrucs[idx].test_val
+                    {
+                        *self
+                            .register
+                            .get_mut(&self.instrucs[idx].change_reg)
+                            .unwrap() += self.instrucs[idx].change_val;
+                    };
+                }
+            }
+        }
+        /* Return the largest value in the registers. */
+        return *self.register.values().max().unwrap();
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Computer::new("./data/input.txt").largest_value()
+    )
+}
