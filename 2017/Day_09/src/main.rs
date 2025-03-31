@@ -65,17 +65,57 @@
  * PART 1:  What is the total score for all groups in your input?
  */
 
+use std::fs::read_to_string;
+
 pub struct GarbageStream {
     pub schars: Vec<char>,
 }
 
 impl GarbageStream {
     pub fn new(data_file: &str) -> Self {
-        GarbageStream { schars: Vec::new() }
+        GarbageStream {
+            schars: read_to_string(data_file)
+                .unwrap()
+                .chars()
+                .filter(|x| !x.is_ascii_whitespace())
+                .collect(),
+        }
     }
 
     pub fn score(&self) -> usize {
-        0
+        let mut s_score = 0;
+        let mut c_idx = 0;
+        let mut in_garbage = false;
+        let mut grp_level = 0;
+
+        /* Check each character in turn */
+        while c_idx < self.schars.len() {
+            let curr_char = self.schars[c_idx];
+
+            /* Ignore the next character in the stream. */
+            if curr_char == '!' {
+                c_idx += 1;
+
+            /* Detect the start of garbage. */
+            } else if !in_garbage && curr_char == '<' {
+                in_garbage = true;
+
+            /* Detect the end of garbage. */
+            } else if in_garbage && curr_char == '>' {
+                in_garbage = false;
+
+            /* A new group starts. */
+            } else if !in_garbage && curr_char == '{' {
+                grp_level += 1;
+
+            /* A group ends and the score is increases. */
+            } else if !in_garbage && curr_char == '}' {
+                s_score += grp_level;
+                grp_level -= 1;
+            }
+            c_idx += 1;
+        }
+        return s_score;
     }
 }
 
