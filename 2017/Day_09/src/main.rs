@@ -119,4 +119,9 @@ impl GarbageStream {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        GarbageStream::new("./data/input.txt").score()
+    );
+}
