@@ -63,6 +63,15 @@
  *      -   {{<a!>},{<a!>},{<a!>},{<ab>}}, score of 1 + 2 = 3.
  *
  * PART 1:  What is the total score for all groups in your input?
+ *
+ * Now, you're ready to remove the garbage.
+ *
+ * To prove you've removed it, you need to count all of the characters within
+ * the garbage. The leading and trailing < and > don't count, nor do any
+ * canceled characters or the ! doing the canceling.
+ *
+ * PART 2:  How many non-canceled characters are within the garbage in your
+ *          puzzle input?
  */
 
 use std::fs::read_to_string;
@@ -82,46 +91,45 @@ impl GarbageStream {
         }
     }
 
-    pub fn score(&self) -> usize {
+    pub fn score(&self) -> (usize, usize) {
         let mut s_score = 0;
         let mut c_idx = 0;
         let mut in_garbage = false;
         let mut grp_level = 0;
+        let mut garbage_cnt = 0;
 
         /* Check each character in turn */
         while c_idx < self.schars.len() {
-            let curr_char = self.schars[c_idx];
-
             /* Ignore the next character in the stream. */
-            if curr_char == '!' {
+            if self.schars[c_idx] == '!' {
                 c_idx += 1;
 
             /* Detect the start of garbage. */
-            } else if !in_garbage && curr_char == '<' {
+            } else if !in_garbage && self.schars[c_idx] == '<' {
                 in_garbage = true;
 
             /* Detect the end of garbage. */
-            } else if in_garbage && curr_char == '>' {
+            } else if in_garbage && self.schars[c_idx] == '>' {
                 in_garbage = false;
 
             /* A new group starts. */
-            } else if !in_garbage && curr_char == '{' {
+            } else if !in_garbage && self.schars[c_idx] == '{' {
                 grp_level += 1;
 
             /* A group ends and the score is increases. */
-            } else if !in_garbage && curr_char == '}' {
+            } else if !in_garbage && self.schars[c_idx] == '}' {
                 s_score += grp_level;
                 grp_level -= 1;
-            }
+            } else if in_garbage {
+                garbage_cnt += 1
+            };
             c_idx += 1;
         }
-        return s_score;
+        return (s_score, garbage_cnt);
     }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        GarbageStream::new("./data/input.txt").score()
-    );
+    let (score, g_cnt) = GarbageStream::new("./data/input.txt").score();
+    println!("Part 1 = {}\nPart 2 = {}", score, g_cnt);
 }
