@@ -87,20 +87,20 @@
 use std::fs::read_to_string;
 
 pub struct KnotHash {
-    pub nums: Vec<u8>,
-    pub twists: Vec<u8>,
+    pub nums: Vec<u32>,
+    pub twists: Vec<usize>,
     pub skip_size: usize,
     pub curr_pos: usize,
 }
 
 impl KnotHash {
-    pub fn new(twist_file: &str, max_num: u8) -> Self {
+    pub fn new(twist_file: &str, max_num: u32) -> Self {
         KnotHash {
             nums: (0..=max_num).collect(),
             twists: read_to_string(twist_file)
                 .unwrap()
                 .split(",")
-                .map(|x| x.trim().parse::<u8>().unwrap())
+                .map(|x| x.trim().parse::<usize>().unwrap())
                 .collect(),
             skip_size: 0,
             curr_pos: 0,
@@ -108,10 +108,45 @@ impl KnotHash {
     }
 
     /// Reverse a section of the numbers
-    pub fn reverse(&mut self, rev_len: usize) {}
+    pub fn reverse(&mut self, rev_len: usize) {
+        let arr_len = self.nums.len();
+
+        /* Select the numbers and reverse them. */
+        let extract = (0..rev_len)
+            .map(|x| self.nums[(self.curr_pos + x) % arr_len])
+            .rev()
+            .collect::<Vec<u32>>();
+
+        /* Re-insert the numbers back into the vector */
+        for (idx, rev_num) in extract.into_iter().enumerate() {
+            self.nums[(self.curr_pos + idx) % arr_len] = rev_num;
+        }
+
+        /* Calculate the new skip size & position */
+        self.curr_pos = (self.curr_pos + rev_len + self.skip_size) % arr_len;
+        self.skip_size += 1;
+    }
 
     /// Perform a single round of the hash
-    pub fn run_round(&mut self) {}
+    pub fn run_round(&mut self) {
+        self.skip_size = 0;
+        self.curr_pos = 0;
+
+        for idx in 0..self.twists.len() {
+            self.reverse(self.twists[idx]);
+        }
+    }
+
+    /// Calculate a round and return the product of the first two numbers
+    pub fn verify_round_hash(&mut self) -> u32 {
+        self.run_round();
+        return self.nums[0] * self.nums[1];
+    }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        KnotHash::new("./data/input.txt", 255).verify_round_hash()
+    );
+}
