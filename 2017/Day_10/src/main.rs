@@ -84,6 +84,8 @@
  *          first two numbers in the list?
  */
 
+use std::fs::read_to_string;
+
 pub struct KnotHash {
     pub nums: Vec<u8>,
     pub twists: Vec<u8>,
@@ -94,8 +96,12 @@ pub struct KnotHash {
 impl KnotHash {
     pub fn new(twist_file: &str, max_num: u8) -> Self {
         KnotHash {
-            nums: Vec::new(),
-            twists: Vec::new(),
+            nums: (0..=max_num).collect(),
+            twists: read_to_string(twist_file)
+                .unwrap()
+                .split(",")
+                .map(|x| x.trim().parse::<u8>().unwrap())
+                .collect(),
             skip_size: 0,
             curr_pos: 0,
         }
