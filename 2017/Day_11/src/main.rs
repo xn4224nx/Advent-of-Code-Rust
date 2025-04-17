@@ -35,6 +35,8 @@
  *          process.
  */
 
+use std::fs::read_to_string;
+
 #[derive(Debug, PartialEq)]
 pub enum Dir {
     North,
@@ -51,13 +53,56 @@ pub struct HexGrid {
 
 impl HexGrid {
     pub fn new(path_file: &str) -> Self {
-        HexGrid { path: Vec::new() }
+        HexGrid {
+            path: read_to_string(path_file)
+                .unwrap()
+                .split(",")
+                .map(|x| match x.trim() {
+                    "n" => Dir::North,
+                    "ne" => Dir::NorthEast,
+                    "nw" => Dir::NorthWest,
+                    "s" => Dir::South,
+                    "se" => Dir::SouthEast,
+                    "sw" => Dir::SouthWest,
+                    _ => panic!("'{x}' is not a recognised direction"),
+                })
+                .collect(),
+        }
     }
 
     /// Determine the distance from the centre the path would take
     pub fn distance(self) -> u32 {
-        0
+        let mut sum_n_dir: i32 = 0;
+        let mut sum_se_dir: i32 = 0;
+
+        for direc in self.path {
+            match direc {
+                Dir::North => {
+                    sum_n_dir += 1;
+                }
+                Dir::NorthEast => {
+                    sum_n_dir += 1;
+                    sum_se_dir += 1;
+                }
+                Dir::NorthWest => {
+                    sum_se_dir -= 1;
+                }
+                Dir::South => {
+                    sum_n_dir -= 1;
+                }
+                Dir::SouthEast => {
+                    sum_se_dir += 1;
+                }
+                Dir::SouthWest => {
+                    sum_n_dir -= 1;
+                    sum_se_dir -= 1;
+                }
+            }
+        }
+        return ((sum_n_dir.abs() + sum_se_dir.abs() + (sum_se_dir - sum_n_dir).abs()) / 2) as u32;
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", HexGrid::new("./data/input.txt").distance())
+}
