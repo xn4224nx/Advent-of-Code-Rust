@@ -76,3 +76,11 @@ fn group_census_exp07() {
         HashSet::from([0, 2, 3, 4, 5, 6])
     );
 }
+
+#[test]
+fn total_groups_in_village() {
+    assert_eq!(
+        ProgramVillage::new("./data/example_01.txt").total_groups(),
+        2
+    );
+}
