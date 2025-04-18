@@ -1,8 +1,8 @@
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
-mod day_11;
-use day_11::ProgramVillage;
+mod day_12;
+use day_12::ProgramVillage;
 use std::collections::{HashMap, HashSet};
 
 #[test]
