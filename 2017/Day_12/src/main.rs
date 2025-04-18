@@ -135,4 +135,11 @@ impl ProgramVillage {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        ProgramVillage::new("./data/input.txt")
+            .full_prog_group(0)
+            .len()
+    );
+}
