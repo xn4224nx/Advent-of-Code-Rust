@@ -33,6 +33,9 @@
  *
  * PART 1:  Determine the fewest number of steps required to reach the child
  *          process.
+ *
+ * PART 2:  How many steps away is the furthest he ever got from his starting
+ *          position?
  */
 
 use std::fs::read_to_string;
@@ -49,6 +52,8 @@ pub enum Dir {
 
 pub struct HexGrid {
     pub path: Vec<Dir>,
+    pub north_displace: i32,
+    pub sou_eas_displace: i32,
 }
 
 impl HexGrid {
@@ -67,42 +72,60 @@ impl HexGrid {
                     _ => panic!("'{x}' is not a recognised direction"),
                 })
                 .collect(),
+            north_displace: 0,
+            sou_eas_displace: 0,
         }
     }
 
-    /// Determine the distance from the centre the path would take
-    pub fn distance(self) -> u32 {
-        let mut sum_n_dir: i32 = 0;
-        let mut sum_se_dir: i32 = 0;
+    /// Using the displacement to the North and to the South East to calculate
+    /// the distance the path has taken from the center of the hex grid.
+    pub fn distance_from_origin(&self) -> u32 {
+        return ((self.north_displace.abs()
+            + self.sou_eas_displace.abs()
+            + (self.sou_eas_displace - self.north_displace).abs())
+            / 2) as u32;
+    }
 
-        for direc in self.path {
+    /// Determine the distance from the centre the path would take
+    pub fn max_and_final_distance(&mut self) -> (u32, u32) {
+        let mut max_dist: u32 = 0;
+
+        /* Follow the path in the hex grid and calculate the distance each time. */
+        for direc in &self.path {
             match direc {
                 Dir::North => {
-                    sum_n_dir += 1;
+                    self.north_displace += 1;
                 }
                 Dir::NorthEast => {
-                    sum_n_dir += 1;
-                    sum_se_dir += 1;
+                    self.north_displace += 1;
+                    self.sou_eas_displace += 1;
                 }
                 Dir::NorthWest => {
-                    sum_se_dir -= 1;
+                    self.sou_eas_displace -= 1;
                 }
                 Dir::South => {
-                    sum_n_dir -= 1;
+                    self.north_displace -= 1;
                 }
                 Dir::SouthEast => {
-                    sum_se_dir += 1;
+                    self.sou_eas_displace += 1;
                 }
                 Dir::SouthWest => {
-                    sum_n_dir -= 1;
-                    sum_se_dir -= 1;
+                    self.north_displace -= 1;
+                    self.sou_eas_displace -= 1;
                 }
-            }
+            };
+
+            /* Test to see if the path has reached a point further that any other. */
+            let curr_dist = self.distance_from_origin();
+            if curr_dist > max_dist {
+                max_dist = curr_dist;
+            };
         }
-        return ((sum_n_dir.abs() + sum_se_dir.abs() + (sum_se_dir - sum_n_dir).abs()) / 2) as u32;
+        return (max_dist, self.distance_from_origin());
     }
 }
 
 fn main() {
-    println!("Part 1 = {}", HexGrid::new("./data/input.txt").distance())
+    let (m_dist, f_dist) = HexGrid::new("./data/input.txt").max_and_final_distance();
+    println!("Part 1 = {}\nPart 2 = {}\n", f_dist, m_dist);
 }

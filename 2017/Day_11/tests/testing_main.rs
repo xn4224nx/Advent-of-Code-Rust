@@ -65,30 +65,60 @@ fn parse_data_exp06() {
 
 #[test]
 fn hex_distance_exp01() {
-    assert_eq!(HexGrid::new("./data/example_01.txt").distance(), 3);
+    assert_eq!(
+        HexGrid::new("./data/example_01.txt")
+            .max_and_final_distance()
+            .1,
+        3
+    );
 }
 
 #[test]
 fn hex_distance_exp02() {
-    assert_eq!(HexGrid::new("./data/example_02.txt").distance(), 0);
+    assert_eq!(
+        HexGrid::new("./data/example_02.txt")
+            .max_and_final_distance()
+            .1,
+        0
+    );
 }
 
 #[test]
 fn hex_distance_exp03() {
-    assert_eq!(HexGrid::new("./data/example_03.txt").distance(), 2);
+    assert_eq!(
+        HexGrid::new("./data/example_03.txt")
+            .max_and_final_distance()
+            .1,
+        2
+    );
 }
 
 #[test]
 fn hex_distance_exp04() {
-    assert_eq!(HexGrid::new("./data/example_04.txt").distance(), 3);
+    assert_eq!(
+        HexGrid::new("./data/example_04.txt")
+            .max_and_final_distance()
+            .1,
+        3
+    );
 }
 
 #[test]
 fn hex_distance_exp05() {
-    assert_eq!(HexGrid::new("./data/example_05.txt").distance(), 2);
+    assert_eq!(
+        HexGrid::new("./data/example_05.txt")
+            .max_and_final_distance()
+            .1,
+        2
+    );
 }
 
 #[test]
 fn hex_distance_exp06() {
-    assert_eq!(HexGrid::new("./data/example_06.txt").distance(), 3);
+    assert_eq!(
+        HexGrid::new("./data/example_06.txt")
+            .max_and_final_distance()
+            .1,
+        3
+    );
 }
