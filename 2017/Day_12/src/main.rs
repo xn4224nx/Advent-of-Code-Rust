@@ -51,6 +51,8 @@
  */
 
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct ProgramVillage {
     pub links: HashMap<u16, HashSet<u16>>,
@@ -58,14 +60,78 @@ pub struct ProgramVillage {
 
 impl ProgramVillage {
     pub fn new(data_file: &str) -> Self {
-        ProgramVillage {
-            links: HashMap::new(),
+        let mut buffer = String::new();
+        let mut links = HashMap::new();
+
+        /* Open the data file. */
+        let file = File::open(data_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let (l_prog, r_prog_lnks) = buffer.split_once(" <-> ").unwrap();
+
+            /* Parse the program ids. */
+            let l_prog = l_prog.parse::<u16>().unwrap();
+
+            let r_prog_lnks = if r_prog_lnks.contains(",") {
+                r_prog_lnks
+                    .split(",")
+                    .map(|x| x.trim().parse::<u16>().unwrap())
+                    .collect()
+            } else {
+                vec![r_prog_lnks.trim().parse::<u16>().unwrap()]
+            };
+
+            /* Add the main id into the record. */
+            if !links.contains_key(&l_prog) {
+                links.insert(l_prog, HashSet::new());
+            };
+
+            /* Record the program links in both programs records. */
+            for prog_id in r_prog_lnks.into_iter() {
+                if !links.contains_key(&prog_id) {
+                    links.insert(prog_id, HashSet::new());
+                };
+
+                /* A program cannot link to itself. */
+                if prog_id != l_prog {
+                    if let Some(x) = links.get_mut(&prog_id) {
+                        x.insert(l_prog);
+                    };
+
+                    if let Some(x) = links.get_mut(&l_prog) {
+                        x.insert(prog_id);
+                    };
+                }
+            }
+            buffer.clear();
         }
+        return ProgramVillage { links };
     }
 
     /// Calculate the group a specific program is in
     pub fn full_prog_group(&self, prog_id: u16) -> HashSet<u16> {
-        HashSet::new()
+        let mut seen_progs = HashSet::new();
+        let mut progs_to_check = HashSet::from([prog_id]);
+
+        while !progs_to_check.is_empty() {
+            let mut nxt_progs = HashSet::new();
+
+            for p_prog in &progs_to_check {
+                seen_progs.insert(*p_prog);
+
+                /* Find every program this one is connected to. */
+                for n_prog in self.links.get(&p_prog).unwrap() {
+                    if !seen_progs.contains(n_prog) {
+                        nxt_progs.insert(*n_prog);
+                        seen_progs.insert(*n_prog);
+                    };
+                }
+            }
+            progs_to_check = nxt_progs;
+        }
+        return seen_progs;
     }
 }
 
