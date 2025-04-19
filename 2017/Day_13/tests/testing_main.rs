@@ -145,3 +145,8 @@ fn detect_scanner_at_top_exp16() {
 fn trip_severity_exp01() {
     assert_eq!(Firewall::new("./data/example_01.txt").trip_severity(), 24);
 }
+
+#[test]
+fn find_clear_path_exp01() {
+    assert_eq!(Firewall::new("./data/example_01.txt").find_clear_path(), 10);
+}

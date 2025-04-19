@@ -55,6 +55,21 @@
  *
  * PART 1:  Given the details of the firewall you've recorded, if you leave
  *          immediately, what is the severity of your whole trip?
+ *
+ * Now, you need to pass through the firewall without being caught - easier
+ * said than done.
+ *
+ * You can't control the speed of the packet, but you can delay it any number
+ * of picoseconds. For each picosecond you delay the packet before beginning
+ * your trip, all security scanners move one step. You're not in the firewall
+ * during this time; you don't enter layer 0 until you stop delaying the
+ * packet.
+ *
+ * Because all smaller delays would get you caught, the fewest number of
+ * picoseconds you would need to delay to get through safely is 10.
+ *
+ * PART 2:  What is the fewest number of picoseconds that you need to delay
+ *          the packet to pass through the firewall without being caught?
  */
 
 use std::collections::HashMap;
@@ -101,11 +116,29 @@ impl Firewall {
         }
         return total_severity;
     }
+
+    /// Find the time delay that allows the packet to pass through the firewall
+    /// without being detected by any of the scanner.
+    pub fn find_clear_path(&self) -> u32 {
+        let mut delay = 0;
+
+        /* Loop until no packet is detected. */
+        't_del: loop {
+            for scanner_idx in self.info.keys() {
+                if self.scanner_at_top(*scanner_idx, *scanner_idx + delay) {
+                    delay += 1;
+                    continue 't_del;
+                }
+            }
+            return delay;
+        }
+    }
 }
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Firewall::new("./data/input.txt").trip_severity()
+        "Part 1 = {}\nPart 2 = {}\n",
+        Firewall::new("./data/input.txt").trip_severity(),
+        Firewall::new("./data/input.txt").find_clear_path()
     );
 }
