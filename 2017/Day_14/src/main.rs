@@ -58,9 +58,22 @@ pub struct DiskDefrag {
 
 impl DiskDefrag {
     pub fn new(seed: &str) -> Self {
-        DiskDefrag {
-            used: HashSet::new(),
+        let mut used = HashSet::new();
+
+        /* Generate the disk, row by row. */
+        for row_idx in 0..128 {
+            let message = format!("{}-{}", seed, row_idx);
+            let digest =
+                u128::from_str_radix(&hasher::KnotHash::new(&message).digest(), 16).unwrap();
+
+            /* Iterate over the binaric number and add the used coordinates. */
+            for (col_idx, bit) in (0..128).rev().map(|n| (digest >> n) & 1).enumerate() {
+                if bit == 1 {
+                    used.insert((col_idx as u8, row_idx as u8));
+                }
+            }
         }
+        return DiskDefrag { used };
     }
 }
 
