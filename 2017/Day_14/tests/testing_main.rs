@@ -99,14 +99,17 @@ fn parse_data_exp18() {
 fn parse_data_exp19() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(0, 5)));
 }
+
 #[test]
 fn parse_data_exp20() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(1, 5)));
 }
+
 #[test]
 fn parse_data_exp21() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(4, 5)));
 }
+
 #[test]
 fn parse_data_exp22() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(7, 5)));
@@ -116,6 +119,7 @@ fn parse_data_exp22() {
 fn parse_data_exp23() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(1, 6)));
 }
+
 #[test]
 fn parse_data_exp24() {
     assert!(DiskDefrag::new("flqrgnkx").used.contains(&(5, 6)));
@@ -149,4 +153,9 @@ fn parse_data_exp29() {
 #[test]
 fn count_used_squares_exp01() {
     assert_eq!(DiskDefrag::new("flqrgnkx").used.len(), 8108);
+}
+
+#[test]
+fn region_count_exp01() {
+    assert_eq!(DiskDefrag::new("flqrgnkx").region_count(), 1242);
 }

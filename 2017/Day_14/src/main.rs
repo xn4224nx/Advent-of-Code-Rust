@@ -75,6 +75,54 @@ impl DiskDefrag {
         }
         return DiskDefrag { used };
     }
+
+    /// Get the coordinates of potentially adjacent points.
+    pub fn adj_coords(&self, coord: &(u8, u8)) -> HashSet<(u8, u8)> {
+        return HashSet::from([
+            (coord.0.saturating_add(1), coord.1),
+            (coord.0, coord.1.saturating_add(1)),
+            (coord.0.saturating_sub(1), coord.1),
+            (coord.0, coord.1.saturating_sub(1)),
+        ]);
+    }
+
+    /// Count the number of connected regions in the disk defrag
+    pub fn region_count(&self) -> u32 {
+        let mut region_cnt = 0;
+        let mut seen_sqrs: HashSet<(u8, u8)> = HashSet::new();
+
+        for coord in &self.used {
+            if seen_sqrs.contains(&coord) {
+                continue;
+            } else {
+                seen_sqrs.insert(*coord);
+                region_cnt += 1;
+            };
+
+            /* Find all the points that the original is connected to. */
+            let mut next_coords: HashSet<(u8, u8)> = HashSet::from([*coord]);
+            while !next_coords.is_empty() {
+                let mut adj_coords: HashSet<(u8, u8)> = HashSet::new();
+
+                for n_coord in next_coords {
+                    /* Find all coordinates this one is connected to. */
+                    for a_coord in &self.adj_coords(&n_coord) {
+                        /* If the coordinate is used but unseen so far. */
+                        if self.used.contains(&a_coord) && !seen_sqrs.contains(&a_coord) {
+                            adj_coords.insert(*a_coord);
+                            seen_sqrs.insert(*a_coord);
+                        }
+                    }
+                }
+                next_coords = adj_coords;
+            }
+        }
+        return region_cnt;
+    }
 }
 
-fn main() {}
+fn main() {
+    let sys_disk = DiskDefrag::new("ffayrhll");
+    println!("Part 1 = {}", sys_disk.used.len());
+    println!("Part 2 = {}", sys_disk.region_count());
+}
