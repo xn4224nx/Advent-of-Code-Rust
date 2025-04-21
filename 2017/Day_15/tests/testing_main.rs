@@ -96,3 +96,13 @@ fn count_next_matches_exp02() {
         588
     );
 }
+
+#[test]
+fn count_non_seq_matches_exp01() {
+    assert_eq!(DualGenerator::new(65, 8921).non_seq_matches(1056), 1);
+}
+
+#[test]
+fn count_non_seq_matches_exp02() {
+    assert_eq!(DualGenerator::new(65, 8921).non_seq_matches(5_000_000), 309);
+}
