@@ -58,26 +58,41 @@
  */
 
 pub struct DualGenerator {
-    pub a: u32,
-    pub b: u32,
+    pub a: u64,
+    pub b: u64,
 }
 
 impl DualGenerator {
-    pub fn new(a: u32, b: u32) -> Self {
+    pub fn new(a: u64, b: u64) -> Self {
         DualGenerator { a, b }
     }
 
     /// Move both values onto the next iteration
-    pub fn iterate(&mut self) {}
+    pub fn iterate(&mut self) {
+        self.a = (self.a * 16807) % 2147483647;
+        self.b = (self.b * 48271) % 2147483647;
+    }
 
     /// Determine if the lowest 16 bits in the numbers are the same
-    pub fn compare_low_bits(&self, val_0: u32, val_1: u32) -> bool {
-        false
+    pub fn compare_low_bits(&self, val_0: u64, val_1: u64) -> bool {
+        let bits_0 = val_0.to_le_bytes();
+        let bits_1 = val_1.to_le_bytes();
+        return bits_0[0] == bits_1[0] && bits_0[1] == bits_1[1];
     }
 
     /// For the next n numbers count those that match
-    pub fn count_next_matches(&mut self, n_nums: u32) -> u32 {
-        0
+    pub fn count_next_matches(&mut self, n_nums: u64) -> u64 {
+        let mut matches = 0;
+
+        /* Iterate n amount of times and count the matches. */
+        for _ in 0..n_nums {
+            self.iterate();
+
+            if self.compare_low_bits(self.a, self.b) {
+                matches += 1;
+            }
+        }
+        return matches;
     }
 }
 
