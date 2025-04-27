@@ -35,6 +35,8 @@
  *          dance?
  */
 
+use std::fs::read_to_string;
+
 #[derive(Debug, PartialEq)]
 pub enum Move {
     Spin(i32),
@@ -49,22 +51,75 @@ pub struct Promenade {
 
 impl Promenade {
     pub fn new(programs: &str, datafile: &str) -> Self {
-        Promenade {
-            group: Vec::new(),
-            instruc: Vec::new(),
+        let mut instruc = Vec::new();
+
+        /* Parse the string commands to enums */
+        for cmd in read_to_string(datafile).unwrap().split(",") {
+            let id = cmd.chars().next().unwrap();
+            let info: String = cmd.chars().skip(1).collect();
+            let parts: Vec<&str> = info.split("/").collect();
+
+            instruc.push(match id {
+                's' => Move::Spin(parts[0].parse::<i32>().unwrap()),
+                'x' => Move::Exchange(
+                    parts[0].parse::<usize>().unwrap(),
+                    parts[1].parse::<usize>().unwrap(),
+                ),
+                'p' => Move::Partner(
+                    parts[0].chars().next().unwrap(),
+                    parts[1].chars().next().unwrap(),
+                ),
+                _ => {
+                    panic!("Invalid instruction '{cmd}'")
+                }
+            })
+        }
+
+        return Promenade {
+            group: programs.chars().collect(),
+            instruc,
+        };
+    }
+
+    /// Rotate the order of the programs left or right.
+    pub fn spin(&mut self, spin_mag: i32) {
+        if spin_mag > 0 {
+            self.group.rotate_right(spin_mag.abs() as usize);
+        } else if spin_mag < 0 {
+            self.group.rotate_right(spin_mag.abs() as usize);
         }
     }
 
-    pub fn spin(&mut self, spin_mag: i32) {}
+    /// Swap programs based on index.
+    pub fn exchange(&mut self, prog_0_idx: usize, prog_1_idx: usize) {
+        let prog_0 = self.group[prog_0_idx];
+        let prog_1 = self.group[prog_1_idx];
+        self.group[prog_0_idx] = prog_1;
+        self.group[prog_1_idx] = prog_0;
+    }
 
-    pub fn exchange(&mut self, prog_0_idx: usize, prog_1_idx: usize) {}
+    /// Swap programs based on value.
+    pub fn partner(&mut self, prog_0: char, prog_1: char) {
+        let prog_0_idx = self.group.iter().position(|x| *x == prog_0).unwrap();
+        let prog_1_idx = self.group.iter().position(|x| *x == prog_1).unwrap();
+        self.exchange(prog_0_idx, prog_1_idx);
+    }
 
-    pub fn partner(&mut self, prog_0: char, prog_1: char) {}
+    /// Execute each instruction in order once.
+    pub fn dance(&mut self) {
+        for insr_idx in 0..self.instruc.len() {
+            match self.instruc[insr_idx] {
+                Move::Spin(mag) => self.spin(mag),
+                Move::Exchange(idx0, idx1) => self.exchange(idx0, idx1),
+                Move::Partner(chr0, chr1) => self.partner(chr0, chr1),
+            }
+        }
+    }
 
-    pub fn dance(&mut self) {}
-
+    /// Give the value after executing each instruction in order once.
     pub fn one_dance(&mut self) -> String {
-        String::new()
+        self.dance();
+        return self.group.iter().collect();
     }
 }
 
