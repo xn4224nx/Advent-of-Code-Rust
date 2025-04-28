@@ -74,19 +74,35 @@ pub struct Tornado {
 }
 
 impl Tornado {
-    pub fn new() -> Self {
+    pub fn new(step: usize) -> Self {
         Tornado {
-            buffer: Vec::new(),
-            step: 0,
-            position: 0,
+            buffer: vec![0],
+            step,
+            position: 1,
         }
     }
 
-    pub fn spin(&mut self) {}
+    /// Simulate a single cycle of the spinlock
+    pub fn spin(&mut self) {
+        let shift = self.step % self.buffer.len();
+        self.buffer.rotate_left(shift);
+        self.buffer.push(self.position);
+        self.position += 1;
+    }
 
+    /// Determine the value after a specified one, once a number of spins has
+    /// happened. Then return this number.
     pub fn value_after(&mut self, check_val: usize, num_spins: usize) -> usize {
-        0
+        while self.position <= num_spins {
+            self.spin();
+        }
+
+        /* Find where the value is and return it. */
+        let chec_idx = self.buffer.iter().position(|&x| x == check_val).unwrap();
+        return self.buffer[(chec_idx + 1) % self.buffer.len()];
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", Tornado::new(354).value_after(2017, 2017))
+}
