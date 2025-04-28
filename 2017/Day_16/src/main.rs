@@ -33,8 +33,25 @@
  * PART 1:  You watch the dance for a while and record their dance moves (your
  *          puzzle input). In what order are the programs standing after their
  *          dance?
+ *
+ * Now that you're starting to get a feel for the dance moves, you turn your
+ * attention to the dance as a whole.
+ *
+ * Keeping the positions they ended up in from their previous dance, the
+ * programs perform it again and again: including the first dance, a total of
+ * one billion (1000000000) times.
+ *
+ * In the example above, their second dance would begin with the order baedc,
+ * and use the same dance moves:
+ *
+ *      -   s1, a spin of size 1: cbaed.
+ *      -   x3/4, swapping the last two programs: cbade.
+ *      -   pe/b, swapping programs e and b: ceadb.
+ *
+ * PART 2:  In what order are the programs standing after their billion dances?
  */
 
+use std::collections::HashMap;
 use std::fs::read_to_string;
 
 #[derive(Debug, PartialEq)]
@@ -121,11 +138,40 @@ impl Promenade {
         self.dance();
         return self.group.iter().collect();
     }
+
+    /// Determine the result after many dances.
+    pub fn many_dances(&mut self) -> String {
+        let d_nums = 1_000_000_000;
+        let orig_state = self.group.clone();
+
+        /* Do multiple dances till a group appears that has been seen before. */
+        let mut lp_idx = 0;
+        let mut seen_states: HashMap<Vec<char>, u32> = HashMap::new();
+        while !seen_states.contains_key(&self.group) {
+            seen_states.insert(self.group.clone(), lp_idx);
+            self.dance();
+            lp_idx += 1;
+        }
+
+        /* Detect the size of the loop to see a duplicate state. */
+        let first_seen_idx = seen_states.get(&self.group).unwrap();
+        let loop_size = lp_idx - first_seen_idx;
+
+        /* Determine how many loops fit in the total number of dances. */
+        let rem = (d_nums - first_seen_idx) % loop_size;
+
+        /* Run the remaining dances to determine the final state. */
+        for _ in 0..rem {
+            self.dance();
+        }
+        return self.group.iter().collect();
+    }
 }
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Promenade::new("abcdefghijklmnop", "./data/input.txt").one_dance()
+        "Part 1 = {}\nPart 2 = {}\n",
+        Promenade::new("abcdefghijklmnop", "./data/input.txt").one_dance(),
+        Promenade::new("abcdefghijklmnop", "./data/input.txt").many_dances(),
     );
 }
