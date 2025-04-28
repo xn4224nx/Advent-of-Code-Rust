@@ -65,10 +65,27 @@
  * that would be 638.
  *
  * PART 1:  What is the value after 2017 in your completed circular buffer?
+ *
+ * The spinlock does not short-circuit. Instead, it gets more angry. At least,
+ * you assume that's what happened; it's spinning significantly faster than it
+ * was a moment ago.
+ *
+ * You have good news and bad news.
+ *
+ * The good news is that you have improved calculations for how to stop the
+ * spinlock. They indicate that you actually need to identify the value after 0
+ * in the current state of the circular buffer.
+ *
+ * The bad news is that while you were determining this, the spinlock has just
+ * finished inserting its fifty millionth value (50000000).
+ *
+ * PART 2:  What is the value after 0 the moment 50000000 is inserted?
  */
 
+use std::collections::VecDeque;
+
 pub struct Tornado {
-    pub buffer: Vec<usize>,
+    pub buffer: VecDeque<usize>,
     pub step: usize,
     pub position: usize,
 }
@@ -76,7 +93,7 @@ pub struct Tornado {
 impl Tornado {
     pub fn new(step: usize) -> Self {
         Tornado {
-            buffer: vec![0],
+            buffer: VecDeque::from([0]),
             step,
             position: 1,
         }
@@ -86,7 +103,7 @@ impl Tornado {
     pub fn spin(&mut self) {
         let shift = self.step % self.buffer.len();
         self.buffer.rotate_left(shift);
-        self.buffer.push(self.position);
+        self.buffer.push_back(self.position);
         self.position += 1;
     }
 
@@ -104,5 +121,9 @@ impl Tornado {
 }
 
 fn main() {
-    println!("Part 1 = {}", Tornado::new(354).value_after(2017, 2017))
+    println!(
+        "Part 1 = {}\nPart 2 = {}\n",
+        Tornado::new(354).value_after(2017, 2017),
+        Tornado::new(354).value_after(0, 50_000_000)
+    )
 }
