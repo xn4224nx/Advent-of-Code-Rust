@@ -57,7 +57,7 @@ impl Promenade {
         for cmd in read_to_string(datafile).unwrap().split(",") {
             let id = cmd.chars().next().unwrap();
             let info: String = cmd.chars().skip(1).collect();
-            let parts: Vec<&str> = info.split("/").collect();
+            let parts: Vec<&str> = info.split("/").map(|x| x.trim()).collect();
 
             instruc.push(match id {
                 's' => Move::Spin(parts[0].parse::<i32>().unwrap()),
@@ -72,7 +72,7 @@ impl Promenade {
                 _ => {
                     panic!("Invalid instruction '{cmd}'")
                 }
-            })
+            });
         }
 
         return Promenade {
@@ -123,4 +123,9 @@ impl Promenade {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Promenade::new("abcdefghijklmnop", "./data/input.txt").one_dance()
+    );
+}
