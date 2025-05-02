@@ -83,29 +83,29 @@ use std::io::{BufRead, BufReader};
 
 #[derive(Debug, PartialEq)]
 pub enum Cmd {
-    SendVal(i32),
+    SendVal(i64),
     SendReg(usize),
-    SetVal(usize, i32),
+    SetVal(usize, i64),
     SetReg(usize, usize),
-    AddVal(usize, i32),
+    AddVal(usize, i64),
     AddReg(usize, usize),
-    MulVal(usize, i32),
+    MulVal(usize, i64),
     MulReg(usize, usize),
-    ModVal(usize, i32),
+    ModVal(usize, i64),
     ModReg(usize, usize),
-    RcvVal(i32),
+    RcvVal(i64),
     RcvReg(usize),
-    JgzRegVal(usize, i32),
-    JgzValVal(i32, i32),
+    JgzRegVal(usize, i64),
+    JgzValVal(i64, i64),
     JgzRegReg(usize, usize),
-    JgzValReg(i32, usize),
+    JgzValReg(i64, usize),
 }
 
 pub struct Duo {
     pub instructions: Vec<Cmd>,
-    pub register: Vec<i32>,
-    pub buffer0: Vec<i32>,
-    pub buffer1: Vec<i32>,
+    pub register: Vec<i64>,
+    pub buffer0: Vec<i64>,
+    pub buffer1: Vec<i64>,
     pub cmd_idx: usize,
 }
 
@@ -128,8 +128,8 @@ impl Duo {
             let rw_cmd: Vec<&str> = buf.split_whitespace().collect();
 
             /* Extract the first identifier. */
-            if rw_cmd[1].parse::<i32>().is_ok() {
-                val0 = Some(rw_cmd[1].parse::<i32>().unwrap());
+            if rw_cmd[1].parse::<i64>().is_ok() {
+                val0 = Some(rw_cmd[1].parse::<i64>().unwrap());
                 reg0 = None;
             } else {
                 val0 = None;
@@ -137,8 +137,8 @@ impl Duo {
             }
 
             /* If there is a second identifier, parse it. */
-            if rw_cmd.len() == 3 && rw_cmd[2].parse::<i32>().is_ok() {
-                val1 = Some(rw_cmd[2].parse::<i32>().unwrap());
+            if rw_cmd.len() == 3 && rw_cmd[2].parse::<i64>().is_ok() {
+                val1 = Some(rw_cmd[2].parse::<i64>().unwrap());
                 reg1 = None;
             } else if rw_cmd.len() == 3 {
                 val1 = None;
@@ -224,13 +224,13 @@ impl Duo {
         match self.instructions[instr_idx] {
             Cmd::SendVal(val0) => self.buffer0.push(val0),
             Cmd::SendReg(reg0) => self.buffer0.push(self.register[reg0]),
-            Cmd::SetVal(reg0, val0) => self.register[reg0] = val0,
-            Cmd::SetReg(reg0, reg1) => self.register[reg1] = self.register[reg0],
-            Cmd::AddVal(reg0, val0) => self.register[reg0] += val0,
+            Cmd::SetVal(reg0, val1) => self.register[reg0] = val1,
+            Cmd::SetReg(reg0, reg1) => self.register[reg0] = self.register[reg1],
+            Cmd::AddVal(reg0, val1) => self.register[reg0] += val1,
             Cmd::AddReg(reg0, reg1) => self.register[reg0] += self.register[reg1],
-            Cmd::MulVal(reg0, val0) => self.register[reg0] *= val0,
+            Cmd::MulVal(reg0, val1) => self.register[reg0] *= val1,
             Cmd::MulReg(reg0, reg1) => self.register[reg0] *= self.register[reg1],
-            Cmd::ModVal(reg0, val0) => self.register[reg0] %= val0,
+            Cmd::ModVal(reg0, val1) => self.register[reg0] %= val1,
             Cmd::ModReg(reg0, reg1) => self.register[reg0] %= self.register[reg1],
             Cmd::RcvVal(val) => {
                 if val != 0 && self.buffer0.len() > 0 {
@@ -243,9 +243,9 @@ impl Duo {
                 }
             }
 
-            Cmd::JgzRegVal(reg0, val0) => {
+            Cmd::JgzRegVal(reg0, val1) => {
                 if self.register[reg0] > 0 {
-                    self.cmd_idx = self.cmd_idx.overflowing_add((val0 - 1) as usize).0;
+                    self.cmd_idx = self.cmd_idx.overflowing_add((val1 - 1) as usize).0;
                 }
             }
             Cmd::JgzValVal(val0, val1) => {
@@ -274,7 +274,7 @@ impl Duo {
         self.cmd_idx += 1;
     }
 
-    pub fn first_recent_sound(&mut self) -> i32 {
+    pub fn first_recent_sound(&mut self) -> i64 {
         while self.cmd_idx < self.instructions.len() && self.buffer1.len() < 1 {
             self.execute_cmd(self.cmd_idx);
         }
@@ -282,4 +282,9 @@ impl Duo {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Duo::new("./data/input.txt").first_recent_sound()
+    );
+}

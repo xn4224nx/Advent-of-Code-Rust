@@ -84,7 +84,7 @@ fn execute_cmd_exp04() {
     test.register = vec![3, 5];
     test.instructions = vec![Cmd::SetReg(0, 1)];
     test.execute_cmd(0);
-    assert_eq!(test.register, vec![3, 3]);
+    assert_eq!(test.register, vec![5, 5]);
     assert_eq!(test.cmd_idx, 1);
 }
 
