@@ -78,6 +78,9 @@
  *          last sound played is 4.
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(Debug, PartialEq)]
 pub enum Cmd {
     SendVal(i32),
@@ -92,31 +95,190 @@ pub enum Cmd {
     ModReg(usize, usize),
     RcvVal(i32),
     RcvReg(usize),
-    JgzReg(usize, i32),
-    JgzVal(i32, i32),
+    JgzRegVal(usize, i32),
+    JgzValVal(i32, i32),
+    JgzRegReg(usize, usize),
+    JgzValReg(i32, usize),
 }
 
 pub struct Duo {
     pub instructions: Vec<Cmd>,
     pub register: Vec<i32>,
-    pub buffer: Vec<i32>,
+    pub buffer0: Vec<i32>,
+    pub buffer1: Vec<i32>,
     pub cmd_idx: usize,
 }
 
 impl Duo {
     pub fn new(datafile: &str) -> Self {
+        let mut instructions = Vec::new();
+        let mut max_reg = 0;
+
+        /* Open the file. */
+        let file = File::open(datafile).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        let mut buf = String::new();
+        while fp.read_line(&mut buf).unwrap() > 0 {
+            let (val0, val1);
+            let (reg0, reg1);
+
+            /* Split the parts of the command. */
+            let rw_cmd: Vec<&str> = buf.split_whitespace().collect();
+
+            /* Extract the first identifier. */
+            if rw_cmd[1].parse::<i32>().is_ok() {
+                val0 = Some(rw_cmd[1].parse::<i32>().unwrap());
+                reg0 = None;
+            } else {
+                val0 = None;
+                reg0 = Some(rw_cmd[1].chars().next().unwrap() as usize - 'a' as usize);
+            }
+
+            /* If there is a second identifier, parse it. */
+            if rw_cmd.len() == 3 && rw_cmd[2].parse::<i32>().is_ok() {
+                val1 = Some(rw_cmd[2].parse::<i32>().unwrap());
+                reg1 = None;
+            } else if rw_cmd.len() == 3 {
+                val1 = None;
+                reg1 = Some(rw_cmd[2].chars().next().unwrap() as usize - 'a' as usize);
+            } else {
+                val1 = None;
+                reg1 = None;
+            }
+
+            /* Make a record of the highest register index encountered. */
+            if reg0.is_some() && reg0.unwrap() > max_reg {
+                max_reg = reg0.unwrap()
+            }
+            if reg1.is_some() && reg1.unwrap() > max_reg {
+                max_reg = reg0.unwrap()
+            }
+
+            /* Save the full instruction for this line. */
+            instructions.push(if rw_cmd[0] == "snd" {
+                if val0.is_some() {
+                    Cmd::SendVal(val0.unwrap())
+                } else {
+                    Cmd::SendReg(reg0.unwrap())
+                }
+            } else if rw_cmd[0] == "set" {
+                if val1.is_some() {
+                    Cmd::SetVal(reg0.unwrap(), val1.unwrap())
+                } else {
+                    Cmd::SetReg(reg0.unwrap(), reg1.unwrap())
+                }
+            } else if rw_cmd[0] == "add" {
+                if val1.is_some() {
+                    Cmd::AddVal(reg0.unwrap(), val1.unwrap())
+                } else {
+                    Cmd::AddReg(reg0.unwrap(), reg1.unwrap())
+                }
+            } else if rw_cmd[0] == "mul" {
+                if val1.is_some() {
+                    Cmd::MulVal(reg0.unwrap(), val1.unwrap())
+                } else {
+                    Cmd::MulReg(reg0.unwrap(), reg1.unwrap())
+                }
+            } else if rw_cmd[0] == "mod" {
+                if val1.is_some() {
+                    Cmd::ModVal(reg0.unwrap(), val1.unwrap())
+                } else {
+                    Cmd::ModReg(reg0.unwrap(), reg1.unwrap())
+                }
+            } else if rw_cmd[0] == "rcv" {
+                if val0.is_some() {
+                    Cmd::RcvVal(val0.unwrap())
+                } else {
+                    Cmd::RcvReg(reg0.unwrap())
+                }
+            } else if rw_cmd[0] == "jgz" {
+                if val0.is_some() && val1.is_some() {
+                    Cmd::JgzValVal(val0.unwrap(), val1.unwrap())
+                } else if reg0.is_some() && reg1.is_some() {
+                    Cmd::JgzRegReg(reg0.unwrap(), reg1.unwrap())
+                } else if val0.is_some() && reg1.is_some() {
+                    Cmd::JgzValReg(val0.unwrap(), reg1.unwrap())
+                } else if reg0.is_some() && val1.is_some() {
+                    Cmd::JgzRegVal(reg0.unwrap(), val1.unwrap())
+                } else {
+                    panic!("Unknown jump combination '{}'", buf);
+                }
+            } else {
+                panic!("Unrecognised command '{}'", rw_cmd[0]);
+            });
+            buf.clear();
+        }
+
         Duo {
-            instructions: Vec::new(),
-            buffer: Vec::new(),
-            register: Vec::new(),
+            instructions,
+            buffer0: Vec::new(),
+            buffer1: Vec::new(),
+            register: vec![0; max_reg + 1],
             cmd_idx: 0,
         }
     }
 
-    pub fn execute_cmd(&mut self, instr_idx: usize) {}
+    pub fn execute_cmd(&mut self, instr_idx: usize) {
+        match self.instructions[instr_idx] {
+            Cmd::SendVal(val0) => self.buffer0.push(val0),
+            Cmd::SendReg(reg0) => self.buffer0.push(self.register[reg0]),
+            Cmd::SetVal(reg0, val0) => self.register[reg0] = val0,
+            Cmd::SetReg(reg0, reg1) => self.register[reg1] = self.register[reg0],
+            Cmd::AddVal(reg0, val0) => self.register[reg0] += val0,
+            Cmd::AddReg(reg0, reg1) => self.register[reg0] += self.register[reg1],
+            Cmd::MulVal(reg0, val0) => self.register[reg0] *= val0,
+            Cmd::MulReg(reg0, reg1) => self.register[reg0] *= self.register[reg1],
+            Cmd::ModVal(reg0, val0) => self.register[reg0] %= val0,
+            Cmd::ModReg(reg0, reg1) => self.register[reg0] %= self.register[reg1],
+            Cmd::RcvVal(val) => {
+                if val != 0 && self.buffer0.len() > 0 {
+                    self.buffer1.push(self.buffer0.pop().unwrap());
+                }
+            }
+            Cmd::RcvReg(reg0) => {
+                if self.register[reg0] != 0 && self.buffer0.len() > 0 {
+                    self.buffer1.push(self.buffer0.pop().unwrap());
+                }
+            }
+
+            Cmd::JgzRegVal(reg0, val0) => {
+                if self.register[reg0] > 0 {
+                    self.cmd_idx = self.cmd_idx.overflowing_add((val0 - 1) as usize).0;
+                }
+            }
+            Cmd::JgzValVal(val0, val1) => {
+                if val0 > 0 {
+                    self.cmd_idx = self.cmd_idx.overflowing_add((val1 - 1) as usize).0;
+                }
+            }
+
+            Cmd::JgzRegReg(reg0, reg1) => {
+                if self.register[reg0] > 0 {
+                    self.cmd_idx = self
+                        .cmd_idx
+                        .overflowing_add((self.register[reg1] - 1) as usize)
+                        .0;
+                }
+            }
+            Cmd::JgzValReg(val0, reg1) => {
+                if val0 > 0 {
+                    self.cmd_idx = self
+                        .cmd_idx
+                        .overflowing_add((self.register[reg1] - 1) as usize)
+                        .0;
+                }
+            }
+        };
+        self.cmd_idx += 1;
+    }
 
     pub fn first_recent_sound(&mut self) -> i32 {
-        0
+        while self.cmd_idx < self.instructions.len() && self.buffer1.len() < 1 {
+            self.execute_cmd(self.cmd_idx);
+        }
+        return self.buffer1[0];
     }
 }
 
