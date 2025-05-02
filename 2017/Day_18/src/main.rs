@@ -76,8 +76,62 @@
  *
  * PART 1:  At the time the recover operation is executed, the frequency of the
  *          last sound played is 4.
+ *
+ * As you congratulate yourself for a job well done, you notice that the
+ * documentation has been on the back of the tablet this entire time. While you
+ * actually got most of the instructions correct, there are a few key
+ * differences. This assembly code isn't about sound at all - it's meant to be
+ * run twice at the same time.
+ *
+ * Each running copy of the program has its own set of registers and follows the
+ * code independently - in fact, the programs don't even necessarily run at the
+ * same speed. To coordinate, they use the send (snd) and receive (rcv)
+ * instructions:
+ *
+ *      -   snd X sends the value of X to the other program. These values wait
+ *          in a queue until that program is ready to receive them. Each program
+ *          has its own message queue, so a program can never receive a message
+ *          it sent.
+ *
+ *      -   rcv X receives the next value and stores it in register X. If no
+ *          values are in the queue, the program waits for a value to be sent to
+ *          it. Programs do not continue to the next instruction until they have
+ *          received a value. Values are received in the order they are sent.
+ *
+ * Each program also has its own program ID (one 0 and the other 1); the
+ * register p should begin with this value.
+ *
+ * For example:
+ *
+ *      snd 1
+ *      snd 2
+ *      snd p
+ *      rcv a
+ *      rcv b
+ *      rcv c
+ *      rcv d
+ *
+ * Both programs begin by sending three values to the other. Program 0 sends 1,
+ * 2, 0; program 1 sends 1, 2, 1. Then, each program receives a value (both 1)
+ * and stores it in a, receives another value (both 2) and stores it in b, and
+ * then each receives the program ID of the other program (program 0 receives 1;
+ * program 1 receives 0) and stores it in c. Each program now sees a different
+ * value in its own copy of register c.
+ *
+ * Finally, both programs try to rcv a fourth time, but no data is waiting for
+ * either of them, and they reach a deadlock. When this happens, both programs
+ * terminate.
+ *
+ * It should be noted that it would be equally valid for the programs to run at
+ * different speeds; for example, program 0 might have sent all three values and
+ * then stopped at the first rcv before program 1 executed even its first
+ * instruction.
+ *
+ * PART 1:  Once both of your programs have terminated (regardless of what
+ *          caused them to do so), how many times did program 1 send a value?
  */
 
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -103,14 +157,17 @@ pub enum Cmd {
 
 pub struct Duo {
     pub instructions: Vec<Cmd>,
-    pub register: Vec<i64>,
-    pub buffer0: Vec<i64>,
-    pub buffer1: Vec<i64>,
-    pub cmd_idx: usize,
+    pub register: Vec<Vec<i64>>,
+    pub buffer: Vec<VecDeque<i64>>,
+    pub cmd_idx: Vec<usize>,
+    pub single_program: bool,
+    pub active_prog: usize,
+    pub inacti_prog: usize,
+    pub transfer_counts: Vec<usize>,
 }
 
 impl Duo {
-    pub fn new(datafile: &str) -> Self {
+    pub fn new(datafile: &str, single_program: bool) -> Self {
         let mut instructions = Vec::new();
         let mut max_reg = 0;
 
@@ -211,80 +268,161 @@ impl Duo {
             buf.clear();
         }
 
+        /* For dual programs set the program identity. */
+        let mut register = vec![vec![0; max_reg + 1], vec![0; max_reg + 1]];
+        if !single_program {
+            register[1]['p' as usize - 'a' as usize] = 1;
+        };
+
         Duo {
             instructions,
-            buffer0: Vec::new(),
-            buffer1: Vec::new(),
-            register: vec![0; max_reg + 1],
-            cmd_idx: 0,
+            buffer: vec![VecDeque::new(), VecDeque::new()],
+            register,
+            cmd_idx: vec![0, 0],
+            single_program,
+            active_prog: 0,
+            inacti_prog: 1,
+            transfer_counts: vec![0, 0],
         }
     }
 
+    /// Run the specified command on the active program
     pub fn execute_cmd(&mut self, instr_idx: usize) {
         match self.instructions[instr_idx] {
-            Cmd::SendVal(val0) => self.buffer0.push(val0),
-            Cmd::SendReg(reg0) => self.buffer0.push(self.register[reg0]),
-            Cmd::SetVal(reg0, val1) => self.register[reg0] = val1,
-            Cmd::SetReg(reg0, reg1) => self.register[reg0] = self.register[reg1],
-            Cmd::AddVal(reg0, val1) => self.register[reg0] += val1,
-            Cmd::AddReg(reg0, reg1) => self.register[reg0] += self.register[reg1],
-            Cmd::MulVal(reg0, val1) => self.register[reg0] *= val1,
-            Cmd::MulReg(reg0, reg1) => self.register[reg0] *= self.register[reg1],
-            Cmd::ModVal(reg0, val1) => self.register[reg0] %= val1,
-            Cmd::ModReg(reg0, reg1) => self.register[reg0] %= self.register[reg1],
+            Cmd::SendVal(val0) => {
+                if self.single_program {
+                    self.buffer[self.active_prog].push_back(val0);
+                } else {
+                    self.buffer[self.inacti_prog].push_back(val0);
+                    self.transfer_counts[self.active_prog] += 1;
+                }
+            }
+            Cmd::SendReg(reg0) => {
+                if self.single_program {
+                    self.buffer[self.active_prog].push_back(self.register[self.active_prog][reg0]);
+                } else {
+                    self.buffer[self.inacti_prog].push_back(self.register[self.active_prog][reg0]);
+                    self.transfer_counts[self.active_prog] += 1;
+                }
+            }
+            Cmd::SetVal(reg0, val1) => self.register[self.active_prog][reg0] = val1,
+            Cmd::SetReg(reg0, reg1) => {
+                self.register[self.active_prog][reg0] = self.register[self.active_prog][reg1]
+            }
+            Cmd::AddVal(reg0, val1) => self.register[self.active_prog][reg0] += val1,
+            Cmd::AddReg(reg0, reg1) => {
+                self.register[self.active_prog][reg0] += self.register[self.active_prog][reg1]
+            }
+            Cmd::MulVal(reg0, val1) => self.register[self.active_prog][reg0] *= val1,
+            Cmd::MulReg(reg0, reg1) => {
+                self.register[self.active_prog][reg0] *= self.register[self.active_prog][reg1]
+            }
+            Cmd::ModVal(reg0, val1) => self.register[self.active_prog][reg0] %= val1,
+            Cmd::ModReg(reg0, reg1) => {
+                self.register[self.active_prog][reg0] %= self.register[self.active_prog][reg1]
+            }
+
             Cmd::RcvVal(val) => {
-                if val != 0 && self.buffer0.len() > 0 {
-                    self.buffer1.push(self.buffer0.pop().unwrap());
+                if self.single_program && val != 0 && self.buffer[self.active_prog].len() > 0 {
+                    let tmp = self.buffer[self.active_prog].pop_back().unwrap();
+                    self.buffer[self.inacti_prog].push_back(tmp);
+                } else {
+                    /* This option doesn't exist for the two program version. */
                 }
             }
             Cmd::RcvReg(reg0) => {
-                if self.register[reg0] != 0 && self.buffer0.len() > 0 {
-                    self.buffer1.push(self.buffer0.pop().unwrap());
+                if self.single_program
+                    && self.register[self.active_prog][reg0] != 0
+                    && self.buffer[self.active_prog].len() > 0
+                {
+                    let tmp = self.buffer[self.active_prog].pop_back().unwrap();
+                    self.buffer[self.inacti_prog].push_back(tmp);
+                } else if !self.single_program && self.buffer[self.active_prog].len() > 0 {
+                    self.register[self.active_prog][reg0] =
+                        self.buffer[self.active_prog].pop_front().unwrap();
+
+                /* Wait on this command until something is forthcoming by
+                 * ensuring this command keeps getting attempted until there
+                 * is a value to set a register too. */
+                } else if !self.single_program {
+                    self.cmd_idx[self.active_prog] -= 1;
                 }
             }
 
             Cmd::JgzRegVal(reg0, val1) => {
-                if self.register[reg0] > 0 {
-                    self.cmd_idx = self.cmd_idx.overflowing_add((val1 - 1) as usize).0;
+                if self.register[self.active_prog][reg0] > 0 {
+                    self.cmd_idx[self.active_prog] = self.cmd_idx[self.active_prog]
+                        .overflowing_add((val1 - 1) as usize)
+                        .0;
                 }
             }
             Cmd::JgzValVal(val0, val1) => {
                 if val0 > 0 {
-                    self.cmd_idx = self.cmd_idx.overflowing_add((val1 - 1) as usize).0;
+                    self.cmd_idx[self.active_prog] = self.cmd_idx[self.active_prog]
+                        .overflowing_add((val1 - 1) as usize)
+                        .0;
                 }
             }
 
             Cmd::JgzRegReg(reg0, reg1) => {
-                if self.register[reg0] > 0 {
-                    self.cmd_idx = self
-                        .cmd_idx
-                        .overflowing_add((self.register[reg1] - 1) as usize)
+                if self.register[self.active_prog][reg0] > 0 {
+                    self.cmd_idx[self.active_prog] = self.cmd_idx[self.active_prog]
+                        .overflowing_add((self.register[self.active_prog][reg1] - 1) as usize)
                         .0;
                 }
             }
             Cmd::JgzValReg(val0, reg1) => {
                 if val0 > 0 {
-                    self.cmd_idx = self
-                        .cmd_idx
-                        .overflowing_add((self.register[reg1] - 1) as usize)
+                    self.cmd_idx[self.active_prog] = self.cmd_idx[self.active_prog]
+                        .overflowing_add((self.register[self.active_prog][reg1] - 1) as usize)
                         .0;
                 }
             }
         };
-        self.cmd_idx += 1;
+        self.cmd_idx[self.active_prog] += 1;
     }
 
+    /// Return the sound value that is first to be played back
     pub fn first_recent_sound(&mut self) -> i64 {
-        while self.cmd_idx < self.instructions.len() && self.buffer1.len() < 1 {
-            self.execute_cmd(self.cmd_idx);
+        while self.cmd_idx[self.active_prog] < self.instructions.len()
+            && self.buffer[self.inacti_prog].len() < 1
+        {
+            self.execute_cmd(self.cmd_idx[self.active_prog]);
         }
-        return self.buffer1[0];
+        return self.buffer[self.inacti_prog][0];
+    }
+
+    /// Determine how many times a program sends values to the other.
+    pub fn count_transfers(&mut self, sending_prog: usize) -> usize {
+        assert!(!self.single_program);
+
+        /* Loop until both of the programs are waiting to recieve data. */
+        loop {
+            /* Run both programs commands */
+            self.execute_cmd(self.cmd_idx[self.active_prog]);
+            (self.active_prog, self.inacti_prog) = (1, 0);
+            self.execute_cmd(self.cmd_idx[self.active_prog]);
+            (self.active_prog, self.inacti_prog) = (0, 1);
+
+            /* Exit if both programs are waiting for a response but nothing will be sent. */
+            if std::mem::discriminant(&self.instructions[self.cmd_idx[0]])
+                == std::mem::discriminant(&Cmd::RcvReg(0))
+                && std::mem::discriminant(&self.instructions[self.cmd_idx[1]])
+                    == std::mem::discriminant(&Cmd::RcvReg(0))
+                && self.buffer[0].len() == 0
+                && self.buffer[1].len() == 0
+            {
+                break;
+            };
+        }
+        return self.transfer_counts[sending_prog];
     }
 }
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Duo::new("./data/input.txt").first_recent_sound()
+        "Part 1 = {}\nPart 2 = {}\n",
+        Duo::new("./data/input.txt", true).first_recent_sound(),
+        Duo::new("./data/input.txt", false).count_transfers(1),
     );
 }
