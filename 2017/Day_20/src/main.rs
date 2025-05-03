@@ -48,8 +48,17 @@
  *
  * PART 1:  Which particle will stay closest to position <0,0,0> in the long
  *          term?
+ *
+ * To simplify the problem further, the GPU would like to remove any particles
+ * that collide. Particles collide if their positions ever exactly match.
+ * Because particles are updated simultaneously, more than two particles can
+ * collide at the same time and place. Once particles collide, they are removed
+ * and cannot collide with anything else after that tick.
+ *
+ * PART 2:  How many particles are left after all collisions are resolved?
  */
 
+use itertools::Itertools;
 use regex::Regex;
 use std::fs::read_to_string;
 
@@ -127,11 +136,42 @@ impl Throng {
         }
         return min_idx;
     }
+
+    pub fn remaining_particles(&mut self) -> usize {
+        let mut collided = vec![false; self.contents.len()];
+
+        /* Advance the particles and determine ones that have collided. */
+        for _ in 0..1000 {
+            for p_idx in 0..self.contents.len() {
+                if !collided[p_idx] {
+                    self.contents[p_idx].step();
+                }
+            }
+
+            /* Find the indexes of uncollided particles. */
+            let uncollided_idxs: Vec<usize> = collided
+                .iter()
+                .enumerate()
+                .filter(|x| !x.1)
+                .map(|x| x.0)
+                .collect();
+
+            /* Check for collisions amoung uncollided particles. */
+            for part_idxs in uncollided_idxs.into_iter().combinations(2) {
+                if self.contents[part_idxs[0]].position == self.contents[part_idxs[1]].position {
+                    collided[part_idxs[0]] = true;
+                    collided[part_idxs[1]] = true;
+                }
+            }
+        }
+        return collided.into_iter().filter(|x| !x).count();
+    }
 }
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Throng::new("./data/input.txt").long_term_closest_to_origin()
+        "Part 1 = {}\nPart 2 = {}\n",
+        Throng::new("./data/input.txt").long_term_closest_to_origin(),
+        Throng::new("./data/input.txt").remaining_particles()
     );
 }

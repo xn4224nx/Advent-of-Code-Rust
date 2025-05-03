@@ -376,3 +376,11 @@ fn long_term_closest_to_origin_exp01() {
         0
     );
 }
+
+#[test]
+fn remaining_particles_exp01() {
+    assert_eq!(
+        Throng::new("./data/example_05.txt").remaining_particles(),
+        1
+    );
+}
