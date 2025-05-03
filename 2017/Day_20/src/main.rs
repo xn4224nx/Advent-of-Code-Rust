@@ -51,7 +51,6 @@
  */
 
 use regex::Regex;
-use std::cmp::Ordering;
 use std::fs::read_to_string;
 
 #[derive(Debug, PartialEq)]
@@ -88,7 +87,7 @@ impl Particle {
         }
     }
 
-    pub fn dist_from_origin(&mut self) -> i32 {
+    pub fn dist_from_origin(&self) -> i32 {
         return self.position.iter().map(|x| x.abs()).sum::<i32>();
     }
 }
@@ -105,6 +104,7 @@ impl Throng {
     }
 
     pub fn long_term_closest_to_origin(&mut self) -> usize {
+        /* Advance the particles. */
         for _ in 0..1000 {
             for p_idx in 0..self.contents.len() {
                 self.contents[p_idx].step()
@@ -112,15 +112,26 @@ impl Throng {
         }
 
         /* Find the particle closest to the origin. */
-        return self
+        let mut min_val = i32::MAX;
+        let mut min_idx = 0;
+        for (p_idx, dist) in self
             .contents
-            .iter_mut()
+            .iter()
             .map(|x| x.dist_from_origin())
             .enumerate()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(Ordering::Equal))
-            .map(|(index, _)| index)
-            .unwrap();
+        {
+            if dist < min_val {
+                min_val = dist;
+                min_idx = p_idx;
+            }
+        }
+        return min_idx;
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Throng::new("./data/input.txt").long_term_closest_to_origin()
+    );
+}

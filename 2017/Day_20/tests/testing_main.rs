@@ -372,7 +372,7 @@ fn dist_from_origin_exp08() {
 #[test]
 fn long_term_closest_to_origin_exp01() {
     assert_eq!(
-        Throng::new("./data/example_05.txt").long_term_closest_to_origin(),
+        Throng::new("./data/example_01.txt").long_term_closest_to_origin(),
         0
     );
 }
