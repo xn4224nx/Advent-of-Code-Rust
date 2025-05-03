@@ -50,6 +50,10 @@
  *          term?
  */
 
+use regex::Regex;
+use std::cmp::Ordering;
+use std::fs::read_to_string;
+
 #[derive(Debug, PartialEq)]
 pub struct Particle {
     pub position: Vec<i32>,
@@ -64,29 +68,58 @@ pub struct Throng {
 
 impl Particle {
     pub fn new(raw_details: &str) -> Self {
-        Particle {
-            position: Vec::new(),
-            velocity: Vec::new(),
-            acceleration: Vec::new(),
+        let re_num = Regex::new(r"-?[0-9]+").unwrap();
+        let raw_nums: Vec<i32> = re_num
+            .find_iter(raw_details)
+            .map(|x| x.as_str().parse::<i32>().unwrap())
+            .collect();
+
+        return Particle {
+            position: vec![raw_nums[0], raw_nums[1], raw_nums[2]],
+            velocity: vec![raw_nums[3], raw_nums[4], raw_nums[5]],
+            acceleration: vec![raw_nums[6], raw_nums[7], raw_nums[8]],
+        };
+    }
+
+    pub fn step(&mut self) {
+        for idx in 0..self.velocity.len() {
+            self.velocity[idx] += self.acceleration[idx];
+            self.position[idx] += self.velocity[idx]
         }
     }
 
-    pub fn step(&mut self) {}
-
-    pub fn dist_from_origin(&mut self) -> u32 {
-        0
+    pub fn dist_from_origin(&mut self) -> i32 {
+        return self.position.iter().map(|x| x.abs()).sum::<i32>();
     }
 }
 
 impl Throng {
     pub fn new(data_file: &str) -> Self {
         Throng {
-            contents: Vec::new(),
+            contents: read_to_string(data_file)
+                .unwrap()
+                .lines()
+                .map(|x| Particle::new(x))
+                .collect(),
         }
     }
 
     pub fn long_term_closest_to_origin(&mut self) -> usize {
-        usize::MAX
+        for _ in 0..1000 {
+            for p_idx in 0..self.contents.len() {
+                self.contents[p_idx].step()
+            }
+        }
+
+        /* Find the particle closest to the origin. */
+        return self
+            .contents
+            .iter_mut()
+            .map(|x| x.dist_from_origin())
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(Ordering::Equal))
+            .map(|(index, _)| index)
+            .unwrap();
     }
 }
 
