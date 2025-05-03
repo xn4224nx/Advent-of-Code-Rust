@@ -44,29 +44,107 @@
 
 use num::complex::Complex;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct Network {
-    pub pipes: HashMap<(usize, usize), char>,
-    pub direction: Complex<i8>,
-    pub path: Vec<(usize, usize)>,
+    pub pipes: HashMap<(i32, i32), char>,
+    pub direction: Complex<i32>,
+    pub path: Vec<(i32, i32)>,
 }
 
 impl Network {
     pub fn new(datafile: &str) -> Self {
-        Network {
-            pipes: HashMap::new(),
-            direction: Complex::new(0, 0),
-            path: Vec::new(),
+        let mut buffer = String::new();
+        let mut pipes = HashMap::new();
+        let mut path = Vec::new();
+
+        /* Open the datafile. */
+        let file = File::open(datafile).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        let mut row_idx = 0;
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            for (col_idx, sqr) in buffer.chars().enumerate() {
+                if sqr.is_whitespace() {
+                    continue;
+                }
+
+                /* Save all the visible parts of the network. */
+                pipes.insert((col_idx as i32, row_idx), sqr);
+
+                /* Save the first visible element as the start of the path. */
+                if path.len() < 1 {
+                    path.push((col_idx as i32, row_idx));
+                }
+            }
+            row_idx += 1;
+            buffer.clear();
         }
+
+        return Network {
+            pipes,
+            direction: Complex::new(0, 1),
+            path,
+        };
     }
 
     /// Determine the next step along the path through the network.
-    pub fn step(&mut self) {}
+    pub fn step(&mut self) {
+        let curr_loc = self.path.last().unwrap();
+        let direct_0 = self.direction * Complex::i();
+        let direct_1 = self.direction * -1 * Complex::i();
+
+        /* The location that would be reached by just continuing. */
+        let cont_loc = (
+            curr_loc.0 + self.direction.re,
+            curr_loc.1 + self.direction.im,
+        );
+
+        /* The location reached by turning in direction 0. */
+        let loc_0 = (curr_loc.0 + direct_0.re, curr_loc.1 + direct_0.im);
+
+        /* The location reached by turning in direction 1. */
+        let loc_1 = (curr_loc.0 + direct_1.re, curr_loc.1 + direct_1.im);
+
+        /* Investigate the possible paths. */
+        if self.pipes.contains_key(&cont_loc) {
+            self.path.push(cont_loc);
+        } else if self.pipes.contains_key(&loc_0) {
+            self.path.push(loc_0);
+            self.direction = direct_0;
+        } else if self.pipes.contains_key(&loc_1) {
+            self.path.push(loc_1);
+            self.direction = direct_1;
+
+        /* Indicate that the path has ended */
+        } else {
+            self.direction = Complex::new(0, 0);
+        };
+    }
 
     /// Follow the path through the network and recover the letters in order
     pub fn find_path_word(&mut self) -> String {
-        String::new()
+        let mut seen_letters = Vec::new();
+
+        while self.direction != Complex::new(0, 0) {
+            let curr_loc = self.path.last().unwrap();
+            let curr_sqr = self.pipes.get(&curr_loc).unwrap();
+
+            /* Collect the letters encountered by traversing the path. */
+            if curr_sqr.is_uppercase() {
+                seen_letters.push(*curr_sqr);
+            }
+            self.step();
+        }
+        return seen_letters.iter().collect();
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Network::new("./data/input.txt").find_path_word()
+    );
+}

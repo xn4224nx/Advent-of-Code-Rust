@@ -101,7 +101,7 @@ fn test_step_exp05() {
     test.direction = Complex::new(0, 1);
     test.step();
     assert_eq!(*test.path.last().unwrap(), (5, 5));
-    assert_eq!(test.direction, Complex::new(1, 0));
+    assert_eq!(test.direction, Complex::new(0, 1));
 }
 
 #[test]
@@ -131,7 +131,7 @@ fn test_step_exp08() {
     test.direction = Complex::new(1, 0);
     test.step();
     assert_eq!(*test.path.last().unwrap(), (8, 5));
-    assert_eq!(test.direction, Complex::new(0, -1));
+    assert_eq!(test.direction, Complex::new(1, 0));
 }
 
 #[test]
@@ -171,7 +171,7 @@ fn test_step_exp12() {
     test.direction = Complex::new(0, -1);
     test.step();
     assert_eq!(*test.path.last().unwrap(), (8, 1));
-    assert_eq!(test.direction, Complex::new(1, 0));
+    assert_eq!(test.direction, Complex::new(0, -1));
 }
 
 #[test]
