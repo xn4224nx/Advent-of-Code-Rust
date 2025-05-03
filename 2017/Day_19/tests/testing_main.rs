@@ -177,7 +177,7 @@ fn test_step_exp12() {
 #[test]
 fn test_path_letters_exp01() {
     assert_eq!(
-        Network::new("./data/example_01.txt").find_path_word(),
-        String::from("ABCDEF")
+        Network::new("./data/example_01.txt").find_path(),
+        (String::from("ABCDEF"), 38)
     );
 }

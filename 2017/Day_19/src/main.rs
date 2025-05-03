@@ -40,6 +40,32 @@
  *          way. What letters will it see (in the order it would see them) if it
  *          follows the path? (The routing diagram is very wide; make sure you
  *          view it without line wrapping.)
+ *
+ * The packet is curious how many steps it needs to go.
+ *
+ * For example, using the same routing diagram from the example above...
+ *
+ *     |
+ *     |  +--+
+ *     A  |  C
+ * F---|--|-E---+
+ *     |  |  |  D
+ *     +B-+  +--+
+ *
+ * ...the packet would go:
+ *
+ *      -   6 steps down (including the first line at the top of the diagram).
+ *      -   3 steps right.
+ *      -   4 steps up.
+ *      -   3 steps right.
+ *      -   4 steps down.
+ *      -   3 steps right.
+ *      -   2 steps up.
+ *      -   13 steps left (including the F it stops on).
+ *
+ * This would result in a total of 38 steps.
+ *
+ * PART 2:  How many steps does the packet need to go?
  */
 
 use num::complex::Complex;
@@ -124,9 +150,11 @@ impl Network {
         };
     }
 
-    /// Follow the path through the network and recover the letters in order
-    pub fn find_path_word(&mut self) -> String {
+    /// Follow the path through the network and recover the letters in order and
+    /// the total path length.
+    pub fn find_path(&mut self) -> (String, usize) {
         let mut seen_letters = Vec::new();
+        let mut step_cnt = 0;
 
         while self.direction != Complex::new(0, 0) {
             let curr_loc = self.path.last().unwrap();
@@ -137,14 +165,13 @@ impl Network {
                 seen_letters.push(*curr_sqr);
             }
             self.step();
+            step_cnt += 1;
         }
-        return seen_letters.iter().collect();
+        return (seen_letters.iter().collect(), step_cnt);
     }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        Network::new("./data/input.txt").find_path_word()
-    );
+    let (path_word, path_len) = Network::new("./data/input.txt").find_path();
+    println!("Part 1 = {}\nPart 2 = {}\n", path_word, path_len);
 }
