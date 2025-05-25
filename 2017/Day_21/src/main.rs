@@ -109,8 +109,10 @@
  */
 
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Pixels {
     pub square: Vec<Vec<u8>>,
 }
@@ -122,36 +124,281 @@ pub struct FractalArt {
 
 impl Pixels {
     /// Rotate the square pixels to the right around the centre
-    pub fn rotate_right(&mut self, k: usize) {}
+    pub fn rotate_right(&mut self, k: usize) {
+        for _ in 0..k % 4 {
+            /* Transpose the square */
+            for x_idx in 0..self.square.len() {
+                for y_idx in x_idx..self.square.len() {
+                    let tmp = self.square[y_idx][x_idx];
+                    self.square[y_idx][x_idx] = self.square[x_idx][y_idx];
+                    self.square[x_idx][y_idx] = tmp;
+                }
+            }
 
-    /// Swap the values in the square along the horizontal axis
-    pub fn flip_vertical(&mut self) {}
+            /* Reverse each row */
+            for rw_idx in 0..self.square.len() {
+                self.square[rw_idx].reverse();
+            }
+        }
+    }
 
-    /// Swap the values in the square along the vertical axis
-    pub fn flip_horizontal(&mut self) {}
+    /// Swap the values in the square across the horizontal axis
+    pub fn flip_vertical(&mut self) {
+        /* Iterate over the top and bottom rows that will be mirrored. */
+        for row_idx in 0..self.square.len() / 2 {
+            let tp_row_idx = row_idx;
+            let bt_row_idx = self.square.len() - 1 - row_idx;
+
+            /* Swap the rows, column by column. */
+            for col_idx in 0..self.square.len() {
+                let tmp = self.square[tp_row_idx][col_idx];
+                self.square[tp_row_idx][col_idx] = self.square[bt_row_idx][col_idx];
+                self.square[bt_row_idx][col_idx] = tmp;
+            }
+        }
+    }
+
+    /// Swap the values in the square across the vertical axis
+    pub fn flip_horizontal(&mut self) {
+        for rw_idx in 0..self.square.len() {
+            self.square[rw_idx].reverse();
+        }
+    }
 }
 
 impl FractalArt {
     pub fn new(transforms_file: &str) -> Self {
-        FractalArt {
-            transformations: HashMap::new(),
-            state: Pixels { square: Vec::new() },
+        let mut buffer = String::new();
+        let mut transformations = HashMap::new();
+
+        /* Open the transformation file. */
+        let file = File::open(transforms_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let mut tmp = Vec::new();
+            let mut init_state = Vec::new();
+            let mut final_state = Vec::new();
+
+            /* Seperate the inital and final states in this transformation. */
+            let (init_r, final_r) = buffer.trim().split_once(" => ").unwrap();
+
+            /* Parse the inital state into arrays. */
+            for s_chr in init_r.chars() {
+                match s_chr {
+                    '.' => tmp.push(0),
+                    '#' => tmp.push(1),
+                    '/' => {
+                        init_state.push(tmp.clone());
+                        tmp.clear();
+                    }
+                    _ => panic!("Unknown char: '{}'", s_chr),
+                }
+            }
+            init_state.push(tmp.clone());
+            tmp.clear();
+
+            /* Parse the final state into arrays. */
+            for f_chr in final_r.chars() {
+                match f_chr {
+                    '.' => tmp.push(0),
+                    '#' => tmp.push(1),
+                    '/' => {
+                        final_state.push(tmp.clone());
+                        tmp.clear();
+                    }
+                    _ => panic!("Unknown char: '{}'", f_chr),
+                }
+            }
+            final_state.push(tmp.clone());
+            tmp.clear();
+
+            /* Keep a record of all possible inital states and start with unmodified. */
+            let mut all_init = vec![Pixels {
+                square: init_state.clone(),
+            }];
+
+            /* Rotate right once */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(1);
+            all_init.push(tmp_scre);
+
+            /* Rotate right twice */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(2);
+            all_init.push(tmp_scre);
+
+            /* Rotate right three times */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(3);
+            all_init.push(tmp_scre);
+
+            /* Rotate right once and flip vertically */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(1);
+            tmp_scre.flip_vertical();
+            all_init.push(tmp_scre);
+
+            /* Rotate right twice and flip vertically */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(2);
+            tmp_scre.flip_vertical();
+            all_init.push(tmp_scre);
+
+            /* Rotate right three times and flip vertically */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(3);
+            tmp_scre.flip_vertical();
+            all_init.push(tmp_scre);
+
+            /* Rotate right once and flip horizontally */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(1);
+            tmp_scre.flip_horizontal();
+            all_init.push(tmp_scre);
+
+            /* Rotate right twice and flip horizontally */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(2);
+            tmp_scre.flip_horizontal();
+            all_init.push(tmp_scre);
+
+            /* Rotate right three times and flip horizontally */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.rotate_right(3);
+            tmp_scre.flip_horizontal();
+            all_init.push(tmp_scre);
+
+            /* Flip horizontally */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.flip_horizontal();
+            all_init.push(tmp_scre);
+
+            /* Flip vertically */
+            let mut tmp_scre = Pixels {
+                square: init_state.clone(),
+            };
+            tmp_scre.flip_vertical();
+            all_init.push(tmp_scre);
+
+            /* Add in all the possible transformations */
+            for trans in all_init.drain(..) {
+                transformations.insert(
+                    trans,
+                    Pixels {
+                        square: final_state.clone(),
+                    },
+                );
+            }
+            buffer.clear();
         }
+
+        return FractalArt {
+            transformations,
+            state: Pixels {
+                square: vec![vec![0, 1, 0], vec![0, 0, 1], vec![1, 1, 1]],
+            },
+        };
     }
 
     /// How many pixels are on in the artwork
     pub fn on_pixels(&self) -> usize {
-        0
+        let mut on_pixel_cnt: usize = 0;
+
+        for row_idx in 0..self.state.square.len() {
+            for col_idx in 0..self.state.square.len() {
+                on_pixel_cnt += self.state.square[row_idx][col_idx] as usize;
+            }
+        }
+        return on_pixel_cnt;
     }
 
     /// Split the artwork into 2x2 or 3x3 chunks and create a new iteration of
     /// the artwork by substituting in different transformations
-    pub fn transform(&mut self) {}
+    pub fn transform(&mut self) {
+        /* Calculate the chunk size, n. */
+        let n = if self.state.square.len() % 2 == 0 {
+            2
+        } else if self.state.square.len() % 3 == 0 {
+            3
+        } else {
+            panic!(
+                "Square of size {} cannot be processed!",
+                self.state.square.len()
+            );
+        };
+        let new_side_len = (n + 1) * self.state.square.len() / n;
+
+        /* Preallocate the new pixels. */
+        let mut new_pixels: Vec<Vec<u8>> = vec![vec![0; new_side_len]; new_side_len];
+
+        /* Iterate over every chunk and find its transformation. */
+        for x in 0..self.state.square.len() / n {
+            for y in 0..self.state.square.len() / n {
+                let mut old_chunk = Pixels {
+                    square: vec![vec![0; n]; n],
+                };
+
+                /* Fill the old chunk. */
+                for c_x in 0..n {
+                    for c_y in 0..n {
+                        old_chunk.square[c_x][c_y] = self.state.square[x * n + c_x][y * n + c_y];
+                    }
+                }
+
+                /* Lookup what the chuck transforms into. */
+                let new_chunk = self
+                    .transformations
+                    .get(&old_chunk)
+                    .expect(&format!("Chunk {:?} could not be found!", old_chunk));
+
+                /* Set the values of the new pixels based on this new chunk. */
+                for c_x in 0..new_chunk.square.len() {
+                    for c_y in 0..new_chunk.square.len() {
+                        let chx = x * (n + 1) + c_x;
+                        let chy = y * (n + 1) + c_y;
+                        new_pixels[chx][chy] = new_chunk.square[c_x][c_y];
+                    }
+                }
+            }
+        }
+        self.state.square = new_pixels;
+    }
 
     /// Count the pixels are on after a certain number of transformations
     pub fn final_on_pixels(&mut self, num_transforms: usize) -> usize {
-        0
+        for _ in 0..num_transforms {
+            self.transform();
+        }
+        return self.on_pixels();
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}\nPart 2 = {}\n",
+        FractalArt::new("./data/input.txt").final_on_pixels(5),
+        FractalArt::new("./data/input.txt").final_on_pixels(18)
+    );
+}
