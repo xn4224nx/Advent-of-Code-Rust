@@ -128,6 +128,8 @@
 
 use num::complex::Complex;
 use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct Infection {
     pub carr_loc: (i32, i32),
@@ -137,19 +139,70 @@ pub struct Infection {
 
 impl Infection {
     pub fn new(initial_state: &str) -> Self {
-        Infection {
-            carr_loc: (0, 0),
-            carr_dir: Complex::new(0, 0),
-            infected_nodes: HashSet::new(),
+        let mut buffer = String::new();
+        let mut infected_nodes = HashSet::new();
+
+        /* Open the File. */
+        let file = File::open(initial_state).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        let mut row_idx = 0;
+        let mut col_idx = 0;
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            col_idx = 0;
+
+            /* Register only the infected nodes. */
+            for comp_char in buffer.trim().chars() {
+                if comp_char == '#' {
+                    infected_nodes.insert((col_idx, row_idx));
+                }
+                col_idx += 1;
+            }
+            buffer.clear();
+            row_idx += 1;
         }
+
+        return Infection {
+            carr_loc: (col_idx / 2, row_idx / 2),
+            carr_dir: Complex::new(0, 1),
+            infected_nodes,
+        };
     }
 
     /// Simulate the carrier moving once
-    pub fn burst(&mut self) {}
+    pub fn burst(&mut self) {
+        /* Currently on an infected node. */
+        if self.infected_nodes.contains(&self.carr_loc) {
+            self.carr_dir *= Complex::new(0, -1);
+            self.infected_nodes.remove(&self.carr_loc);
+
+        /* Currently on a clean node. */
+        } else {
+            self.carr_dir *= Complex::new(0, 1);
+            self.infected_nodes.insert(self.carr_loc);
+        }
+
+        /* Move the carrier one space in direction it is pointing. */
+        self.carr_loc = (
+            self.carr_loc.0 + self.carr_dir.re,
+            self.carr_loc.1 - self.carr_dir.im,
+        );
+    }
 
     /// Count the number of burst that cause a node to become infected.
     pub fn num_infected_nodes(&mut self, num_bursts: usize) -> usize {
-        0
+        let mut infected_cnt = 0;
+
+        for _ in 0..num_bursts {
+            let old_infected_cnt = self.infected_nodes.len();
+            self.burst();
+
+            if self.infected_nodes.len() > old_infected_cnt {
+                infected_cnt += 1;
+            }
+        }
+        return infected_cnt;
     }
 }
 

@@ -8,15 +8,15 @@ use std::collections::HashSet;
 
 #[test]
 fn new_infection_exp01() {
-    let test = Infection::new("./data/input.txt");
+    let test = Infection::new("./data/example_01.txt");
     assert_eq!(test.carr_loc, (1, 1));
     assert_eq!(test.carr_dir, Complex::new(0, 1));
     assert_eq!(test.infected_nodes, HashSet::from([(2, 0), (0, 1),]));
 }
 
 #[test]
-fn test_burst_exp01() {
-    let mut test = Infection::new("./data/input.txt");
+fn burst_exp01() {
+    let mut test = Infection::new("./data/example_01.txt");
     test.burst();
     assert_eq!(test.carr_loc, (0, 1));
     assert_eq!(test.carr_dir, Complex::new(-1, 0));
@@ -27,8 +27,8 @@ fn test_burst_exp01() {
 }
 
 #[test]
-fn test_burst_exp02() {
-    let mut test = Infection::new("./data/input.txt");
+fn burst_exp02() {
+    let mut test = Infection::new("./data/example_01.txt");
     test.carr_loc = (0, 1);
     test.carr_dir = Complex::new(-1, 0);
     test.infected_nodes = HashSet::from([(2, 0), (0, 1), (1, 1)]);
@@ -39,8 +39,8 @@ fn test_burst_exp02() {
 }
 
 #[test]
-fn test_burst_exp03() {
-    let mut test = Infection::new("./data/input.txt");
+fn burst_exp03() {
+    let mut test = Infection::new("./data/example_01.txt");
     for _ in 0..6 {
         test.burst()
     }
@@ -54,8 +54,8 @@ fn test_burst_exp03() {
 }
 
 #[test]
-fn test_burst_exp04() {
-    let mut test = Infection::new("./data/input.txt");
+fn burst_exp04() {
+    let mut test = Infection::new("./data/example_01.txt");
     for _ in 0..7 {
         test.burst()
     }
@@ -69,8 +69,8 @@ fn test_burst_exp04() {
 }
 
 #[test]
-fn test_burst_exp05() {
-    let mut test = Infection::new("./data/input.txt");
+fn burst_exp05() {
+    let mut test = Infection::new("./data/example_01.txt");
     for _ in 0..70 {
         test.burst()
     }
@@ -95,5 +95,29 @@ fn test_burst_exp05() {
             (5, 0),
             (0, -1),
         ])
+    );
+}
+
+#[test]
+fn num_burst_infected_exp01() {
+    assert_eq!(
+        Infection::new("./data/example_01.txt").num_infected_nodes(7),
+        5
+    );
+}
+
+#[test]
+fn num_burst_infected_exp02() {
+    assert_eq!(
+        Infection::new("./data/example_01.txt").num_infected_nodes(70),
+        41
+    );
+}
+
+#[test]
+fn num_burst_infected_exp03() {
+    assert_eq!(
+        Infection::new("./data/example_01.txt").num_infected_nodes(10000),
+        5587
     );
 }
