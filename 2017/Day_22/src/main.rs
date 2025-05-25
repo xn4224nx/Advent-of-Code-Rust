@@ -124,6 +124,47 @@
  * PART 1:  Given your actual map, after 10000 bursts of activity, how many
  *          bursts cause a node to become infected? (Do not count nodes that
  *          begin infected.)
+ *
+ * As you go to remove the virus from the infected nodes, it evolves to resist
+ * your attempt.
+ *
+ * Now, before it infects a clean node, it will weaken it to disable your
+ * defenses. If it encounters an infected node, it will instead flag the node to
+ * be cleaned in the future. So:
+ *
+ *      -   Clean nodes become weakened.
+ *      -   Weakened nodes become infected.
+ *      -   Infected nodes become flagged.
+ *      -   Flagged nodes become clean.
+ *
+ * Every node is always in exactly one of the above states. The virus carrier
+ * still functions in a similar way, but now uses the following logic during its
+ * bursts of action:
+ *
+ *      -   Decide which way to turn based on the current node:
+ *
+ *              -   If it is clean, it turns left.
+ *
+ *              -   If it is weakened, it does not turn, and will continue moving
+ *                  in the same direction.
+ *
+ *              -   If it is infected, it turns right.
+ *
+ *              -   If it is flagged, it reverses direction, and will go back the
+ *                  way it came.
+ *
+ *      -   Modify the state of the current node, as described above.
+ *
+ *      -   The virus carrier moves forward one node in the direction it is
+ *          facing.
+ *
+ * Of the first 100 bursts, 26 will result in infection. Unfortunately, another
+ * feature of this evolved virus is speed; of the first 10000000 bursts, 2511944
+ * will result in infection.
+ *
+ * PART 2:  Given your actual map, after 10000000 bursts of activity, how many
+ *          bursts cause a node to become infected? (Do not count nodes that
+ *          begin infected.)
  */
 
 use num::complex::Complex;
@@ -135,10 +176,13 @@ pub struct Infection {
     pub carr_loc: (i32, i32),
     pub carr_dir: Complex<i32>,
     pub infected_nodes: HashSet<(i32, i32)>,
+    pub weak_nodes: HashSet<(i32, i32)>,
+    pub flag_nodes: HashSet<(i32, i32)>,
+    pub multi_stage: bool,
 }
 
 impl Infection {
-    pub fn new(initial_state: &str) -> Self {
+    pub fn new(initial_state: &str, multi_stage: bool) -> Self {
         let mut buffer = String::new();
         let mut infected_nodes = HashSet::new();
 
@@ -167,20 +211,47 @@ impl Infection {
             carr_loc: (col_idx / 2, row_idx / 2),
             carr_dir: Complex::new(0, 1),
             infected_nodes,
+            weak_nodes: HashSet::new(),
+            flag_nodes: HashSet::new(),
+            multi_stage,
         };
     }
 
     /// Simulate the carrier moving once
     pub fn burst(&mut self) {
-        /* Currently on an infected node. */
-        if self.infected_nodes.contains(&self.carr_loc) {
-            self.carr_dir *= Complex::new(0, -1);
-            self.infected_nodes.remove(&self.carr_loc);
+        if self.multi_stage {
+            /* Weakened State */
+            if self.weak_nodes.contains(&self.carr_loc) {
+                self.infected_nodes.insert(self.carr_loc);
+                self.weak_nodes.remove(&self.carr_loc);
 
-        /* Currently on a clean node. */
+            /* Infected State */
+            } else if self.infected_nodes.contains(&self.carr_loc) {
+                self.carr_dir *= Complex::new(0, -1);
+                self.flag_nodes.insert(self.carr_loc);
+                self.infected_nodes.remove(&self.carr_loc);
+
+            /* Flagged State */
+            } else if self.flag_nodes.contains(&self.carr_loc) {
+                self.carr_dir *= Complex::new(-1, 0);
+                self.flag_nodes.remove(&self.carr_loc);
+
+            /* Current node is clean */
+            } else {
+                self.carr_dir *= Complex::new(0, 1);
+                self.weak_nodes.insert(self.carr_loc);
+            }
         } else {
-            self.carr_dir *= Complex::new(0, 1);
-            self.infected_nodes.insert(self.carr_loc);
+            /* Currently on an infected node. */
+            if self.infected_nodes.contains(&self.carr_loc) {
+                self.carr_dir *= Complex::new(0, -1);
+                self.infected_nodes.remove(&self.carr_loc);
+
+            /* Currently on a clean node. */
+            } else {
+                self.carr_dir *= Complex::new(0, 1);
+                self.infected_nodes.insert(self.carr_loc);
+            }
         }
 
         /* Move the carrier one space in direction it is pointing. */
@@ -208,7 +279,8 @@ impl Infection {
 
 fn main() {
     println!(
-        "Part 1 = {}",
-        Infection::new("./data/input.txt").num_infected_nodes(10000)
+        "Part 1 = {}\nPart 2 = {}\n",
+        Infection::new("./data/input.txt", false).num_infected_nodes(10000),
+        Infection::new("./data/input.txt", true).num_infected_nodes(10000000),
     );
 }
