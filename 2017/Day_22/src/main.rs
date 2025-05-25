@@ -206,4 +206,9 @@ impl Infection {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Infection::new("./data/input.txt").num_infected_nodes(10000)
+    );
+}
