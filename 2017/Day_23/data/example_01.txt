@@ -1,0 +1,7 @@
+set a 1
+sub a 2
+mul a a
+set a 0
+jgz a -1
+set a 1
+jgz a -2
