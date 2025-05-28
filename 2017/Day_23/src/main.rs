@@ -30,8 +30,26 @@
  *
  * PART 1:  If you run the program (your puzzle input), how many times is the mul
  *          instruction invoked?
+ *
+ * Now, it's time to fix the problem.
+ *
+ * The debug mode switch is wired directly to register a. You flip the switch,
+ * which makes register a now start at 1 when the program is executed.
+ *
+ * Immediately, the coprocessor begins to overheat. Whoever wrote this program
+ * obviously didn't choose a very efficient implementation. You'll need to
+ * optimize the program if it has any hope of completing before Santa needs that
+ * printer working.
+ *
+ * The coprocessor's ultimate goal is to determine the final value left in
+ * register h once the program completes. Technically, if it had that... it
+ * wouldn't even need to run the program.
+ *
+ * PART 2:  After setting register a to 1, if the program were to run to
+ *          completion, what value would be left in register h?
  */
 
+use slow_primes::is_prime_miller_rabin;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -177,8 +195,46 @@ impl CPU {
         }
         return num_muls;
     }
+
+    /// Optimised version of part 2. Find the number of non-primes between two
+    /// specified values.
+    pub fn final_reg_value(&mut self) -> i32 {
+        let mut counter = 0;
+        let mut values = Vec::new();
+
+        /* Extract values from the instructions. */
+        if let Command::SetVal(_, val) = self.instructions[0] {
+            values.push(val);
+        }
+        if let Command::MulVal(_, val) = self.instructions[4] {
+            values.push(val);
+        }
+        if let Command::SubVal(_, val) = self.instructions[5] {
+            values.push(val);
+        }
+        if let Command::SubVal(_, val) = self.instructions[7] {
+            values.push(val);
+        }
+        if let Command::SubVal(_, val) = self.instructions[self.instructions.len() - 2] {
+            values.push(val);
+        }
+
+        let first_val = values[0] * values[1] - values[2];
+        let last_val = first_val - values[3];
+
+        for value in (first_val..last_val).step_by(-values[4] as usize) {
+            if !is_prime_miller_rabin(value as u64) {
+                counter += 1;
+            }
+        }
+        return counter;
+    }
 }
 
 fn main() {
-    println!("Part 1 = {}", CPU::new("./data/input.txt").run_all());
+    println!(
+        "Part 1 = {}\nPart 2 = {}\n",
+        CPU::new("./data/input.txt").run_all(),
+        CPU::new("./data/input.txt").final_reg_value()
+    );
 }
