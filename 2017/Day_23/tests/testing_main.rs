@@ -44,7 +44,7 @@ fn new_enum_exp04() {
 
 #[test]
 fn new_enum_exp05() {
-    assert_eq!(Command::new("jgz a -1"), Command::JnzVal(0, -1));
+    assert_eq!(Command::new("jnz a -1"), Command::JnzVal(0, -1));
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn new_enum_exp06() {
 
 #[test]
 fn new_enum_exp07() {
-    assert_eq!(Command::new("jgz a -2"), Command::JnzVal(0, -2));
+    assert_eq!(Command::new("jnz a -2"), Command::JnzVal(0, -2));
 }
 
 #[test]
@@ -127,9 +127,9 @@ fn execute_instruc_exp07() {
 fn execute_instruc_exp08() {
     let mut test = CPU::new("./data/example_01.txt");
     test.register = vec![1, 2, -3, 0];
-    test.instructions = vec![Command::MulVal(1, 2)];
+    test.instructions = vec![Command::MulReg(1, 2)];
     test.execute_instruc();
-    assert_eq!(test.register, vec![1,-6,-3,0]);
+    assert_eq!(test.register, vec![1, -6, -3, 0]);
     assert_eq!(test.instruc_idx, 1);
 }
 
@@ -137,7 +137,7 @@ fn execute_instruc_exp08() {
 fn execute_instruc_exp09() {
     let mut test = CPU::new("./data/example_01.txt");
     test.register = vec![1, 2, -3, 0];
-    test.instructions = vec![Command::JnzVal(3, 2)];
+    test.instructions = vec![Command::JnzReg(3, 2)];
     test.execute_instruc();
     assert_eq!(test.register, vec![1, 2, -3, 0]);
     assert_eq!(test.instruc_idx, 1);
@@ -147,7 +147,7 @@ fn execute_instruc_exp09() {
 fn execute_instruc_exp10() {
     let mut test = CPU::new("./data/example_01.txt");
     test.register = vec![1, 2, -3, 0];
-    test.instructions = vec![Command::JnzVal(1, 1)];
+    test.instructions = vec![Command::JnzReg(1, 1)];
     test.execute_instruc();
     assert_eq!(test.register, vec![1, 2, -3, 0]);
     assert_eq!(test.instruc_idx, 2);
