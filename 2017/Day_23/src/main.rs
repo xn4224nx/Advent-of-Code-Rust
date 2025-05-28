@@ -45,6 +45,7 @@ pub enum Command {
     SubReg(usize, usize),
     MulReg(usize, usize),
     JnzReg(usize, usize),
+    JnzValVal(i32, i32),
 }
 
 pub struct CPU {
@@ -98,10 +99,12 @@ impl Command {
                 }
             }
             "jnz" => {
-                if switch[1] {
+                if switch[0] && switch[1] {
                     Command::JnzReg(registers[0], registers[1])
-                } else {
+                } else if switch[0] && !switch[1] {
                     Command::JnzVal(registers[0], values[1])
+                } else {
+                    Command::JnzValVal(values[0], values[1])
                 }
             }
             _ => panic!("'{}' is not a recognised command!", parts[0]),
@@ -150,6 +153,11 @@ impl CPU {
                     self.instruc_idx += self.register[reg_b] - 1;
                 }
             }
+            Command::JnzValVal(val_a, val_b) => {
+                if val_a != 0 {
+                    self.instruc_idx += val_b - 1;
+                }
+            }
         };
         self.instruc_idx += 1;
     }
@@ -171,4 +179,6 @@ impl CPU {
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", CPU::new("./data/input.txt").run_all());
+}
