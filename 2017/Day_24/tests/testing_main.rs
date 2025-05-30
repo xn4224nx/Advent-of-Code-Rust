@@ -33,7 +33,7 @@ fn bridge_strength_exp01() {
 #[test]
 fn bridge_strength_exp02() {
     assert_eq!(
-        BridgeBuilder::new("./data/example_01.txt").bridge_strength(&vec![3]),
+        BridgeBuilder::new("./data/example_01.txt").bridge_strength(&vec![0]),
         2
     );
 }
@@ -41,8 +41,32 @@ fn bridge_strength_exp02() {
 #[test]
 fn bridge_strength_exp03() {
     assert_eq!(
-        BridgeBuilder::new("./data/example_01.txt").bridge_strength(&vec![3, 4]),
+        BridgeBuilder::new("./data/example_01.txt").bridge_strength(&vec![0, 1]),
         6
+    );
+}
+
+#[test]
+fn starting_components_exp01() {
+    assert_eq!(
+        BridgeBuilder::new("./data/example_01.txt").starting_components(),
+        vec![0, 5]
+    );
+}
+
+#[test]
+fn extract_values_exp01() {
+    assert_eq!(
+        BridgeBuilder::new("./data/example_01.txt").extract_values(&vec![5, 6, 7]),
+        vec![0, 1, 1, 10, 10, 9]
+    );
+}
+
+#[test]
+fn extract_values_exp02() {
+    assert_eq!(
+        BridgeBuilder::new("./data/example_01.txt").extract_values(&vec![0, 2, 4]),
+        vec![0, 2, 2, 3, 3, 5]
     );
 }
 
