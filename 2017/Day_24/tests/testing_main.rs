@@ -74,6 +74,6 @@ fn extract_values_exp02() {
 fn strongest_bridge_exp_01() {
     assert_eq!(
         BridgeBuilder::new("./data/example_01.txt").strongest_bridge(),
-        31
+        (31, 19)
     );
 }

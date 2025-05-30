@@ -58,6 +58,21 @@
  *
  * PART 1:  What is the strength of the strongest bridge you can make with the
  *          components you have available?
+ *
+ * The bridge you've built isn't long enough; you can't jump the rest of the
+ * way.
+ *
+ * In the example above, there are two longest bridges:
+ *
+ *      0/2--2/2--2/3--3/4
+ *      0/2--2/2--2/3--3/5
+ *
+ * Of them, the one which uses the 3/5 component is stronger; its strength is
+ * 0+2 + 2+2 + 2+3 + 3+5 = 19.
+ *
+ * PART 2:  What is the strength of the longest bridge you can make? If you can
+ *          make multiple bridges of the longest length, pick the strongest
+ *          one.
  */
 
 use std::cmp::{max, min};
@@ -132,8 +147,8 @@ impl BridgeBuilder {
     }
 
     /// What combination of components makes the strongest bridge
-    pub fn strongest_bridge(&self) -> u32 {
-        let mut strg_value = 0;
+    pub fn strongest_bridge(&self) -> (u32, u32) {
+        let (mut longest_bridge, mut long_strng, mut strg_value) = (0, 0, 0);
         let mut curr_bridges: HashMap<Vec<usize>, Vec<u32>> = HashMap::new();
 
         /* The bridge can only start with particular values. */
@@ -158,6 +173,14 @@ impl BridgeBuilder {
                             strg_value = bri_strg;
                         }
 
+                        /* Check if this bridge is the longest */
+                        if new_bri.len() > longest_bridge {
+                            longest_bridge = new_bri.len();
+                            long_strng = bri_strg;
+                        } else if new_bri.len() == longest_bridge && bri_strg > long_strng {
+                            long_strng = bri_strg;
+                        }
+
                         /* Save the new bridge for the next iteration. */
                         new_bridges.insert(new_bri.clone(), self.extract_values(&new_bri));
                     }
@@ -165,13 +188,11 @@ impl BridgeBuilder {
             }
             curr_bridges = new_bridges;
         }
-        return strg_value;
+        return (strg_value, long_strng);
     }
 }
 
 fn main() {
-    println!(
-        "Part 1 = {}",
-        BridgeBuilder::new("./data/input.txt").strongest_bridge()
-    );
+    let (overall_max, long_max) = BridgeBuilder::new("./data/input.txt").strongest_bridge();
+    println!("Part 1 = {}\nPart 2 = {}\n", overall_max, long_max);
 }
