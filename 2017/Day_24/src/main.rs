@@ -169,4 +169,9 @@ impl BridgeBuilder {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        BridgeBuilder::new("./data/input.txt").strongest_bridge()
+    );
+}
