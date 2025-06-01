@@ -94,6 +94,7 @@
  */
 
 use std::collections::{HashMap, HashSet};
+use std::fs::read_to_string;
 
 #[derive(Debug, PartialEq)]
 pub struct BluePrint {
@@ -112,19 +113,107 @@ pub struct TuringMachine {
 
 impl TuringMachine {
     pub fn new(blueprint_file: &str) -> Self {
-        TuringMachine {
-            tape: HashSet::new(),
-            state: '0',
-            cursor: 1,
-            diag_steps: 0,
-            blueprints: HashMap::new(),
+        let (state_size, state_prefix) = (10, 3);
+        let binding = read_to_string(blueprint_file).unwrap();
+        let data: Vec<&str> = binding.lines().collect();
+        let num_states = 1 + (data.len() - state_prefix) / state_size;
+        let mut blueprints = HashMap::with_capacity(num_states);
+
+        /* Read the initial state from the second to last char */
+        let state = data[0].chars().nth_back(1).unwrap();
+
+        /* Read the diagnostic checksum. */
+        let diag_steps = data[1]
+            .split_whitespace()
+            .nth_back(1)
+            .unwrap()
+            .parse::<usize>()
+            .unwrap();
+
+        /* Read the different state commands. */
+        for state_idx in 0..num_states {
+            let idx = (state_idx * state_size) + state_prefix;
+            let mut inter_blue = Vec::new();
+
+            /* Read the state char. */
+            let in_state = data[idx].chars().nth_back(1).unwrap();
+
+            /* Read the first state */
+            inter_blue.push(BluePrint {
+                write_val: data[idx + 2]
+                    .chars()
+                    .nth_back(1)
+                    .unwrap()
+                    .to_digit(10 as u32)
+                    .unwrap() as u8,
+                move_dir: if data[idx + 3].contains("left") {
+                    -1
+                } else if data[idx + 3].contains("right") {
+                    1
+                } else {
+                    panic!("Invalid direction {}", data[idx + 3])
+                },
+                next_state: data[idx + 4].chars().nth_back(1).unwrap(),
+            });
+
+            /* Read the second state. */
+            inter_blue.push(BluePrint {
+                write_val: data[idx + 6]
+                    .chars()
+                    .nth_back(1)
+                    .unwrap()
+                    .to_digit(10 as u32)
+                    .unwrap() as u8,
+                move_dir: if data[idx + 7].contains("left") {
+                    -1
+                } else if data[idx + 7].contains("right") {
+                    1
+                } else {
+                    panic!("Invalid direction {}", data[idx + 7])
+                },
+                next_state: data[idx + 8].chars().nth_back(1).unwrap(),
+            });
+            blueprints.insert(in_state, inter_blue);
         }
+        return TuringMachine {
+            tape: HashSet::new(),
+            state,
+            cursor: 0,
+            diag_steps,
+            blueprints,
+        };
     }
 
-    pub fn advance(&mut self) {}
+    pub fn advance(&mut self) {
+        /* What value on the tape is the cursor pointing at. */
+        let curr_val = if self.tape.get(&self.cursor).is_some() {
+            1
+        } else {
+            0
+        };
+
+        /* Based on the current value and state decide what to do. */
+        let command = &self.blueprints.get(&self.state).unwrap()[curr_val];
+
+        /* Write the value to the tape */
+        if command.write_val == 1 {
+            self.tape.insert(self.cursor)
+        } else {
+            self.tape.remove(&self.cursor)
+        };
+
+        /* Move the cursor. */
+        self.cursor += command.move_dir as i32;
+
+        /* Change the state. */
+        self.state = command.next_state;
+    }
 
     pub fn diagnostics(&mut self) -> usize {
-        0
+        for _ in 0..self.diag_steps {
+            self.advance()
+        }
+        return self.tape.len();
     }
 }
 

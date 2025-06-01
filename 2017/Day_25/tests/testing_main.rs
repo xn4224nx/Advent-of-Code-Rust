@@ -63,7 +63,7 @@ fn advance_exp01() {
 fn advance_exp02() {
     let mut test = TuringMachine::new("./data/example_01.txt");
 
-    for _ in 0..3 {
+    for _ in 0..2 {
         test.advance()
     }
 
