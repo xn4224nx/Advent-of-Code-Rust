@@ -217,4 +217,9 @@ impl TuringMachine {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        TuringMachine::new("./data/input.txt").diagnostics()
+    )
+}
