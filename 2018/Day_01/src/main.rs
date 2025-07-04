@@ -48,8 +48,45 @@
  *
  * PART 1:  Starting with a frequency of zero, what is the resulting frequency
  *          after all of the changes in frequency have been applied?
+ *
+ * You notice that the device repeats the same frequency change list over and
+ * over. To calibrate the device, you need to find the first frequency it
+ * reaches twice.
+ *
+ * For example, using the same list of changes above, the device would loop as
+ * follows:
+ *
+ *      -   Current frequency  0, change of +1; resulting frequency  1.
+ *
+ *      -   Current frequency  1, change of -2; resulting frequency -1.
+ *
+ *      -   Current frequency -1, change of +3; resulting frequency  2.
+ *
+ *      -   Current frequency  2, change of +1; resulting frequency  3.
+ *
+ *      -   (At this point, the device continues from the start of the list.)
+ *
+ *      -   Current frequency  3, change of +1; resulting frequency  4.
+ *
+ *      -   Current frequency  4, change of -2; resulting frequency  2, which
+ *          has already been seen.
+ *
+ * In this example, the first frequency reached twice is 2. Note that your
+ * device might need to repeat its list of frequency changes many times before
+ * a duplicate frequency is found, and that duplicates might be found while in
+ * the middle of processing the list.
+ *
+ * Here are other examples:
+ *
+ *      +1, -1 first reaches 0 twice.
+ *      +3, +3, +4, -2, -4 first reaches 10 twice.
+ *      -6, +3, +8, +5, -6 first reaches 5 twice.
+ *      +7, +7, -2, -7, -4 first reaches 14 twice.
+ *
+ * PART 2:  What is the first frequency your device reaches twice?
  */
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -74,7 +111,23 @@ pub fn final_freq(freqs: &Vec<i32>) -> i32 {
     return freqs.iter().sum();
 }
 
+/// When changing the frequency what is the first frequency reached twice
+pub fn freq_encountered_twice(freqs: &Vec<i32>) -> i32 {
+    let mut seen_freqs = HashSet::new();
+    let mut f_idx = 0;
+    let mut curr_freq = 0;
+
+    /* Iterate over the frequencies until a repeat is found. */
+    while !seen_freqs.contains(&curr_freq) {
+        seen_freqs.insert(curr_freq);
+        curr_freq += freqs[f_idx];
+        f_idx = (f_idx + 1) % freqs.len();
+    }
+    return curr_freq;
+}
+
 fn main() {
     let in_freqs = read_frequencies("./data/input_0.txt");
     println!("Part 1 = {}", final_freq(&in_freqs));
+    println!("Part 2 = {}", freq_encountered_twice(&in_freqs));
 }

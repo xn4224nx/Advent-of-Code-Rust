@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod day_1;
-use day_1::{final_freq, read_frequencies};
+use day_1::{final_freq, freq_encountered_twice, read_frequencies};
 
 #[test]
 fn read_frequencies_exp0() {
@@ -71,4 +71,29 @@ fn final_freq_exp3() {
 #[test]
 fn final_freq_exp4() {
     assert_eq!(final_freq(&vec![-1, -2, -3]), -6);
+}
+
+#[test]
+fn freq_encountered_twice_exp1() {
+    assert_eq!(freq_encountered_twice(&vec![1, -2, 3, 1,]), 2);
+}
+
+#[test]
+fn freq_encountered_twice_exp2() {
+    assert_eq!(freq_encountered_twice(&vec![1, -1]), 0);
+}
+
+#[test]
+fn freq_encountered_twice_exp3() {
+    assert_eq!(freq_encountered_twice(&vec![3, 3, 4, -2, -4]), 10);
+}
+
+#[test]
+fn freq_encountered_twice_exp4() {
+    assert_eq!(freq_encountered_twice(&vec![-6, 3, 8, 5, -6]), 5);
+}
+
+#[test]
+fn freq_encountered_twice_exp5() {
+    assert_eq!(freq_encountered_twice(&vec![7, 7, -2, -7, -4]), 14);
 }
