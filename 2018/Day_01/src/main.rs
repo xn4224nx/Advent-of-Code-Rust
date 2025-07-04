@@ -50,13 +50,31 @@
  *          after all of the changes in frequency have been applied?
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub fn read_frequencies(freq_file: &str) -> Vec<i32> {
-    Vec::new()
+    let mut freqs = Vec::new();
+    let mut buffer = String::new();
+
+    /* Open the file */
+    let file = File::open(freq_file).unwrap();
+    let mut fp = BufReader::new(file);
+
+    /* Iterate over the file line by line. */
+    while fp.read_line(&mut buffer).unwrap() > 0 {
+        freqs.push(buffer.trim().parse::<i32>().unwrap());
+        buffer.clear();
+    }
+    return freqs;
 }
 
 /// If you start at zero what is the final state after all the changes
 pub fn final_freq(freqs: &Vec<i32>) -> i32 {
-    0
+    return freqs.iter().sum();
 }
 
-fn main() {}
+fn main() {
+    let in_freqs = read_frequencies("./data/input_0.txt");
+    println!("Part 1 = {}", final_freq(&in_freqs));
+}
