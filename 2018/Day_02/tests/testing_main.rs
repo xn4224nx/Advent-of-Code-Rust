@@ -84,3 +84,11 @@ fn box_check_exp6() {
 fn checksum_exp0() {
     assert_eq!(IMS::new("./data/example_0.txt").checksum(), 12);
 }
+
+#[test]
+fn key_box_contents_exp1() {
+    assert_eq!(
+        IMS::new("./data/example_1.txt").key_box_contents(),
+        String::from("fgij")
+    );
+}

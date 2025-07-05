@@ -50,6 +50,28 @@
  * Multiplying these together produces a checksum of 4 * 3 = 12.
  *
  * PART 1:  What is the checksum for your list of box IDs?
+ *
+ * Confident that your list of box IDs is complete, you're ready to find the
+ * boxes full of prototype fabric.
+ *
+ * The boxes will have IDs which differ by exactly one character at the same
+ * position in both strings. For example, given the following box IDs:
+ *
+ *      abcde
+ *      fghij
+ *      klmno
+ *      pqrst
+ *      fguij
+ *      axcye
+ *      wvxyz
+ *
+ * The IDs abcde and axcye are close, but they differ by two characters (the
+ * second and fourth). However, the IDs fghij and fguij differ by exactly one
+ * character, the third (h and u). Those must be the correct boxes.
+ *
+ * PART 2:  What letters are common between the two correct box IDs? (In the
+ *          example above, this is found by removing the differing character
+ *          from either ID, producing fgij.)
  */
 
 use std::collections::HashMap;
@@ -131,9 +153,42 @@ impl IMS {
         }
         return duplicates * triplicates;
     }
+
+    /// Find the box contents that are only one letter different from each other
+    pub fn key_box_contents(&self) -> String {
+        /* Compare each box to each other. */
+        for idx_0 in 0..self.boxes.len() {
+            'lower_bx: for idx_1 in 0..self.boxes.len() {
+                if idx_0 == idx_1 {
+                    continue;
+                }
+
+                /* Count the letter differences between the boxes */
+                let mut diff_cnt = 0;
+                for b_idx in 0..self.boxes[idx_0].len() {
+                    if self.boxes[idx_0][b_idx] != self.boxes[idx_1][b_idx] {
+                        diff_cnt += 1;
+
+                        /* The answer will only have a single letter diff */
+                        if diff_cnt > 1 {
+                            continue 'lower_bx;
+                        }
+                    }
+                }
+
+                /* At this point this is the answer. */
+                return (0..self.boxes[idx_0].len())
+                    .filter(|x| self.boxes[idx_0][*x] == self.boxes[idx_1][*x])
+                    .map(|x| self.boxes[idx_1][x])
+                    .collect();
+            }
+        }
+        panic!("No answer found!");
+    }
 }
 
 fn main() {
     let utility_closet = IMS::new("./data/input_0.txt");
     println!("Part 1 = {}", utility_closet.checksum());
+    println!("Part 2 = '{}'", utility_closet.key_box_contents());
 }
