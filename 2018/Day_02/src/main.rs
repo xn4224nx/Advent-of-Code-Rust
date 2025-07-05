@@ -133,4 +133,7 @@ impl IMS {
     }
 }
 
-fn main() {}
+fn main() {
+    let utility_closet = IMS::new("./data/input_0.txt");
+    println!("Part 1 = {}", utility_closet.checksum());
+}
