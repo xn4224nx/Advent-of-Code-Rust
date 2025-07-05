@@ -52,6 +52,10 @@
  * PART 1:  What is the checksum for your list of box IDs?
  */
 
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct IMS {
     pub boxes: Vec<Vec<char>>,
 }
@@ -66,18 +70,66 @@ pub enum Multiples {
 
 impl IMS {
     pub fn new(box_file: &str) -> Self {
-        IMS { boxes: Vec::new() }
+        let mut boxes = Vec::new();
+        let mut buffer = String::new();
+
+        /* Load the file */
+        let file = File::open(box_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            boxes.push(buffer.trim().chars().collect());
+            buffer.clear();
+        }
+        return IMS { boxes };
     }
 
     /// What kind of multiples are inside the box
     pub fn box_check(&self, box_idx: usize) -> Multiples {
-        Multiples::Nothing
+        let mut letter_cnt: HashMap<char, usize> = HashMap::new();
+
+        /* Count the occurances of each char in the box */
+        for letter in self.boxes[box_idx].iter() {
+            letter_cnt
+                .entry(*letter)
+                .and_modify(|x| *x += 1)
+                .or_insert(1);
+        }
+
+        let counts: Vec<usize> = letter_cnt.drain().map(|(_, y)| y).collect();
+        let triples = counts.contains(&3);
+        let doubles = counts.contains(&2);
+
+        return if triples && doubles {
+            Multiples::Both
+        } else if doubles {
+            Multiples::Duplicate
+        } else if triples {
+            Multiples::Triplicate
+        } else {
+            Multiples::Nothing
+        };
     }
 
     /// Count the number of boxes with duplicates & triplicates and return
     /// the product as a checksum.
     pub fn checksum(&self) -> usize {
-        0
+        let mut duplicates = 0;
+        let mut triplicates = 0;
+
+        for box_idx in 0..self.boxes.len() {
+            match self.box_check(box_idx) {
+                Multiples::Nothing => {}
+                Multiples::Duplicate => duplicates += 1,
+                Multiples::Triplicate => triplicates += 1,
+                Multiples::Both => {
+                    duplicates += 1;
+                    triplicates += 1;
+                }
+            }
+        }
+        return duplicates * triplicates;
     }
 }
 
