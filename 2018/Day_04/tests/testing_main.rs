@@ -37,3 +37,11 @@ fn find_sleepiest_guard_exp0() {
         240
     );
 }
+
+#[test]
+fn guard_most_reliable_asleep_exp0() {
+    assert_eq!(
+        SecuritySchedule::new("./data/example_0.txt").guard_most_reliable_asleep(),
+        4455
+    );
+}

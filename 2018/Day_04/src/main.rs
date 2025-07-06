@@ -81,6 +81,16 @@
  *
  * PART 1:  What is the ID of the guard you chose multiplied by the minute you
  *          chose? (In the above example, the answer would be 10 * 24 = 240.)
+ *
+ * Strategy 2: Of all guards, which guard is most frequently asleep on the same
+ * minute?
+ *
+ * In the example above, Guard #99 spent minute 45 asleep more than any other
+ * guard or minute - three times in total. (In all other cases, any guard spent
+ * any minute asleep at most twice.)
+ *
+ * PART 2:  What is the ID of the guard you chose multiplied by the minute you
+ *          chose? (In the above example, the answer would be 99 * 45 = 4455.)
  */
 
 use chrono::NaiveDateTime;
@@ -247,9 +257,38 @@ impl SecuritySchedule {
         };
         return sleepiest_min * sleepiest_guard;
     }
+
+    /// Which guard is most frequently asleep on the same minute?
+    pub fn guard_most_reliable_asleep(&self) -> usize {
+        let mut sleepiest_guard = 0;
+        let mut sleep_amount = 0;
+        let mut min_of_midnight = 0;
+
+        /* Find the guard that is asleep consistently. */
+        for (g_idx, g_sleep) in self.midnight_sleeps.iter() {
+            let mut curr_slp_min = 0;
+            let mut curr_slp_amt = 0;
+
+            /* Find the minute that this guard is asleep the most. */
+            for t_idx in 0..g_sleep.len() {
+                if curr_slp_amt < g_sleep[t_idx] {
+                    curr_slp_min = t_idx;
+                    curr_slp_amt = g_sleep[t_idx];
+                }
+            }
+
+            if curr_slp_amt > sleep_amount {
+                sleep_amount = curr_slp_amt;
+                sleepiest_guard = *g_idx;
+                min_of_midnight = curr_slp_min;
+            }
+        }
+        return min_of_midnight * sleepiest_guard;
+    }
 }
 
 fn main() {
     let lab_guards = SecuritySchedule::new("./data/input_0.txt");
     println!("Part 1 = {}", lab_guards.sleepiest_guard_id());
+    println!("Part 2 = {}", lab_guards.guard_most_reliable_asleep());
 }
