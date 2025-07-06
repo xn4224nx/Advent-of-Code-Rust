@@ -64,6 +64,16 @@
  * PART 1:  If the Elves all proceed with their own plans, none of them will
  *          have enough fabric. How many square inches of fabric are within two
  *          or more claims?
+ *
+ * Amidst the chaos, you notice that exactly one claim doesn't overlap by even
+ * a single square inch of fabric with any other claim. If you can somehow draw
+ * attention to it, maybe the Elves will be able to make Santa's suit after
+ * all!
+ *
+ * For example, in the claims above, only claim 3 is intact after all claims
+ * are made.
+ *
+ * PART 2:  What is the ID of the only claim that doesn't overlap?
  */
 
 use regex::Regex;
@@ -74,12 +84,14 @@ use std::io::{BufRead, BufReader};
 #[derive(Debug)]
 pub struct Fabric {
     pub claims: HashMap<(usize, usize), HashSet<usize>>,
+    pub claim_idxs: HashSet<usize>,
 }
 
 impl Fabric {
     pub fn new(claims_data: &str) -> Self {
         let re = Regex::new(r"#([0-9]+) @ ([0-9]+),([0-9]+): ([0-9]+)x([0-9]+)").unwrap();
         let mut claims = HashMap::new();
+        let mut claim_idxs = HashSet::new();
         let mut buffer = String::new();
 
         /* Open the file */
@@ -113,18 +125,38 @@ impl Fabric {
                         .or_insert(HashSet::from([cl_dat[0]]));
                 }
             }
+
+            /* Make a record of the claim indexs. */
+            claim_idxs.insert(cl_dat[0]);
+
             buffer.clear();
         }
-        return Fabric { claims };
+        return Fabric { claims, claim_idxs };
     }
 
     /// How many square inches of  fabric are overlapping from all the claims.
     pub fn overlapping_sqrs(&self) -> usize {
-        return self.claims.iter().filter(|x| x.1.len() > 1).count();
+        return self.claims.values().filter(|x| x.len() > 1).count();
+    }
+
+    /// Find the index of the claim the doesn't overlap with any other.
+    pub fn find_non_overlapping_claim(&self) -> usize {
+        let mut overlapping: HashSet<usize> = HashSet::new();
+
+        /* Make a record of each index that overlaps with another.  */
+        for clm_idxes in self.claims.values() {
+            if clm_idxes.len() > 1 {
+                overlapping.extend(clm_idxes);
+            }
+        }
+
+        /* Compare the overlaping indexs with all indexes. */
+        return *self.claim_idxs.difference(&overlapping).next().unwrap();
     }
 }
 
 fn main() {
     let santas_suit = Fabric::new("./data/input_0.txt");
     println!("Part 1 = {}", santas_suit.overlapping_sqrs());
+    println!("Part 2 = {}", santas_suit.find_non_overlapping_claim());
 }

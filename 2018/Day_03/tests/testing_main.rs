@@ -51,3 +51,11 @@ fn read_claims_exp0() {
 fn overlaping_sqrs_exp0() {
     assert_eq!(Fabric::new("./data/example_0.txt").overlapping_sqrs(), 4);
 }
+
+#[test]
+fn non_overlapping_claim_exp0() {
+    assert_eq!(
+        Fabric::new("./data/example_0.txt").find_non_overlapping_claim(),
+        3
+    );
+}
