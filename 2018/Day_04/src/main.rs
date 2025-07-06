@@ -249,4 +249,7 @@ impl SecuritySchedule {
     }
 }
 
-fn main() {}
+fn main() {
+    let lab_guards = SecuritySchedule::new("./data/input_0.txt");
+    println!("Part 1 = {}", lab_guards.sleepiest_guard_id());
+}
