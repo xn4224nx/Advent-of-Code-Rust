@@ -83,23 +83,169 @@
  *          chose? (In the above example, the answer would be 10 * 24 = 240.)
  */
 
+use chrono::NaiveDateTime;
+use chrono::prelude::*;
+use regex::Regex;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct SecuritySchedule {
-    pub guard_asleep: HashMap<usize, Vec<usize>>,
+    pub midnight_sleeps: HashMap<usize, Vec<usize>>,
+}
+
+#[derive(Eq, Ord, PartialEq, PartialOrd)]
+enum Event {
+    GuardWakes,
+    GuardSleeps,
+    GuardStarts(usize),
 }
 
 impl SecuritySchedule {
     pub fn new(sleep_record: &str) -> Self {
-        SecuritySchedule {
-            guard_asleep: HashMap::new(),
+        let mut events = Vec::new();
+        let mut buffer = String::new();
+        let mut midnight_sleeps = HashMap::new();
+        let re = Regex::new(r"\[(\d+\-\d+\-\d+ \d+:\d+)\] (.*)").unwrap();
+        let num_re = Regex::new(r"(\d+)").unwrap();
+
+        /* Open the file. */
+        let file = File::open(sleep_record).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line and read the events. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let Some(caps) = re.captures(&buffer) else {
+                println!("Line not parse: '{}'", buffer);
+                buffer.clear();
+                continue;
+            };
+
+            /* Parse the date and time of the event. */
+            let event_dt = NaiveDateTime::parse_from_str(&caps[1], "%Y-%m-%d %H:%M").unwrap();
+
+            /* Parse the nature of the event. */
+            let event_nature = if caps[2].contains("wakes") {
+                Event::GuardWakes
+            } else if caps[2].contains("falls") {
+                Event::GuardSleeps
+            } else {
+                let guard_id = num_re.captures(&caps[2]).unwrap()[1]
+                    .parse::<usize>()
+                    .unwrap();
+                midnight_sleeps.insert(guard_id, vec![0; 60]);
+                Event::GuardStarts(guard_id)
+            };
+
+            /* Save the event */
+            events.push((event_dt, event_nature));
+            buffer.clear();
         }
+
+        /* Sort the events by the datatime it happened. */
+        events.sort_by_key(|x| x.0);
+
+        /* Iterate over the events and record the muinutes a guard was asleep. */
+        let mut curr_guard = 0;
+        let mut active_guard = false;
+        let mut guard_asleep = false;
+
+        for eve_idx in 0..events.len() {
+            match events[eve_idx].1 {
+                Event::GuardWakes => {
+                    guard_asleep = false;
+
+                    /* Determine when the guard fell asleep. */
+                    let start_min = if events[eve_idx - 1].0.time().hour() != 0 {
+                        0
+                    } else {
+                        events[eve_idx - 1].0.time().minute()
+                    };
+
+                    /* Record the minutes they where asleep */
+                    if let Some(x) = midnight_sleeps.get_mut(&curr_guard) {
+                        for t_idx in start_min..events[eve_idx].0.time().minute() {
+                            x[t_idx as usize] += 1;
+                        }
+                    };
+                }
+                Event::GuardSleeps => {
+                    guard_asleep = true;
+                }
+                Event::GuardStarts(g_id) => {
+                    /* Has a guard ended a shift asleep? */
+                    if active_guard && guard_asleep {
+                        let start_min = if events[eve_idx - 1].0.time().hour() != 0 {
+                            0
+                        } else {
+                            events[eve_idx - 1].0.time().minute()
+                        };
+
+                        /* Record the minutes they where asleep */
+                        if let Some(x) = midnight_sleeps.get_mut(&curr_guard) {
+                            for t_idx in start_min..events[eve_idx].0.time().minute() {
+                                x[t_idx as usize] += 1;
+                            }
+                        };
+                    }
+
+                    /* Set the guard details. */
+                    active_guard = true;
+                    guard_asleep = false;
+                    curr_guard = g_id;
+                }
+            }
+        }
+
+        /* catch the final guard being asleep on shift. */
+        if guard_asleep {
+            let eve_idx = events.len() - 1;
+            let start_min = if events[eve_idx - 1].0.time().hour() != 0 {
+                0
+            } else {
+                events[eve_idx - 1].0.time().minute()
+            };
+
+            /* Record the minutes they where asleep */
+            if let Some(x) = midnight_sleeps.get_mut(&curr_guard) {
+                for t_idx in start_min..events[eve_idx].0.time().minute() {
+                    x[t_idx as usize] += 1;
+                }
+            };
+        }
+
+        return SecuritySchedule { midnight_sleeps };
     }
 
     /// What guard sleeps the most? Return the id multiplied by the minute that
     /// they are most likely to be alseep.
     pub fn sleepiest_guard_id(&self) -> usize {
-        0
+        let mut sleepiest_guard = 0;
+        let mut sleep_amount = 0;
+
+        /* Find the guard that sleeps the most. */
+        for (g_idx, g_sleep) in self.midnight_sleeps.iter() {
+            let tmp_slp_amnt = g_sleep.iter().sum();
+
+            if sleep_amount < tmp_slp_amnt {
+                sleep_amount = tmp_slp_amnt;
+                sleepiest_guard = *g_idx;
+            }
+        }
+
+        /* Find what minute they are most likely to be asleep. */
+        let mut most_occurances = 0;
+        let mut sleepiest_min = 0;
+
+        if let Some(mid_hour) = self.midnight_sleeps.get(&sleepiest_guard) {
+            for t_idx in 0..mid_hour.len() {
+                if mid_hour[t_idx] > most_occurances {
+                    most_occurances = mid_hour[t_idx];
+                    sleepiest_min = t_idx;
+                }
+            }
+        };
+        return sleepiest_min * sleepiest_guard;
     }
 }
 

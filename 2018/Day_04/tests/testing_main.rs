@@ -8,7 +8,7 @@ use std::collections::HashMap;
 #[test]
 fn new_schedule_exp0() {
     assert_eq!(
-        SecuritySchedule::new("./data/example_0.txt").guard_asleep,
+        SecuritySchedule::new("./data/example_0.txt").midnight_sleeps,
         HashMap::from([
             (
                 10,
@@ -19,7 +19,7 @@ fn new_schedule_exp0() {
                 ]
             ),
             (
-                90,
+                99,
                 vec![
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 1, 1,
