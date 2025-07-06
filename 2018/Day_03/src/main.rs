@@ -66,7 +66,10 @@
  *          or more claims?
  */
 
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug)]
 pub struct Fabric {
@@ -75,14 +78,49 @@ pub struct Fabric {
 
 impl Fabric {
     pub fn new(claims_data: &str) -> Self {
-        Fabric {
-            claims: HashMap::new(),
+        let re = Regex::new(r"#([0-9]+) @ ([0-9]+),([0-9]+): ([0-9]+)x([0-9]+)").unwrap();
+        let mut claims = HashMap::new();
+        let mut buffer = String::new();
+
+        /* Open the file */
+        let file = File::open(claims_data).unwrap();
+        let mut fs = BufReader::new(file);
+
+        /* Read the file line by line. */
+        while fs.read_line(&mut buffer).unwrap() > 0 {
+            let raw_claim = re.captures(&buffer);
+
+            /* Extract the claim details or skip the line. */
+            let Some(claim) = raw_claim else {
+                println!("Line could not be extracted: '{}'", buffer);
+                buffer.clear();
+                continue;
+            };
+
+            /* Parse the numbers in the claim. */
+            let cl_dat: Vec<usize> = (1..claim.len())
+                .map(|x| claim[x].parse::<usize>().unwrap())
+                .collect();
+
+            /* Add every sq covered by this claim to the claims record. */
+            for x_idx in cl_dat[1]..cl_dat[1] + cl_dat[3] {
+                for y_idx in cl_dat[2]..cl_dat[2] + cl_dat[4] {
+                    claims
+                        .entry((x_idx, y_idx))
+                        .and_modify(|x: &mut HashSet<usize>| {
+                            x.insert(cl_dat[0]);
+                        })
+                        .or_insert(HashSet::from([cl_dat[0]]));
+                }
+            }
+            buffer.clear();
         }
+        return Fabric { claims };
     }
 
     /// How many square inches of  fabric are overlapping from all the claims.
     pub fn overlapping_sqrs(&self) -> usize {
-        0
+        return self.claims.iter().filter(|x| x.1.len() > 1).count();
     }
 }
 

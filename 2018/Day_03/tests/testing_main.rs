@@ -3,6 +3,7 @@
 #[path = "../src/main.rs"]
 mod main;
 use crate::main::Fabric;
+
 use std::collections::{HashMap, HashSet};
 
 #[test]
