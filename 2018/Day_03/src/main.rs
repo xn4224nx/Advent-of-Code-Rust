@@ -124,4 +124,7 @@ impl Fabric {
     }
 }
 
-fn main() {}
+fn main() {
+    let santas_suit = Fabric::new("./data/input_0.txt");
+    println!("Part 1 = {}", santas_suit.overlapping_sqrs());
+}
