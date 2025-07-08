@@ -46,25 +46,50 @@ fn read_polymer_exp4() {
 
 #[test]
 fn compress_polymer_len_exp0() {
-    assert_eq!(Polymer::new("./data/example_0.txt").compressed_len(), 0);
+    assert_eq!(Polymer::new("./data/example_0.txt").compressed_len(' '), 0);
 }
 
 #[test]
 fn compress_polymer_len_exp1() {
-    assert_eq!(Polymer::new("./data/example_1.txt").compressed_len(), 0);
+    assert_eq!(Polymer::new("./data/example_1.txt").compressed_len(' '), 0);
 }
 
 #[test]
 fn compress_polymer_len_exp2() {
-    assert_eq!(Polymer::new("./data/example_2.txt").compressed_len(), 4);
+    assert_eq!(Polymer::new("./data/example_2.txt").compressed_len(' '), 4);
 }
 
 #[test]
 fn compress_polymer_len_exp3() {
-    assert_eq!(Polymer::new("./data/example_3.txt").compressed_len(), 6);
+    assert_eq!(Polymer::new("./data/example_3.txt").compressed_len(' '), 6);
 }
 
 #[test]
 fn compress_polymer_len_exp4() {
-    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len(), 10);
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len(' '), 10);
+}
+
+#[test]
+fn removal_compress_polymer_len_exp0() {
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len('a'), 6);
+}
+
+#[test]
+fn removal_compress_polymer_len_exp1() {
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len('b'), 8);
+}
+
+#[test]
+fn removal_compress_polymer_len_exp2() {
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len('c'), 4);
+}
+
+#[test]
+fn removal_compress_polymer_len_exp3() {
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_len('d'), 6);
+}
+
+#[test]
+fn compressed_rm_len_exp01() {
+    assert_eq!(Polymer::new("./data/example_4.txt").compressed_rm_len(), 4);
 }
