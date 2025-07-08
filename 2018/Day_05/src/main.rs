@@ -48,18 +48,82 @@
  *          paste your input, make sure you get the whole thing.)
  */
 
-struct Polymer {
-    units: Vec<char>,
+use std::fs::read_to_string;
+
+pub struct Polymer {
+    pub units: Vec<char>,
 }
 
 impl Polymer {
     pub fn new(element_file: &str) -> Self {
-        Polymer { units: Vec::new() }
+        Polymer {
+            units: read_to_string(element_file)
+                .unwrap()
+                .trim()
+                .chars()
+                .collect(),
+        }
     }
 
+    /// What is the length of the polymer after commpressing it until no more
+    /// removals can be made.
     pub fn compressed_len(&self) -> usize {
-        0
+        let mut rm_units = vec![true; self.units.len()];
+
+        /* Find adjacent elements that are the same letter but different case. */
+        loop {
+            let mut c_idx = 0;
+            let mut n_idx = 1;
+            let mut change_made = false;
+
+            /* Iterate over the polymer and remove units. */
+            while c_idx < self.units.len() && n_idx < self.units.len() {
+                /* Move the indexes to find the next chars to compare */
+                if !rm_units[c_idx] {
+                    c_idx += 1;
+                    continue;
+                }
+
+                /* Make sure a value is not compared to itself. */
+                if c_idx == n_idx || !rm_units[n_idx] {
+                    n_idx += 1;
+                    continue;
+                }
+
+                /* See if the pair of units should be removed. */
+                if (self.units[c_idx] as i32 - self.units[n_idx] as i32).abs()
+                    == ('A' as i32 - 'a' as i32).abs()
+                {
+                    change_made = true;
+
+                    /* Mark these units as having been removed. */
+                    rm_units[c_idx] = false;
+                    rm_units[n_idx] = false;
+
+                    /* Prepare for the next check. */
+                    c_idx += 1;
+                    n_idx += 1;
+                }
+
+                /* Move onto the next pair to check. */
+                c_idx += 1;
+                n_idx += 1;
+            }
+
+            /* If no modifications have been made, stop looking. */
+            if !change_made {
+                break;
+            }
+        }
+
+        /* Return the number of remaining units. */
+        return rm_units.iter().filter(|x| **x).count();
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        Polymer::new("./data/input_0.txt").compressed_len()
+    );
+}
