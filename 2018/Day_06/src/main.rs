@@ -128,7 +128,56 @@ impl MineField {
     }
 
     pub fn largest_connected_area(self) -> usize {
-        0
+        let mut assigned_areas = vec![0; self.mine_coords.len()];
+        let mut inf_areas = vec![false; self.mine_coords.len()];
+
+        /* Iterate over every coordinate and determine the closest mine. */
+        for x in self.top_left_corner.0..=self.bottom_right_corner.0 {
+            for y in self.top_left_corner.1..=self.bottom_right_corner.1 {
+                let mut closest_dist = usize::MAX;
+                let mut closest_mine = 0;
+                let mut dist_tie = false;
+
+                for m_idx in 0..self.mine_coords.len() {
+                    let dist = self.mine_coords[m_idx].0.abs_diff(x)
+                        + self.mine_coords[m_idx].1.abs_diff(y);
+
+                    if dist < closest_dist {
+                        closest_dist = dist;
+                        closest_mine = m_idx;
+                        dist_tie = false;
+                    } else if dist == closest_dist {
+                        dist_tie = true;
+                    }
+                }
+
+                /* Points equally close to multiple mines don't count. */
+                if dist_tie {
+                    continue;
+                };
+
+                /* An edge point means an infinite area for the mine. */
+                if x == self.top_left_corner.0
+                    || x == self.bottom_right_corner.0
+                    || y == self.top_left_corner.1
+                    || y == self.bottom_right_corner.1
+                {
+                    inf_areas[closest_mine] = true;
+                }
+
+                assigned_areas[closest_mine] += 1;
+            }
+        }
+
+        /* Return the largest area that is not associated with an infinte mine. */
+        let mut max_area = 0;
+        for m_idx in 0..self.mine_coords.len() {
+            if !inf_areas[m_idx] && assigned_areas[m_idx] > max_area {
+                max_area = assigned_areas[m_idx];
+            }
+        }
+
+        return max_area;
     }
 }
 
