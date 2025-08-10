@@ -69,6 +69,10 @@
  * PART 1:  What is the size of the largest area that isn't infinite?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct MineField {
     pub mine_coords: Vec<(usize, usize)>,
     pub top_left_corner: (usize, usize),
@@ -77,10 +81,49 @@ pub struct MineField {
 
 impl MineField {
     pub fn new(mine_coords_file: &str) -> Self {
+        let pnt_re = Regex::new(r"(\d+), (\d+)").unwrap();
+        let mut buffer = String::new();
+        let mut mine_coords = Vec::new();
+        let mut top_left_corner = (usize::MAX, usize::MAX);
+        let mut bottom_right_corner = (0, 0);
+
+        /* Open the coordinates file */
+        let file = File::open(mine_coords_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Read the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let Some(raw_coord) = pnt_re.captures(&buffer) else {
+                buffer.clear();
+                continue;
+            };
+
+            let coord = (
+                raw_coord[1].parse::<usize>().unwrap(),
+                raw_coord[2].parse::<usize>().unwrap(),
+            );
+
+            /* Determine the reach of the mine field. */
+            if coord.0 > bottom_right_corner.0 {
+                bottom_right_corner.0 = coord.0;
+            }
+            if coord.1 > bottom_right_corner.1 {
+                bottom_right_corner.1 = coord.1;
+            }
+            if coord.0 < top_left_corner.0 {
+                top_left_corner.0 = coord.0;
+            }
+            if coord.1 < top_left_corner.1 {
+                top_left_corner.1 = coord.1;
+            }
+            mine_coords.push(coord);
+            buffer.clear();
+        }
+
         MineField {
-            mine_coords: Vec::new(),
-            top_left_corner: (0, 0),
-            bottom_right_corner: (0, 0),
+            mine_coords,
+            top_left_corner,
+            bottom_right_corner,
         }
     }
 
