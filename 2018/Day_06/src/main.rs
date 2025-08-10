@@ -176,9 +176,13 @@ impl MineField {
                 max_area = assigned_areas[m_idx];
             }
         }
-
         return max_area;
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        MineField::new("./data/input_0.txt").largest_connected_area()
+    );
+}
