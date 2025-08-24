@@ -22,3 +22,11 @@ fn largest_connected_area_exp0() {
         17
     )
 }
+
+#[test]
+fn close_region_size_exp0() {
+    assert_eq!(
+        MineField::new("./data/example_0.txt").close_region_size(32),
+        16
+    )
+}
