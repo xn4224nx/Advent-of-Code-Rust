@@ -21,17 +21,17 @@ fn new_instance_exp0() {
 }
 
 #[test]
-fn first_letters_exp0() {
+fn single_worker_word_exp0() {
     assert_eq!(
-        WordMaker::new("./data/example_0.txt").first_letters(),
-        vec!['C']
+        WordMaker::new("./data/example_0.txt").multi_worker(1, 0).0,
+        String::from("CABDFE")
     )
 }
 
 #[test]
-fn single_worker_word_exp0() {
+fn multi_worker_word_exp0() {
     assert_eq!(
-        WordMaker::new("./data/example_0.txt").single_worker(),
-        String::from("CABDFE")
+        WordMaker::new("./data/example_0.txt").multi_worker(2, 0),
+        (String::from("CABFDE"), 15)
     )
 }

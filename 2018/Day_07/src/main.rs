@@ -66,6 +66,52 @@
  * So, in this example, the correct order is CABDFE.
  *
  * PART 1:  In what order should the steps in your instructions be completed?
+ *
+ * As you're about to begin construction, four of the Elves offer to help. "The
+ * sun will set soon; it'll go faster if we work together." Now, you need to
+ * account for multiple people working on steps simultaneously. If multiple
+ * steps are available, workers should still begin them in alphabetical order.
+ *
+ * Each step takes 60 seconds plus an amount corresponding to its letter: A=1,
+ * B=2, C=3, and so on. So, step A takes 60+1=61 seconds, while step Z takes
+ * 60+26=86 seconds. No time is required between steps.
+ *
+ * To simplify things for the example, however, suppose you only have help from
+ * one Elf (a total of two workers) and that each step takes 60 fewer seconds
+ * (so that step A takes 1 second and step Z takes 26 seconds). Then, using the
+ * same instructions as above, this is how each second would be spent:
+ *
+ * Second   Worker 1   Worker 2   Done
+ *   0        C          .
+ *   1        C          .
+ *   2        C          .
+ *   3        A          F       C
+ *   4        B          F       CA
+ *   5        B          F       CA
+ *   6        D          F       CAB
+ *   7        D          F       CAB
+ *   8        D          F       CAB
+ *   9        D          .       CABF
+ *  10        E          .       CABFD
+ *  11        E          .       CABFD
+ *  12        E          .       CABFD
+ *  13        E          .       CABFD
+ *  14        E          .       CABFD
+ *  15        .          .       CABFDE
+ *
+ * Each row represents one second of time. The Second column identifies how many
+ * seconds have passed as of the beginning of that second. Each worker column
+ * shows the step that worker is currently doing (or . if they are idle). The
+ * Done column shows completed steps.
+ *
+ * Note that the order of the steps has changed; this is because steps now take
+ * time to finish and multiple workers can begin multiple steps simultaneously.
+ *
+ * In this example, it would take 15 seconds for two workers to complete these
+ * steps.
+ *
+ * PART 2:  With 5 workers and the 60+ second step durations described above,
+ *          how long will it take to complete all of the steps?
  */
 
 use std::collections::{HashMap, HashSet};
@@ -105,51 +151,81 @@ impl WordMaker {
         return WordMaker { dependencies };
     }
 
-    /// What will  be the first letter in the word be?
-    pub fn first_letters(&self) -> Vec<char> {
-        let mut f_letters = Vec::new();
-
-        /* Find the letters with no dependancies. */
-        for (letter, depends) in &self.dependencies {
-            if depends.is_empty() {
-                f_letters.push(*letter);
-            }
-        }
-        f_letters.sort();
-        return f_letters;
-    }
-
-    /// What would the word be if constructed by a single worker?
-    pub fn single_worker(&self) -> String {
+    /// How long would it take to construct a word with multiple workers.
+    pub fn multi_worker(&self, num_workers: usize, min_time: usize) -> (String, usize) {
+        let mut time_taken = 0;
         let mut final_word = String::new();
-        let mut used_words: HashSet<char> = HashSet::new();
 
-        /* Pick the first letter in the word */
-        let first_letter = self.first_letters()[0];
-        final_word.push(first_letter);
-        used_words.insert(first_letter);
+        /* Keep track of what letter and time a worker in processing */
+        let mut workers = vec![0; num_workers];
+        let mut worker_task = vec![' '; num_workers];
 
-        /* Pick the next letters. */
-        while used_words.len() < self.dependencies.len() {
+        /* Keep track of where each letter is */
+        let mut used_letters: HashSet<char> = HashSet::new();
+        let mut processing_letters: HashSet<char> = HashSet::new();
+
+        while used_letters.len() < self.dependencies.len() {
             let mut nxt_letters = Vec::new();
 
-            /* Find the letters that are available. */
+            /* Find the available letters. */
             for (letter, depends) in &self.dependencies {
-                if !used_words.contains(letter) && depends.is_subset(&used_words) {
+                if !used_letters.contains(letter)
+                    && !processing_letters.contains(letter)
+                    && depends.is_subset(&used_letters)
+                {
                     nxt_letters.push(*letter);
                 }
             }
 
-            /* Add the first available word alphabetically. */
+            /* The letters get assigned alphabetically. */
             nxt_letters.sort();
-            final_word.push(nxt_letters[0]);
-            used_words.insert(nxt_letters[0]);
+            nxt_letters.reverse();
+
+            /* Give the letters to the free workers.  */
+            for wrk_idx in 0..num_workers {
+                if workers[wrk_idx] == 0 && !nxt_letters.is_empty() {
+                    let assign_letter = nxt_letters.pop().unwrap();
+                    processing_letters.insert(assign_letter);
+                    workers[wrk_idx] = min_time + (assign_letter as usize) - ('A' as usize) + 1;
+                    worker_task[wrk_idx] = assign_letter;
+                }
+            }
+
+            /* How long will it take a worker to finish next? */
+            let mut min_time = usize::MAX;
+            for wrk_idx in 0..num_workers {
+                if workers[wrk_idx] < min_time && workers[wrk_idx] != 0 {
+                    min_time = workers[wrk_idx];
+                }
+            }
+
+            /* Simulate time running and the letters being processed. */
+            time_taken += min_time;
+            for wrk_idx in 0..num_workers {
+                if workers[wrk_idx] != 0 {
+                    workers[wrk_idx] -= min_time;
+
+                    /* A worker finishes the letter and it is added to the word */
+                    if workers[wrk_idx] == 0 {
+                        processing_letters.remove(&worker_task[wrk_idx]);
+                        used_letters.insert(worker_task[wrk_idx]);
+                        final_word.push(worker_task[wrk_idx]);
+                        worker_task[wrk_idx] = ' ';
+                    }
+                }
+            }
         }
-        return final_word;
+
+        /* After the last letter has been assigned determine the final time. */
+        return (final_word, time_taken);
     }
 }
 
 fn main() {
     let sleigh_kit = WordMaker::new("./data/input_0.txt");
-    println!("Part 1 = '{}'", sleigh_kit.single_worker());
+    println!(
+        "Part 1 = '{}'\nPart 2 = {}",
+        sleigh_kit.multi_worker(1, 0).0,
+        sleigh_kit.multi_worker(5, 60).1
+    );
 }
