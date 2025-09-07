@@ -69,6 +69,8 @@
  */
 
 use std::collections::{HashMap, HashSet};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 pub struct WordMaker {
     pub dependencies: HashMap<char, HashSet<char>>,
@@ -76,20 +78,78 @@ pub struct WordMaker {
 
 impl WordMaker {
     pub fn new(relations_file: &str) -> Self {
-        WordMaker {
-            dependencies: HashMap::new(),
+        let mut buffer = String::new();
+        let mut dependencies: HashMap<char, HashSet<char>> = HashMap::new();
+
+        /* Open the data file. */
+        let file = File::open(relations_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            /* Convert the line to a vector of chars */
+            let line: Vec<char> = buffer.chars().collect();
+
+            /* Ensure both letters have entries. */
+            if !dependencies.contains_key(&line[5]) {
+                dependencies.insert(line[5], HashSet::new());
+            };
+            if !dependencies.contains_key(&line[36]) {
+                dependencies.insert(line[36], HashSet::new());
+            };
+
+            /* Codify the letter dependancy */
+            dependencies.get_mut(&line[36]).unwrap().insert(line[5]);
+            buffer.clear();
         }
+        return WordMaker { dependencies };
     }
 
     /// What will  be the first letter in the word be?
     pub fn first_letters(&self) -> Vec<char> {
-        Vec::new()
+        let mut f_letters = Vec::new();
+
+        /* Find the letters with no dependancies. */
+        for (letter, depends) in &self.dependencies {
+            if depends.is_empty() {
+                f_letters.push(*letter);
+            }
+        }
+        f_letters.sort();
+        return f_letters;
     }
 
     /// What would the word be if constructed by a single worker?
     pub fn single_worker(&self) -> String {
-        String::new()
+        let mut final_word = String::new();
+        let mut used_words: HashSet<char> = HashSet::new();
+
+        /* Pick the first letter in the word */
+        let first_letter = self.first_letters()[0];
+        final_word.push(first_letter);
+        used_words.insert(first_letter);
+
+        /* Pick the next letters. */
+        while used_words.len() < self.dependencies.len() {
+            let mut nxt_letters = Vec::new();
+
+            /* Find the letters that are available. */
+            for (letter, depends) in &self.dependencies {
+                if !used_words.contains(letter) && depends.is_subset(&used_words) {
+                    nxt_letters.push(*letter);
+                }
+            }
+
+            /* Add the first available word alphabetically. */
+            nxt_letters.sort();
+            final_word.push(nxt_letters[0]);
+            used_words.insert(nxt_letters[0]);
+        }
+        return final_word;
     }
 }
 
-fn main() {}
+fn main() {
+    let sleigh_kit = WordMaker::new("./data/input_0.txt");
+    println!("Part 1 = '{}'", sleigh_kit.single_worker());
+}
