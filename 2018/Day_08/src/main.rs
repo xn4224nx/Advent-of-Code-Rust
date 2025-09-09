@@ -162,4 +162,7 @@ impl FlatTree {
     }
 }
 
-fn main() {}
+fn main() {
+    let (meta_sum, root_node) = FlatTree::new("./data/input_0.txt").statistics();
+    println!("Part 1 = {}\nPart 2 = {}\n", meta_sum, root_node);
+}
