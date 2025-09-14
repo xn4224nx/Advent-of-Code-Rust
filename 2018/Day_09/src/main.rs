@@ -91,21 +91,38 @@ pub struct MarbleGame {
 impl MarbleGame {
     pub fn new(players: usize, last_marb_pnts: usize) -> Self {
         MarbleGame {
-            marbs: VecDeque::new(),
+            marbs: VecDeque::from([0]),
             players,
-            player_scores: Vec::new(),
+            player_scores: vec![0; players],
             last_marb_pnts,
-            curr_marb: 0,
+            curr_marb: 1,
             curr_player: 0,
         }
     }
 
     /// Place the current marble in the circle
-    pub fn place_marb(&mut self) {}
+    pub fn place_marb(&mut self) {
+        if self.curr_marb % 23 == 0 {
+            self.player_scores[self.curr_player] += self.curr_marb;
+            self.marbs.rotate_right(7);
+            self.player_scores[self.curr_player] += self.marbs.pop_front().unwrap();
+        } else {
+            self.marbs
+                .rotate_left(if self.marbs.len() < 2 { 0 } else { 2 });
+            self.marbs.push_front(self.curr_marb)
+        }
+
+        /* Move onto the next player and marble. */
+        self.curr_marb += 1;
+        self.curr_player = (self.curr_player + 1) % self.players
+    }
 
     /// Find the highest score after the last marble is placed
     pub fn highest_score(&mut self) -> usize {
-        0
+        while self.curr_marb <= self.last_marb_pnts {
+            self.place_marb();
+        }
+        return *self.player_scores.iter().max().unwrap();
     }
 }
 
