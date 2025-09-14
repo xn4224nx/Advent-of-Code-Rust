@@ -126,4 +126,6 @@ impl MarbleGame {
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", MarbleGame::new(427, 70723).highest_score());
+}
