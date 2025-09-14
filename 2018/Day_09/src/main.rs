@@ -75,6 +75,11 @@
  *      -   30 players; last marble is worth 5807 points: high score is 37305
  *
  * PART 1:  What is the winning Elf's score?
+ *
+ * Amused by the speed of your answer, the Elves are curious:
+ *
+ * PART 2:  What would the new winning Elf's score be if the number of the last marble
+ *          were 100 times larger?
  */
 
 use std::collections::VecDeque;
@@ -127,5 +132,9 @@ impl MarbleGame {
 }
 
 fn main() {
-    println!("Part 1 = {}", MarbleGame::new(427, 70723).highest_score());
+    println!(
+        "Part 1 = {}\nPart 2 = {}\n",
+        MarbleGame::new(427, 70723).highest_score(),
+        MarbleGame::new(427, 7072300).highest_score()
+    );
 }
