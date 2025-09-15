@@ -8,7 +8,7 @@ use crate::main::NightSky;
 fn star_cluster_size_exp0() {
     assert_eq!(
         NightSky::new("./data/example_0.txt").star_cluster_size(0),
-        36
+        (-6, 15, -4, 11)
     );
 }
 

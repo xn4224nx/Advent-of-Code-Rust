@@ -78,34 +78,122 @@
  *          that message to appear?
  */
 
+use regex::Regex;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct NightSky {
-    pub star_position: Vec<(usize, usize)>,
-    pub star_velocity: Vec<(usize, usize)>,
+    pub star_position: Vec<(i32, i32)>,
+    pub star_velocity: Vec<(i32, i32)>,
 }
 
 impl NightSky {
     pub fn new(data_file: &str) -> Self {
-        NightSky {
-            star_position: Vec::new(),
-            star_velocity: Vec::new(),
+        let mut buffer = String::new();
+        let mut star_position = Vec::new();
+        let mut star_velocity = Vec::new();
+        let re_num = Regex::new(r"\-?\d+").unwrap();
+
+        /* Open the datafile. */
+        let file = File::open(data_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Each line will describe one star. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            let nums = re_num
+                .captures_iter(&buffer)
+                .map(|x| x[0].parse::<i32>().unwrap())
+                .collect::<Vec<i32>>();
+
+            /* Extract the star position and velocity. */
+            star_position.push((nums[0], nums[1]));
+            star_velocity.push((nums[2], nums[3]));
+            buffer.clear();
         }
+
+        return NightSky {
+            star_position,
+            star_velocity,
+        };
     }
 
     /// Calculate a measure of how close all the stars are to each other at a
     /// specific point int time
-    pub fn star_cluster_size(&self, time: usize) -> usize {
-        0
+    pub fn star_cluster_size(&self, time: i32) -> (i32, i32, i32, i32) {
+        let mut x_min = i32::MAX;
+        let mut x_max = i32::MIN;
+        let mut y_min = i32::MAX;
+        let mut y_max = i32::MIN;
+
+        /* Find the min and max x & y values for stars  */
+        for star_idx in 0..self.star_position.len() {
+            let x_pos = self.star_position[star_idx].0 + time * self.star_velocity[star_idx].0;
+            let y_pos = self.star_position[star_idx].1 + time * self.star_velocity[star_idx].1;
+
+            if x_pos > x_max {
+                x_max = x_pos;
+            }
+
+            if x_pos < x_min {
+                x_min = x_pos;
+            }
+
+            if y_pos > y_max {
+                y_max = y_pos;
+            }
+
+            if y_pos < y_min {
+                y_min = y_pos;
+            }
+        }
+
+        return (x_min, x_max, y_min, y_max);
     }
 
     /// Create a visual representation of the night sky at a point in time.
-    pub fn show(&self, time: usize) -> &str {
-        ""
+    pub fn show(&self, time: i32) -> String {
+        let (min_x, max_x, min_y, max_y) = self.star_cluster_size(time);
+        let mut nsky = vec![vec!['.'; (1 + max_x - min_x) as usize]; (1 + max_y - min_y) as usize];
+
+        /* Add the stars into the empty space. */
+        for star_idx in 0..self.star_position.len() {
+            let x = self.star_position[star_idx].0 + time * self.star_velocity[star_idx].0 - min_x;
+            let y = self.star_position[star_idx].1 + time * self.star_velocity[star_idx].1 - min_y;
+            nsky[y as usize][x as usize] = '#';
+        }
+
+        /* Convert the vector to a string. */
+        let mut out_n_sky = String::new();
+
+        for row in 0..(1 + max_y - min_y) {
+            for col in 0..(1 + max_x - min_x) {
+                out_n_sky.push(nsky[row as usize][col as usize]);
+            }
+            out_n_sky.push('\n');
+        }
+
+        return out_n_sky;
     }
 
     /// Show what the night sky looks like when its stars are closest together.
     /// Then return the time it takes for that pattern to appear.
-    pub fn message(&self) -> usize {
-        0
+    pub fn message(&self) -> i32 {
+        let mut time_idx = 0;
+        let mut star_spread = i32::MAX - 1;
+        let mut old_spread = i32::MAX;
+
+        /* Find the time index when the stars are closest together. */
+        while star_spread < old_spread {
+            old_spread = star_spread;
+            let rn = self.star_cluster_size(time_idx);
+            star_spread = rn.1 - rn.0 + rn.3 - rn.2;
+            time_idx += 1;
+        }
+        time_idx -= 2;
+
+        /* Show what message the stars form. */
+        self.show(time_idx);
+        return time_idx;
     }
 }
 
