@@ -192,9 +192,14 @@ impl NightSky {
         time_idx -= 2;
 
         /* Show what message the stars form. */
-        self.show(time_idx);
+        println!("{}", self.show(time_idx));
         return time_idx;
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 2 = {}\n",
+        NightSky::new("./data/input_0.txt").message()
+    );
+}
