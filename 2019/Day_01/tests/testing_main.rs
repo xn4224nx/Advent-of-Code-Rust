@@ -17,7 +17,7 @@ fn module_fuel_exp0() {
         Rocket {
             module_masses: vec![12]
         }
-        .fuel_reqs(),
+        .fuel_reqs(false),
         2
     );
 }
@@ -28,7 +28,7 @@ fn module_fuel_exp1() {
         Rocket {
             module_masses: vec![14]
         }
-        .fuel_reqs(),
+        .fuel_reqs(false),
         2
     );
 }
@@ -39,7 +39,7 @@ fn module_fuel_exp2() {
         Rocket {
             module_masses: vec![1969]
         }
-        .fuel_reqs(),
+        .fuel_reqs(false),
         654
     );
 }
@@ -50,12 +50,50 @@ fn module_fuel_exp3() {
         Rocket {
             module_masses: vec![100756]
         }
-        .fuel_reqs(),
+        .fuel_reqs(false),
         33583
     );
 }
 
 #[test]
 fn module_fuel_exp4() {
-    assert_eq!(Rocket::new("./data/example_1.txt").fuel_reqs(), 34241);
+    assert_eq!(Rocket::new("./data/example_1.txt").fuel_reqs(false), 34241);
+}
+
+#[test]
+fn module_fuel_exp5() {
+    assert_eq!(
+        Rocket {
+            module_masses: vec![14]
+        }
+        .fuel_reqs(true),
+        2
+    );
+}
+
+#[test]
+fn module_fuel_exp6() {
+    assert_eq!(
+        Rocket {
+            module_masses: vec![1969]
+        }
+        .fuel_reqs(true),
+        966
+    );
+}
+
+#[test]
+fn module_fuel_exp7() {
+    assert_eq!(
+        Rocket {
+            module_masses: vec![100756]
+        }
+        .fuel_reqs(true),
+        50346
+    );
+}
+
+#[test]
+fn module_fuel_exp8() {
+    assert_eq!(Rocket::new("./data/example_1.txt").fuel_reqs(true), 51316);
 }
