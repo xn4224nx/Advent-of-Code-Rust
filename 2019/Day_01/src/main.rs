@@ -39,20 +39,39 @@
  *          your spacecraft?
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 pub struct Rocket {
     pub module_masses: Vec<usize>,
 }
 
 impl Rocket {
     pub fn new(init_file: &str) -> Self {
-        Rocket {
-            module_masses: Vec::new(),
+        let mut buffer = String::new();
+        let mut module_masses = Vec::new();
+
+        /* Open the file. */
+        let file = File::open(init_file).unwrap();
+        let mut fp = BufReader::new(file);
+
+        /* Iterate over the file line by line. */
+        while fp.read_line(&mut buffer).unwrap() > 0 {
+            module_masses.push(buffer.trim_end().parse::<usize>().unwrap());
+            buffer.clear();
         }
+        return Rocket { module_masses };
     }
 
     pub fn fuel_reqs(self) -> usize {
-        0
+        return self
+            .module_masses
+            .iter()
+            .map(|x| (x / 3) - 2)
+            .sum::<usize>();
     }
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", Rocket::new("./data/input_0.txt").fuel_reqs());
+}
