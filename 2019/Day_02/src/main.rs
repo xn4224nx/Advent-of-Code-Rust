@@ -91,8 +91,12 @@
  * PART 1:  What value is left at position 0 after the program halts?
  */
 
+const ADD_OPCODE: usize = 1;
+const MULT_OPCODE: usize = 2;
+const EXIT_OPCODE: usize = 99;
+
 pub struct IntCodeProgram {
-    pub memory: Vec<i32>,
+    pub memory: Vec<usize>,
     pub pntr: usize,
 }
 
@@ -100,18 +104,59 @@ impl IntCodeProgram {
     /// Initialise a program from a file
     pub fn from_file(file_path: &str) -> Self {
         return IntCodeProgram {
-            memory: Vec::new(),
+            memory: std::fs::read_to_string(file_path)
+                .unwrap()
+                .split(",")
+                .map(|x| x.trim().parse::<usize>().unwrap())
+                .collect(),
             pntr: 0,
         };
     }
 
     /// Run the current opcode pointed to in the programs memory.
-    pub fn execute_cmd(&mut self) {}
+    pub fn execute_cmd(&mut self) {
+        if self.memory[self.pntr] == EXIT_OPCODE {
+            return;
+        }
+
+        let param1_idx: usize = self.memory[self.pntr + 1];
+        let param2_idx: usize = self.memory[self.pntr + 2];
+        let out_idx: usize = self.memory[self.pntr + 3];
+
+        /* Addition */
+        if self.memory[self.pntr] == ADD_OPCODE {
+            self.memory[out_idx] = self.memory[param1_idx] + self.memory[param2_idx];
+
+        /* Multiplication */
+        } else if self.memory[self.pntr] == MULT_OPCODE {
+            self.memory[out_idx] = self.memory[param1_idx] * self.memory[param2_idx];
+        } else {
+            panic!("Unknown Opcode: '{}'", self.memory[self.pntr]);
+        }
+
+        /* Move onto the next command after this one. */
+        self.pntr += 4;
+    }
 
     /// What is the final value of the program
-    pub fn run(&mut self) -> i32 {
-        0
+    pub fn run(&mut self, alarm: bool) -> usize {
+        /* Set 1202 program alarm state */
+        if alarm {
+            self.memory[1] = 12;
+            self.memory[2] = 2;
+        }
+
+        /* Execute commands until the exit opcode is encountered. */
+        while self.memory[self.pntr] != EXIT_OPCODE {
+            self.execute_cmd();
+        }
+        return self.memory[0];
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1  = {}",
+        IntCodeProgram::from_file("./data/input_0.txt").run(true)
+    );
+}

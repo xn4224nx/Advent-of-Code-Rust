@@ -117,27 +117,39 @@ fn multi_cmd_exp0() {
 #[test]
 fn run_exp0() {
     assert_eq!(
-        IntCodeProgram::from_file("./data/example_0.txt").run(),
+        IntCodeProgram::from_file("./data/example_0.txt").run(false),
         3500
     );
 }
 
 #[test]
 fn run_exp1() {
-    assert_eq!(IntCodeProgram::from_file("./data/example_1.txt").run(), 2);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_1.txt").run(false),
+        2
+    );
 }
 
 #[test]
 fn run_exp2() {
-    assert_eq!(IntCodeProgram::from_file("./data/example_2.txt").run(), 2);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_2.txt").run(false),
+        2
+    );
 }
 
 #[test]
 fn run_exp3() {
-    assert_eq!(IntCodeProgram::from_file("./data/example_3.txt").run(), 2);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_3.txt").run(false),
+        2
+    );
 }
 
 #[test]
 fn run_exp4() {
-    assert_eq!(IntCodeProgram::from_file("./data/example_4.txt").run(), 30);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_4.txt").run(false),
+        30
+    );
 }
