@@ -145,4 +145,9 @@ impl WireInteraction {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        WireInteraction::from_file("./data/input_0.txt").short_circuit_dist()
+    );
+}
