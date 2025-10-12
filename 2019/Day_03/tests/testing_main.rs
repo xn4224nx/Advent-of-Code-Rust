@@ -65,7 +65,7 @@ fn new_pair_of_wires_exp0() {
 #[test]
 fn test_short_circuit_dist_exp_0() {
     assert_eq!(
-        WireInteraction::from_file("./data/example_0.txt").short_circuit_dist(),
+        WireInteraction::from_file("./data/example_0.txt").short_circuit_dist(false),
         6
     );
 }
@@ -73,7 +73,7 @@ fn test_short_circuit_dist_exp_0() {
 #[test]
 fn test_short_circuit_dist_exp_1() {
     assert_eq!(
-        WireInteraction::from_file("./data/example_1.txt").short_circuit_dist(),
+        WireInteraction::from_file("./data/example_1.txt").short_circuit_dist(false),
         159
     );
 }
@@ -81,7 +81,31 @@ fn test_short_circuit_dist_exp_1() {
 #[test]
 fn test_short_circuit_dist_exp_2() {
     assert_eq!(
-        WireInteraction::from_file("./data/example_2.txt").short_circuit_dist(),
+        WireInteraction::from_file("./data/example_2.txt").short_circuit_dist(false),
         135
+    );
+}
+
+#[test]
+fn test_short_circuit_dist_exp_3() {
+    assert_eq!(
+        WireInteraction::from_file("./data/example_0.txt").short_circuit_dist(true),
+        30
+    );
+}
+
+#[test]
+fn test_short_circuit_dist_exp_4() {
+    assert_eq!(
+        WireInteraction::from_file("./data/example_1.txt").short_circuit_dist(true),
+        610
+    );
+}
+
+#[test]
+fn test_short_circuit_dist_exp_5() {
+    assert_eq!(
+        WireInteraction::from_file("./data/example_2.txt").short_circuit_dist(true),
+        410
     );
 }
