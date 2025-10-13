@@ -30,12 +30,41 @@
 
 /// Does the provided number meet the password rules
 pub fn is_valid_num(number: &Vec<usize>) -> bool {
-    false
+    let mut double_seen: bool = false;
+
+    /* It is a six-digit number. */
+    if number.len() != 6 {
+        return false;
+    }
+
+    for dig_idx in 1..number.len() {
+        /* Look for any doubles. */
+        if !double_seen && number[dig_idx] == number[dig_idx - 1] {
+            double_seen = true;
+        }
+
+        /* Ensure the values are not decreasing. */
+        if number[dig_idx] < number[dig_idx - 1] {
+            return false;
+        }
+    }
+    return double_seen;
 }
 
 /// How many valid passwords are in the supplied range (inclusive)?
 pub fn count_valid_nums(lower_lim: usize, upper_lim: usize) -> usize {
-    0
+    return (lower_lim..=upper_lim)
+        .filter(|x| {
+            is_valid_num(
+                &x.to_string()
+                    .chars()
+                    .map(|y| y.to_digit(10).unwrap() as usize)
+                    .collect::<Vec<usize>>(),
+            )
+        })
+        .count();
 }
 
-fn main() {}
+fn main() {
+    println!("Part 1 = {}", count_valid_nums(254032, 789860));
+}
