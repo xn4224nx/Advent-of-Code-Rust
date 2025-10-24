@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod main;
-use main::{IntCodeProgram, OPCode};
+use main::IntCodeProgram;
 use rand::Rng;
 
 #[test]
@@ -92,7 +92,7 @@ fn new_program_exp9() {
 #[test]
 fn execute_print_cmd() {
     let mut test = IntCodeProgram::from_file("./data/example_0.txt");
-    test.input_val = rand::thread_rng().gen_range(-10000..10000);
+    test.input_val = rand::rng().random_range(-10000..10000);
 
     test.execute_cmd();
     assert_eq!(test.memory, vec![test.input_val, 0, 4, 0, 99]);
@@ -146,10 +146,192 @@ fn extract_modes_exp5() {
 }
 
 #[test]
-fn final_diag_code_exp0() {
-    let rnd_val = rand::thread_rng().gen_range(-10000..10000);
+fn final_diag_code_exp00() {
+    let rnd_val = rand::rng().random_range(-10000..10000);
     assert_eq!(
         IntCodeProgram::from_file("./data/example_0.txt").final_diag_code(rnd_val),
         rnd_val
+    );
+}
+
+#[test]
+fn final_diag_code_exp01_position_equal_to() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_3.txt").final_diag_code(8),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp02_position_equal_to() {
+    let rnd_val = rand::rng().random_range(-1000..=7);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_3.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp03_position_equal_to() {
+    let rnd_val = rand::rng().random_range(9..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_3.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp04_position_less_than() {
+    let rnd_val = rand::rng().random_range(8..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_4.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp05_position_less_than() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_4.txt").final_diag_code(8),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp06_position_less_than() {
+    let rnd_val = rand::rng().random_range(-1000..=7);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_4.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp07_immediate_equal_to() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_5.txt").final_diag_code(8),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp08_immediate_equal_to() {
+    let rnd_val = rand::rng().random_range(9..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_5.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp09_immediate_equal_to() {
+    let rnd_val = rand::rng().random_range(-1000..=7);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_5.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp10_immediate_less_than() {
+    let rnd_val = rand::rng().random_range(-1000..=7);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_6.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp11_immediate_less_than() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_6.txt").final_diag_code(8),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp12_immediate_less_than() {
+    let rnd_val = rand::rng().random_range(8..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_6.txt").final_diag_code(rnd_val),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp13_jump_position() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_7.txt").final_diag_code(0),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp14_jump_position() {
+    let rnd_val = rand::rng().random_range(-1000..=-1);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_7.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp15_jump_position() {
+    let rnd_val = rand::rng().random_range(1..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_7.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp16_jump_immediate() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_8.txt").final_diag_code(0),
+        0
+    );
+}
+
+#[test]
+fn final_diag_code_exp17_jump_immediate() {
+    let rnd_val = rand::rng().random_range(-1000..=-1);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_8.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp18_jump_immediate() {
+    let rnd_val = rand::rng().random_range(1..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_8.txt").final_diag_code(rnd_val),
+        1
+    );
+}
+
+#[test]
+fn final_diag_code_exp19() {
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_9.txt").final_diag_code(8),
+        1000
+    );
+}
+
+#[test]
+fn final_diag_code_exp20() {
+    let rnd_val = rand::rng().random_range(-1000..=7);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_9.txt").final_diag_code(rnd_val),
+        999
+    );
+}
+
+#[test]
+fn final_diag_code_exp21() {
+    let rnd_val = rand::rng().random_range(9..=1000);
+    assert_eq!(
+        IntCodeProgram::from_file("./data/example_9.txt").final_diag_code(rnd_val),
+        1001
     );
 }
