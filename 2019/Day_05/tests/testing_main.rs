@@ -2,7 +2,7 @@
 #[allow(unused_variables)]
 #[path = "../src/main.rs"]
 mod main;
-use main::IntCodeProgram;
+use main::{IntCodeProgram, OPCode};
 use rand::Rng;
 
 #[test]

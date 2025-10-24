@@ -99,11 +99,14 @@
  *          tests, what diagnostic code does the program produce?
  */
 
-const ADD_OPCODE: i32 = 1;
-const MULT_OPCODE: i32 = 2;
-const INPUT_OPCODE: i32 = 3;
-const OUTPUT_OPCODE: i32 = 4;
-const EXIT_OPCODE: i32 = 99;
+#[derive(PartialEq)]
+pub enum OPCode {
+    ADD = 1,
+    MULT = 2,
+    INPUT = 3,
+    OUTPUT = 4,
+    EXIT = 99,
+}
 
 pub struct IntCodeProgram {
     pub memory: Vec<i32>,
@@ -115,7 +118,12 @@ pub struct IntCodeProgram {
 impl IntCodeProgram {
     pub fn from_file(mem_file: &str) -> Self {
         return IntCodeProgram {
-            memory: Vec::new(),
+            memory: std::fs::read_to_string(mem_file)
+                .unwrap()
+                .trim()
+                .split(",")
+                .map(|x| x.parse::<i32>().unwrap())
+                .collect::<Vec<i32>>(),
             pntr: 0,
             input_val: 0,
             outputs: Vec::new(),
@@ -124,20 +132,93 @@ impl IntCodeProgram {
 
     /// Extract the opcode and modes from a single value
     pub fn extract_modes(value: i32) -> (i32, i32, i32, i32) {
-        return (0, 0, 0, 0);
-    }
-
-    /// For the current command what are the parameters involved
-    pub fn cmd_parameters(&self) -> Vec<i32> {
-        return Vec::new();
+        return (
+            value % 100,
+            value % 1000 / 100,
+            value % 10000 / 1000,
+            value % 100000 / 10000,
+        );
     }
 
     /// Change the state of the program according to the referenced command
-    pub fn execute_cmd(&mut self) {}
+    pub fn execute_cmd(&mut self) -> OPCode {
+        let (op_code, prm_1, prm_2, _prm_3) = Self::extract_modes(self.memory[self.pntr]);
+
+        /* No further actions take place if exit detected. */
+        if op_code == OPCode::EXIT as i32 {
+            return OPCode::EXIT;
+        }
+
+        /* Resolve the first parameter. */
+        let value_1 = if prm_1 == 0
+            && self.pntr + 1 < self.memory.len()
+            && self.memory[self.pntr + 1] < self.memory.len() as i32
+        {
+            self.memory[self.memory[self.pntr + 1] as usize]
+        } else if self.pntr + 1 < self.memory.len() {
+            self.memory[self.pntr + 1]
+        } else {
+            0
+        };
+
+        /* Resolve the second parameter. */
+        let value_2 = if prm_2 == 0
+            && self.pntr + 2 < self.memory.len()
+            && self.memory[self.pntr + 2] < self.memory.len() as i32
+        {
+            self.memory[self.memory[self.pntr + 2] as usize]
+        } else if self.pntr + 2 < self.memory.len() {
+            self.memory[self.pntr + 2]
+        } else {
+            0
+        };
+
+        /* Convert the op_code value to its enum equivilent. */
+        let ret_code = match op_code {
+            1 => OPCode::ADD,
+            2 => OPCode::MULT,
+            3 => OPCode::INPUT,
+            4 => OPCode::OUTPUT,
+            99 => OPCode::EXIT,
+            _ => panic!("Unknown opcode: '{}'", op_code),
+        };
+
+        /* Run the specified operation. */
+        match ret_code {
+            OPCode::ADD => {
+                let idx = self.memory[self.pntr + 3] as usize;
+                self.memory[idx] = value_1 + value_2;
+            }
+            OPCode::MULT => {
+                let idx = self.memory[self.pntr + 3] as usize;
+                self.memory[idx] = value_1 * value_2;
+            }
+            OPCode::INPUT => {
+                let idx = self.memory[self.pntr + 1] as usize;
+                self.memory[idx] = self.input_val;
+            }
+            OPCode::OUTPUT => {
+                self.outputs.push(value_1);
+            }
+            OPCode::EXIT => {}
+        }
+
+        /* Change the pointer ready for the next command */
+        self.pntr += match ret_code {
+            OPCode::ADD | OPCode::MULT => 4,
+            OPCode::INPUT | OPCode::OUTPUT => 2,
+            _ => 0,
+        };
+        return ret_code;
+    }
 
     /// After all possible command executions determine the final diagnostic code
     pub fn final_diag_code(&mut self, init_value: i32) -> i32 {
-        0
+        self.input_val = init_value;
+
+        /* Generate diagnostic codes until the stop code is reached. */
+        while self.execute_cmd() != OPCode::EXIT {}
+        return self.outputs[self.outputs.len() - 1];
     }
 }
 
