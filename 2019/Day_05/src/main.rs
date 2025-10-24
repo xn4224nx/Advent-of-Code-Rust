@@ -222,4 +222,9 @@ impl IntCodeProgram {
     }
 }
 
-fn main() {}
+fn main() {
+    println!(
+        "Part 1 = {}",
+        IntCodeProgram::from_file("./data/input_0.txt").final_diag_code(1)
+    );
+}
